@@ -90,6 +90,13 @@ router.post('/evidence/:id/transfer', policeValidators.transferEvidenceValidator
 // GET /police/cases/:id/timeline
 router.get('/cases/:id/timeline', checkCaseAssignment, policeController.getCaseTimeline);
 
+// MODULE 11 - Court Hearings
+router.get('/cases/:id/hearings', checkCaseAssignment, policeController.getCourtHearings);
+router.post('/cases/:id/hearings', checkCaseAssignment, policeController.createCourtHearing);
+
+// MODULE 12 - Reports Status
+router.get('/reports-status', policeController.getReportsStatus);
+
 
 // Error handling for Multer
 router.use((err, req, res, next) => {

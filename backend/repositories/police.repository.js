@@ -223,12 +223,36 @@ const getIncidents = async (caseId) => {
 };
 
 const createIncident = async (caseId, incidentData, userId) => {
-  const query = `
-    INSERT INTO incident (case_id, incident_datetime, location, description, weather)
-    VALUES ($1, $2, $3, $4, $5) RETURNING *
-  `;
-  const result = await pool.query(query, [caseId, incidentData.incident_datetime, incidentData.location, incidentData.description, incidentData.weather]);
-  return result.rows[0];
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const query = `
+      INSERT INTO incident (case_id, incident_datetime, location, description, weather)
+      VALUES ($1, $2, $3, $4, $5) RETURNING *
+    `;
+    const result = await client.query(query, [caseId, incidentData.incident_datetime, incidentData.location, incidentData.description, incidentData.weather]);
+    const incident = result.rows[0];
+
+    if (incidentData.involved_persons && incidentData.involved_persons.length > 0) {
+      for (const person of incidentData.involved_persons) {
+        await client.query(
+          `INSERT INTO incident_person (incident_id, person_id, role) VALUES ($1, $2, $3)`,
+          [incident.incident_id, person.person_id, person.role]
+        );
+      }
+    }
+
+    await logActivity(client, userId, 'Incident Added', 'incident', incident.incident_id, `Incident logged.`);
+    await addCaseActivity(client, caseId, userId, 'Incident Added', 'A new incident detail was added to the case.');
+
+    await client.query('COMMIT');
+    return incident;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
 };
 
 const updateIncident = async (incidentId, incidentData) => {
@@ -499,6 +523,36 @@ const getOfficerIdByUserId = async (userId) => {
 };
 
 
+// --- MODULE 11: Court Hearings ---
+const getCourtHearings = async (caseId) => {
+  const query = `SELECT * FROM court_hearing WHERE case_id = $1 ORDER BY hearing_date ASC`;
+  const result = await pool.query(query, [caseId]);
+  return result.rows;
+};
+
+const createCourtHearing = async (caseId, hearingData, userId) => {
+  const query = `
+    INSERT INTO court_hearing (case_id, court_name, hearing_date, status, remarks)
+    VALUES ($1, $2, $3, $4, $5) RETURNING *
+  `;
+  const values = [caseId, hearingData.court_name, hearingData.hearing_date, hearingData.status || 'SCHEDULED', hearingData.remarks];
+  const result = await pool.query(query, values);
+  return result.rows[0];
+};
+
+// --- MODULE 12: Reports Status ---
+const getReportsStatus = async (officerId) => {
+  const mlefQuery = `
+    SELECT m.mlef_id as id, 'MLEF (H.886)' as request_type, m.request_date, m.status as jmo_status, pc.case_number
+    FROM mlef m
+    JOIN case_assignment ca ON m.case_id = ca.case_id
+    JOIN police_case pc ON m.case_id = pc.case_id
+    WHERE ca.officer_id = $1 AND ca.removed_date IS NULL
+  `;
+  const mlefResult = await pool.query(mlefQuery, [officerId]);
+  return mlefResult.rows;
+};
+
 module.exports = {
   getDashboardStats,
   createCase, getCases, getCaseById, updateCase,
@@ -510,5 +564,7 @@ module.exports = {
   getMlefRequests, getMlefById, createMlefRequest,
   getCaseTimeline,
   search,
-  getOfficerIdByUserId
+  getOfficerIdByUserId,
+  getCourtHearings, createCourtHearing,
+  getReportsStatus
 };
