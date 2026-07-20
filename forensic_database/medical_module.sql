@@ -254,3 +254,14 @@ CREATE TABLE medico_legal_report (
         REFERENCES examination(examination_id)
         ON DELETE CASCADE
 );
+
+CREATE TABLE appointment (
+    appointment_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    jmo_id UUID NOT NULL REFERENCES judicial_medical_officer(jmo_id),
+    patient_id UUID NOT NULL REFERENCES patient(patient_id),
+    mlef_id UUID REFERENCES mlef(mlef_id),
+    appointment_date TIMESTAMP NOT NULL,
+    status VARCHAR(30) DEFAULT 'SCHEDULED',
+    remarks TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
