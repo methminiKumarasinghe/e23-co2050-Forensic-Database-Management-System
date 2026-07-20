@@ -558,6 +558,113 @@ const search = async (jmoId, hospitalId, { query_text, date, limit, offset }) =>
   return result.rows;
 };
 
+// --- MODULE 10.5: Autopsy ---
+const getPendingAutopsies = async (jmoId, hospitalId) => {
+  const query = `
+    SELECT m.mlef_id, p.first_name, p.last_name, pc.case_number, m.reason, m.request_date
+    FROM mlef m
+    JOIN patient pt ON m.patient_id = pt.patient_id
+    JOIN person p ON pt.person_id = p.person_id
+    LEFT JOIN police_case pc ON m.case_id = pc.case_id
+    WHERE m.hospital_id = $1 
+    AND m.reason ILIKE '%Autopsy%' 
+    AND m.status = 'PENDING'
+  `;
+  const result = await pool.query(query, [hospitalId]);
+  return result.rows;
+};
+
+const createAutopsyNotification = async (jmoId, hospitalId, data, userId) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const query = `
+      INSERT INTO autopsy (deceased_id, jmo_id, hospital_id, autopsy_date, autopsy_type, magistrate_details, investigation_needed)
+      VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *
+    `;
+    const values = [data.deceased_id, jmoId, hospitalId, data.autopsy_date, data.autopsy_type, data.magistrate_details, data.investigation_needed];
+    const result = await client.query(query, values);
+    await logActivity(client, userId, 'Autopsy Notification Created', 'autopsy', result.rows[0].autopsy_id, 'Autopsy notification H.1328 generated.');
+    await client.query('COMMIT');
+    return result.rows[0];
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
+const updateAutopsyExternal = async (autopsyId, data, userId) => {
+  const query = `
+    UPDATE autopsy 
+    SET rigor_mortis = $1, livor_mortis = $2, body_temp = $3, external_general_notes = $4, external_findings = $5
+    WHERE autopsy_id = $6 RETURNING *
+  `;
+  const values = [data.rigor_mortis, data.livor_mortis, data.body_temp, data.external_general_notes, data.external_findings, autopsyId];
+  const result = await pool.query(query, values);
+  return result.rows[0];
+};
+
+const updateAutopsyInternal = async (autopsyId, data, userId) => {
+  const query = `
+    UPDATE autopsy 
+    SET cranial_cavity = $1, thoracic_cavity = $2, abdominal_cavity = $3, pelvic_cavity = $4, internal_findings = $5
+    WHERE autopsy_id = $6 RETURNING *
+  `;
+  const values = [data.cranial_cavity, data.thoracic_cavity, data.abdominal_cavity, data.pelvic_cavity, data.internal_findings, autopsyId];
+  const result = await pool.query(query, values);
+  return result.rows[0];
+};
+
+const recordCauseOfDeath = async (autopsyId, data, userId) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const query = `
+      INSERT INTO cause_of_death (autopsy_id, cause_type, cause_description, icd10_code, manner_of_death)
+      VALUES ($1, $2, $3, $4, $5) RETURNING *
+    `;
+    const values = [autopsyId, data.cause_type, data.cause_description, data.icd10_code, data.manner_of_death];
+    const result = await client.query(query, values);
+    await logActivity(client, userId, 'Cause of Death Recorded', 'cause_of_death', result.rows[0].cause_id, 'Cause of death finalized.');
+    await client.query('COMMIT');
+    return result.rows[0];
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
+const generateAutopsyReport = async (autopsyId, data, userId) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const docQuery = `
+      INSERT INTO document (document_number, document_type, title, created_by, status)
+      VALUES ($1, 'Autopsy Report', $2, $3, 'DRAFT') RETURNING *
+    `;
+    const docResult = await client.query(docQuery, [data.report_number, 'Autopsy Report for ' + autopsyId, userId]);
+    
+    const query = `
+      INSERT INTO autopsy_report (autopsy_id, document_id, summary, final_opinion)
+      VALUES ($1, $2, $3, $4) RETURNING *
+    `;
+    const values = [autopsyId, docResult.rows[0].document_id, data.summary, data.final_opinion];
+    const result = await client.query(query, values);
+    await logActivity(client, userId, 'Autopsy Report Generated', 'autopsy_report', result.rows[0].autopsy_report_id, 'Autopsy report created.');
+    await client.query('COMMIT');
+    return result.rows[0];
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
 module.exports = {
   getJmoDataByUserId,
   getDashboardStats,
@@ -569,6 +676,7 @@ module.exports = {
   getSpecimens, createSpecimen,
   getLabRequests, createLabRequest,
   getLabResults, getLabResultById,
+  getPendingAutopsies, createAutopsyNotification, updateAutopsyExternal, updateAutopsyInternal, recordCauseOfDeath, generateAutopsyReport,
   getReports, getReportById, createReport, updateReport, signReport,
   getAppointments, createAppointment, updateAppointment,
   search

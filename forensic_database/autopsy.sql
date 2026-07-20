@@ -11,8 +11,28 @@ CREATE TABLE autopsy (
     autopsy_date TIMESTAMP NOT NULL,
 
     autopsy_type VARCHAR(100),
+    
+    magistrate_details TEXT,
+    
+    investigation_needed BOOLEAN,
+
+    rigor_mortis VARCHAR(100),
+    
+    livor_mortis VARCHAR(100),
+    
+    body_temp NUMERIC(4,1),
+    
+    external_general_notes TEXT,
 
     external_findings TEXT,
+    
+    cranial_cavity TEXT,
+    
+    thoracic_cavity TEXT,
+    
+    abdominal_cavity TEXT,
+    
+    pelvic_cavity TEXT,
 
     internal_findings TEXT,
 

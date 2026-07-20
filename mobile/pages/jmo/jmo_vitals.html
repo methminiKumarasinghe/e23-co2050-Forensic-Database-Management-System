@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Record Vital Signs — JMO Dashboard</title>
+  <link rel="stylesheet" href="../../css/style.css" />
+  <style>
+    .patient-context { background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--primary-color); display: flex; justify-content: space-between; align-items: center; }
+    .form-group { margin-bottom: 15px; }
+    .form-label { display: block; margin-bottom: 5px; font-weight: 500; color: #334155; }
+    .form-control { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .btn-save { background-color: var(--primary-color); color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; margin-top: 10px; }
+  </style>
+</head>
+<body>
+<div class="dash-layout">
+
+  <!-- Sidebar (Same as jmo_mlef.html but different active state) -->
+  <aside class="sidebar" role="navigation" aria-label="Main Navigation">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">🔬</div>
+      <div class="sidebar-brand">
+        <h3>DFMIS Portal</h3>
+        <p>Sri Lanka Gov. System</p>
+      </div>
+    </div>
+    <div class="sidebar-user-card">
+      <div class="user-avatar">🩺</div>
+      <div class="user-info">
+        <div class="name">Dr. JMO</div>
+        <div class="role">Judicial Medical Officer</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main Menu</div>
+      <a class="nav-item" href="jmo.html" id="nav-dashboard">
+        <span class="nav-icon">🏠</span> Dashboard
+      </a>
+
+      <div class="nav-section-label">Clinical Examination</div>
+      <a class="nav-item" href="jmo_mlef.html" id="nav-pending-mlef">
+        <span class="nav-icon">📄</span> Assigned MLEF Cases
+        <span class="nav-badge">6</span>
+      </a>
+      <a class="nav-item active" href="jmo_vitals.html" id="nav-vital-signs">
+        <span class="nav-icon">❤️</span> Record Vital Signs
+      </a>
+      <a class="nav-item" href="jmo_injuries.html" id="nav-injuries">
+        <span class="nav-icon">🩹</span> Record Injuries
+      </a>
+      <a class="nav-item" href="jmo_photos.html" id="nav-injury-photos">
+        <span class="nav-icon">📷</span> Upload Injury Photos
+      </a>
+      <div class="nav-section-label">Post-Mortem / Autopsy</div>
+      <a class="nav-item" href="jmo_autopsy_pending.html"><span class="nav-icon">📋</span> Pending Autopsies</a>
+      <a class="nav-item" href="jmo_autopsy.html"><span class="nav-icon">📝</span> Notification (H.1328)</a>
+      <a class="nav-item" href="jmo_autopsy_exam.html"><span class="nav-icon">🔍</span> Perform Autopsy</a>
+      <a class="nav-item" href="jmo_autopsy_findings.html"><span class="nav-icon">🫀</span> Enter Findings</a>
+      <a class="nav-item" href="jmo_autopsy_cod.html"><span class="nav-icon">⚰️</span> Cause of Death</a>
+      <a class="nav-item" href="jmo_autopsy_report.html"><span class="nav-icon">📄</span> Autopsy Report</a>
+      
+      <div class="nav-section-label">Forensic Reports</div>
+      <a class="nav-item" href="jmo_lab.html" id="nav-lab-requests">
+        <span class="nav-icon">🧪</span> Lab Requests
+      </a>
+      <a class="nav-item" href="jmo_mlr.html" id="nav-mlr">
+        <span class="nav-icon">📑</span> Prepare MLR
+      </a>
+      <a class="nav-item" href="jmo_signature.html" id="nav-signature">
+        <span class="nav-icon">✒️</span> Digital Signature
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="logout()" id="btn-logout">
+        <span>🚪</span> Logout
+      </button>
+    </div>
+  </aside>
+
+  <div class="dash-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div>
+          <div class="topbar-title">Record Vital Signs</div>
+          <div class="breadcrumb">
+            <span>DFMIS</span><span class="breadcrumb-sep">›</span><span>JMO Dashboard</span><span class="breadcrumb-sep">›</span><span>Vital Signs</span>
+          </div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-time" id="dashClock"></div>
+      </div>
+    </div>
+
+    <div class="dash-body">
+      <!-- Patient Context Header -->
+      <div class="patient-context">
+        <div>
+          <h4 style="margin:0 0 5px 0;" id="ctx-patient-name">Patient: Ravi Mendis</h4>
+          <span class="badge badge-primary" id="ctx-case-type">Assault</span>
+          <span style="font-size: 0.85rem; color: #64748b; margin-left: 10px;">MLEF-2391</span>
+        </div>
+        <div>
+          <button class="action-btn btn-view" onclick="window.location.href='jmo_injuries.html'">Next: Record Injuries ➡️</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h5>❤️ Enter Clinical Vital Signs</h5>
+        </div>
+        <div class="card-body">
+          <form onsubmit="event.preventDefault(); alert('Vital signs saved successfully!'); window.location.href='jmo_injuries.html';">
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Examination Date & Time</label>
+                <input type="datetime-local" class="form-control" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Level of Consciousness (GCS)</label>
+                <select class="form-control">
+                  <option>15/15 - Fully Conscious</option>
+                  <option>13/15 - Mild impairment</option>
+                  <option>9/15 - Moderate impairment</option>
+                  <option>3/15 - Unconscious</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Blood Pressure (mmHg)</label>
+                <input type="text" class="form-control" placeholder="e.g. 120/80" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Pulse Rate (bpm)</label>
+                <input type="number" class="form-control" placeholder="e.g. 72" required />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Respiratory Rate (breaths/min)</label>
+                <input type="number" class="form-control" placeholder="e.g. 16" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Temperature (°C)</label>
+                <input type="number" step="0.1" class="form-control" placeholder="e.g. 37.0" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">General Clinical Notes</label>
+              <textarea class="form-control" rows="3" placeholder="Any general observations before specific injury logging..."></textarea>
+            </div>
+
+            <button type="submit" class="btn-save">Save & Continue</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function tick() {
+    const el = document.getElementById("dashClock");
+    if (el) el.textContent = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  }
+  tick(); setInterval(tick, 1000);
+  function logout() { sessionStorage.clear(); window.location.href = "../../index.html"; }
+
+  // Load context if available
+  document.addEventListener('DOMContentLoaded', () => {
+    const patientName = sessionStorage.getItem('currentPatient');
+    const caseType = sessionStorage.getItem('currentCaseType');
+    if(patientName) document.getElementById('ctx-patient-name').textContent = 'Patient: ' + patientName;
+    if(caseType) document.getElementById('ctx-case-type').textContent = caseType;
+  });
+</script>
+</body>
+</html>

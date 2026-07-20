@@ -103,6 +103,26 @@ CREATE TABLE examination (
     examination_date TIMESTAMP,
 
     examination_notes TEXT,
+    
+    category_of_hurt VARCHAR(100),
+    
+    history_given_by_patient TEXT,
+    
+    general_exam_notes TEXT,
+    
+    smell_of_liquor BOOLEAN,
+    
+    intoxicated BOOLEAN,
+    
+    alcohol_exam_notes TEXT,
+    
+    vaginal_penetration BOOLEAN,
+    
+    anal_penetration BOOLEAN,
+    
+    inter_labial_penetration BOOLEAN,
+    
+    sexual_assault_notes TEXT,
 
     conclusion TEXT,
 
