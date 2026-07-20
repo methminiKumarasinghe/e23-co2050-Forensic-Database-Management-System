@@ -114,3 +114,13 @@ CREATE TABLE government_analyst (
         REFERENCES person(person_id)
         ON DELETE CASCADE
 );
+
+CREATE TABLE forensic_staff (
+    staff_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    person_id UUID UNIQUE NOT NULL,
+    hospital_id UUID NOT NULL,
+    employee_number VARCHAR(50) UNIQUE,
+    joined_date DATE,
+    CONSTRAINT fk_fstaff_person FOREIGN KEY (person_id) REFERENCES person(person_id) ON DELETE CASCADE,
+    CONSTRAINT fk_fstaff_hospital FOREIGN KEY (hospital_id) REFERENCES hospital(hospital_id) ON DELETE RESTRICT
+);

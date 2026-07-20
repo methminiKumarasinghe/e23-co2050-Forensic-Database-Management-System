@@ -1,0 +1,130 @@
+{
+  "info": {
+    "name": "Forensic Staff Dashboard API",
+    "description": "API endpoints for the Forensic Staff Dashboard in the DFMIS system.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Dashboard Overview",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/staff/dashboard",
+          "host": [ "{{base_url}}" ],
+          "path": [ "staff", "dashboard" ]
+        }
+      }
+    },
+    {
+      "name": "Case Monitoring",
+      "item": [
+        {
+          "name": "Get Cases",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": {
+              "raw": "{{base_url}}/staff/cases",
+              "host": [ "{{base_url}}" ],
+              "path": [ "staff", "cases" ]
+            }
+          }
+        },
+        {
+          "name": "Get Case By ID",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": {
+              "raw": "{{base_url}}/staff/cases/{{case_id}}",
+              "host": [ "{{base_url}}" ],
+              "path": [ "staff", "cases", "{{case_id}}" ]
+            }
+          }
+        },
+        {
+          "name": "Get Case Timeline",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": {
+              "raw": "{{base_url}}/staff/cases/{{case_id}}/timeline",
+              "host": [ "{{base_url}}" ],
+              "path": [ "staff", "cases", "{{case_id}}", "timeline" ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "MLEF Monitoring",
+      "item": [
+        {
+          "name": "Get MLEFs",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": {
+              "raw": "{{base_url}}/staff/mlef",
+              "host": [ "{{base_url}}" ],
+              "path": [ "staff", "mlef" ]
+            }
+          }
+        },
+        {
+          "name": "Get MLEF By ID",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": {
+              "raw": "{{base_url}}/staff/mlef/{{mlef_id}}",
+              "host": [ "{{base_url}}" ],
+              "path": [ "staff", "mlef", "{{mlef_id}}" ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Appointment Management",
+      "item": [
+        {
+          "name": "Get Appointments",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": {
+              "raw": "{{base_url}}/staff/appointments",
+              "host": [ "{{base_url}}" ],
+              "path": [ "staff", "appointments" ]
+            }
+          }
+        },
+        {
+          "name": "Create Appointment",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ],
+            "url": {
+              "raw": "{{base_url}}/staff/appointments",
+              "host": [ "{{base_url}}" ],
+              "path": [ "staff", "appointments" ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jmo_id\": \"uuid-here\",\n  \"patient_id\": \"uuid-here\",\n  \"appointment_date\": \"2026-07-25T10:00:00Z\",\n  \"remarks\": \"Follow-up examination\"\n}"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:3000" },
+    { "key": "token", "value": "your_forensic_staff_jwt_token" }
+  ]
+}
