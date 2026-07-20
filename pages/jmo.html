@@ -33,21 +33,31 @@
       <a class="nav-item active" href="jmo.html" id="nav-dashboard">
         <span class="nav-icon">🏠</span> Dashboard
       </a>
-      <a class="nav-item" href="#" id="nav-patients">
-        <span class="nav-icon">👤</span> Patients
+      <a class="nav-item" href="#" id="nav-pending-mlef">
+        <span class="nav-icon">📄</span> Assigned MLEF Cases
+        <span class="nav-badge">6</span>
       </a>
-      <a class="nav-item" href="#" id="nav-examination">
-        <span class="nav-icon">🩺</span> Examination
-        <span class="nav-badge">2</span>
+
+      <div class="nav-section-label">Clinical Examination</div>
+      <a class="nav-item" href="#" id="nav-vital-signs">
+        <span class="nav-icon">❤️</span> Record Vital Signs
       </a>
-      <a class="nav-item" href="#" id="nav-autopsy">
-        <span class="nav-icon">⚰️</span> Autopsy
+      <a class="nav-item" href="#" id="nav-injuries">
+        <span class="nav-icon">🩹</span> Record Injuries
       </a>
+      <a class="nav-item" href="#" id="nav-injury-photos">
+        <span class="nav-icon">📷</span> Upload Injury Photos
+      </a>
+      
+      <div class="nav-section-label">Forensic Reports</div>
       <a class="nav-item" href="#" id="nav-lab-requests">
         <span class="nav-icon">🧪</span> Lab Requests
       </a>
       <a class="nav-item" href="#" id="nav-mlr">
-        <span class="nav-icon">📄</span> Medico Legal Report
+        <span class="nav-icon">📑</span> Prepare MLR
+      </a>
+      <a class="nav-item" href="#" id="nav-signature">
+        <span class="nav-icon">✒️</span> Digital Signature
       </a>
     </nav>
 
@@ -81,7 +91,7 @@
       <div class="welcome-banner">
         <div class="welcome-text">
           <h2>Welcome, Judicial Medical Officer 👋</h2>
-          <p>Clinical Examination, Autopsy &amp; Medico-Legal Report Portal</p>
+          <p>Clinical Examination, Lab Requests &amp; Medico-Legal Expert Opinion Portal</p>
         </div>
         <div class="welcome-icon">🩺</div>
       </div>
@@ -90,81 +100,73 @@
         <div class="stat-card">
           <div class="stat-icon blue">👤</div>
           <div class="stat-info">
-            <div class="value">18</div>
-            <div class="label">Total Patients</div>
-            <div class="change up">↑ 3 new today</div>
+            <div class="value">6</div>
+            <div class="label">Pending Examinations</div>
+            <div class="change down">↓ MLEF Assigned</div>
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon green">🩺</div>
+          <div class="stat-icon green">🩹</div>
           <div class="stat-info">
-            <div class="value">2</div>
-            <div class="label">Examinations Due</div>
-            <div class="change down">↓ Urgent</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon amber">⚰️</div>
-          <div class="stat-info">
-            <div class="value">1</div>
-            <div class="label">Autopsy Scheduled</div>
-            <div class="change up">↑ Today 10 AM</div>
+            <div class="value">14</div>
+            <div class="label">Injuries Recorded</div>
+            <div class="change up">↑ Today</div>
           </div>
         </div>
         <div class="stat-card">
           <div class="stat-icon teal">🧪</div>
           <div class="stat-info">
             <div class="value">5</div>
-            <div class="label">Lab Requests</div>
-            <div class="change up">↑ 3 completed</div>
+            <div class="label">Lab Tests Requested</div>
+            <div class="change up">↑ 2 completed</div>
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon purple">📄</div>
+          <div class="stat-icon purple">📑</div>
           <div class="stat-info">
             <div class="value">9</div>
             <div class="label">MLR Issued</div>
-            <div class="change up">↑ This month</div>
+            <div class="change up">↑ Digitally Signed</div>
           </div>
         </div>
       </div>
 
       <div class="two-col" style="margin-bottom: 20px;">
 
-        <!-- Patient Queue -->
+        <!-- Pending MLEF Exams -->
         <div class="card">
           <div class="card-header">
-            <h5>👤 Today's Patient Queue</h5>
+            <h5>📄 Pending MLEF Examinations</h5>
             <span class="badge badge-warning">6 Scheduled</span>
           </div>
           <div class="card-body" style="padding: 0;">
             <div class="table-wrap">
               <table class="dash-table">
                 <thead>
-                  <tr><th>Time</th><th>Patient</th><th>Case Type</th><th>Priority</th></tr>
+                  <tr><th>Time</th><th>Requesting Station</th><th>Case Reason</th><th>Priority</th></tr>
                 </thead>
                 <tbody>
                   <tr>
                     <td>09:00 AM</td>
-                    <td>Ravi Mendis</td>
-                    <td>Assault Exam</td>
+                    <td>Kandy Police Station</td>
+                    <td>Assault Investigation</td>
                     <td><span class="badge badge-danger">Urgent</span></td>
                   </tr>
                   <tr>
                     <td>10:00 AM</td>
-                    <td>N/A</td>
-                    <td>Autopsy</td>
+                    <td>Peradeniya Police Station</td>
+                    <td>Suspicious Death (Autopsy)</td>
                     <td><span class="badge badge-danger">Urgent</span></td>
                   </tr>
                   <tr>
                     <td>01:00 PM</td>
-                    <td>Priya Fernando</td>
+                    <td>Katugastota Police Station</td>
                     <td>Sexual Assault</td>
                     <td><span class="badge badge-warning">High</span></td>
                   </tr>
                   <tr>
                     <td>03:00 PM</td>
-                    <td>Amara Perera</td>
+                    <td>Kandy Police Station</td>
                     <td>MVA Injuries</td>
                     <td><span class="badge badge-primary">Normal</span></td>
                   </tr>
@@ -184,31 +186,31 @@
             <div class="table-wrap">
               <table class="dash-table">
                 <thead>
-                  <tr><th>Req. No.</th><th>Test Type</th><th>Patient</th><th>Result</th></tr>
+                  <tr><th>Req. No.</th><th>Test Type</th><th>Sample</th><th>Status</th></tr>
                 </thead>
                 <tbody>
                   <tr>
                     <td>#LR-001</td>
                     <td>Toxicology</td>
-                    <td>J. Perera</td>
+                    <td>Blood</td>
                     <td><span class="badge badge-success">Ready</span></td>
                   </tr>
                   <tr>
                     <td>#LR-002</td>
                     <td>DNA Analysis</td>
-                    <td>N. Silva</td>
+                    <td>Buccal Swab</td>
                     <td><span class="badge badge-warning">Pending</span></td>
                   </tr>
                   <tr>
                     <td>#LR-003</td>
                     <td>Blood Alcohol</td>
-                    <td>R. Fernando</td>
+                    <td>Blood</td>
                     <td><span class="badge badge-success">Ready</span></td>
                   </tr>
                   <tr>
                     <td>#LR-004</td>
                     <td>Histopathology</td>
-                    <td>A. Bandara</td>
+                    <td>Tissue</td>
                     <td><span class="badge badge-primary">In Progress</span></td>
                   </tr>
                 </tbody>
@@ -220,12 +222,12 @@
       </div>
 
       <div class="card">
-        <div class="card-header"><h5>🚧 Advanced Features</h5><span class="badge badge-secondary">UI Phase</span></div>
+        <div class="card-header"><h5>🚧 Medical Expert Authority</h5><span class="badge badge-secondary">UI Phase</span></div>
         <div class="card-body">
           <div class="under-dev">
-            <div class="icon">🔧</div>
-            <h3>Welcome, Judicial Medical Officer</h3>
-            <p>Digital examination forms, autopsy recording, lab request submission, and medico-legal report generation will be available after backend integration.</p>
+            <div class="icon">🩺</div>
+            <h3>Role Segregation Enforced</h3>
+            <p>JMOs conduct clinical examinations, document injuries (size, severity), record vital signs, order lab tests, and provide expert opinions in Medico-Legal Reports verified with digital signatures. <strong>JMOs do not create police cases, assign police officers, or manage legal evidence custody outside their medical purview.</strong></p>
           </div>
         </div>
       </div>

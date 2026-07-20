@@ -33,18 +33,27 @@
       <a class="nav-item active" href="police.html" id="nav-dashboard">
         <span class="nav-icon">🏠</span> Dashboard
       </a>
-      <a class="nav-item" href="#" id="nav-mycases">
-        <span class="nav-icon">📂</span> My Cases
-        <span class="nav-badge">4</span>
+      
+      <div class="nav-section-label">Cases</div>
+      <a class="nav-item" href="#" id="nav-create-case">
+        <span class="nav-icon">➕</span> Create Case
+      </a>
+      <a class="nav-item" href="#" id="nav-add-incident">
+        <span class="nav-icon">📝</span> Add Incident Details
+      </a>
+      <a class="nav-item" href="#" id="nav-assign-officers">
+        <span class="nav-icon">👮</span> Assign Officers
+      </a>
+      
+      <div class="nav-section-label">Investigation</div>
+      <a class="nav-item" href="#" id="nav-evidence">
+        <span class="nav-icon">🧾</span> Evidence (Custody)
       </a>
       <a class="nav-item" href="#" id="nav-mlef">
-        <span class="nav-icon">📄</span> Submit MLEF
-      </a>
-      <a class="nav-item" href="#" id="nav-evidence">
-        <span class="nav-icon">🧾</span> Evidence
+        <span class="nav-icon">📄</span> Request MLEF
       </a>
       <a class="nav-item" href="#" id="nav-reports">
-        <span class="nav-icon">📁</span> Reports
+        <span class="nav-icon">📁</span> Reports (Status View)
       </a>
     </nav>
 
@@ -78,7 +87,7 @@
       <div class="welcome-banner">
         <div class="welcome-text">
           <h2>Welcome, Police Officer 👋</h2>
-          <p>Case Tracking &amp; Medico-Legal Evidence Management Portal</p>
+          <p>Legal Investigation, Incident Tracking &amp; Evidence Custody Portal</p>
         </div>
         <div class="welcome-icon">🚔</div>
       </div>
@@ -96,8 +105,8 @@
           <div class="stat-icon amber">📄</div>
           <div class="stat-info">
             <div class="value">2</div>
-            <div class="label">Pending MLEFs</div>
-            <div class="change down">↓ Action needed</div>
+            <div class="label">Requested MLEFs</div>
+            <div class="change down">↓ Waiting for JMO</div>
           </div>
         </div>
         <div class="stat-card">
@@ -105,7 +114,7 @@
           <div class="stat-info">
             <div class="value">7</div>
             <div class="label">Evidence Items</div>
-            <div class="change up">↑ Logged</div>
+            <div class="change up">↑ Logged &amp; Secured</div>
           </div>
         </div>
         <div class="stat-card">
@@ -113,7 +122,7 @@
           <div class="stat-info">
             <div class="value">3</div>
             <div class="label">Reports Ready</div>
-            <div class="change up">↑ Download</div>
+            <div class="change up">↑ Pending Court Sub.</div>
           </div>
         </div>
       </div>
@@ -123,43 +132,39 @@
         <!-- My Cases -->
         <div class="card">
           <div class="card-header">
-            <h5>📂 My Cases</h5>
+            <h5>📂 My Police Cases</h5>
             <span class="badge badge-primary">4 Active</span>
           </div>
           <div class="card-body" style="padding: 0;">
             <div class="table-wrap">
               <table class="dash-table">
                 <thead>
-                  <tr><th>Case No.</th><th>Victim</th><th>Type</th><th>JMO</th><th>Status</th></tr>
+                  <tr><th>Case No.</th><th>Type</th><th>Incident Date</th><th>Investigation Status</th></tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td><strong>#P-2026-018</strong></td>
-                    <td>J. Perera</td>
+                    <td><strong>#C001</strong></td>
+                    <td>Suspicious Death</td>
+                    <td>Jul 18</td>
+                    <td><span class="badge badge-warning">MLEF Requested</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>#C002</strong></td>
                     <td>Assault</td>
-                    <td>Dr. Wickrama</td>
-                    <td><span class="badge badge-warning">Pending</span></td>
+                    <td>Jul 19</td>
+                    <td><span class="badge badge-primary">Under Investigation</span></td>
                   </tr>
                   <tr>
-                    <td><strong>#P-2026-021</strong></td>
-                    <td>N. Silva</td>
+                    <td><strong>#C003</strong></td>
                     <td>MVA</td>
-                    <td>Dr. Jayasinghe</td>
-                    <td><span class="badge badge-primary">In Progress</span></td>
+                    <td>Jul 20</td>
+                    <td><span class="badge badge-success">Report Available</span></td>
                   </tr>
                   <tr>
-                    <td><strong>#P-2026-025</strong></td>
-                    <td>R. Fernando</td>
-                    <td>Autopsy</td>
-                    <td>Dr. Wickrama</td>
-                    <td><span class="badge badge-success">Completed</span></td>
-                  </tr>
-                  <tr>
-                    <td><strong>#P-2026-027</strong></td>
-                    <td>A. Bandara</td>
-                    <td>Examination</td>
-                    <td>Dr. Kumara</td>
-                    <td><span class="badge badge-danger">Overdue</span></td>
+                    <td><strong>#C004</strong></td>
+                    <td>Burglary</td>
+                    <td>Jul 20</td>
+                    <td><span class="badge badge-danger">Evidence Pending</span></td>
                   </tr>
                 </tbody>
               </table>
@@ -170,39 +175,39 @@
         <!-- Evidence Log -->
         <div class="card">
           <div class="card-header">
-            <h5>🧾 Evidence Log</h5>
+            <h5>🧾 Evidence Chain of Custody</h5>
             <span class="badge badge-secondary">7 Items</span>
           </div>
           <div class="card-body" style="padding: 0;">
             <div class="table-wrap">
               <table class="dash-table">
                 <thead>
-                  <tr><th>Ref</th><th>Case</th><th>Item</th><th>Date</th></tr>
+                  <tr><th>Ref ID</th><th>Case</th><th>Item</th><th>Custody Status</th></tr>
                 </thead>
                 <tbody>
                   <tr>
                     <td>#E-001</td>
-                    <td>#P-2026-018</td>
+                    <td>#C001</td>
                     <td>Blood Sample</td>
-                    <td>Jul 18</td>
+                    <td><span class="badge badge-primary">Sent to Laboratory</span></td>
                   </tr>
                   <tr>
                     <td>#E-002</td>
-                    <td>#P-2026-021</td>
+                    <td>#C002</td>
                     <td>Clothing</td>
-                    <td>Jul 19</td>
+                    <td><span class="badge badge-success">Secured in Storage</span></td>
                   </tr>
                   <tr>
                     <td>#E-003</td>
-                    <td>#P-2026-025</td>
+                    <td>#C003</td>
                     <td>Photographs</td>
-                    <td>Jul 20</td>
+                    <td><span class="badge badge-secondary">With Officer A</span></td>
                   </tr>
                   <tr>
                     <td>#E-004</td>
-                    <td>#P-2026-027</td>
-                    <td>Wound Swab</td>
-                    <td>Jul 20</td>
+                    <td>#C004</td>
+                    <td>Weapon</td>
+                    <td><span class="badge badge-warning">Transfer Pending</span></td>
                   </tr>
                 </tbody>
               </table>
@@ -213,12 +218,12 @@
       </div>
 
       <div class="card">
-        <div class="card-header"><h5>🚧 Advanced Features</h5><span class="badge badge-secondary">UI Phase</span></div>
+        <div class="card-header"><h5>🚧 Legal Investigation Access</h5><span class="badge badge-secondary">UI Phase</span></div>
         <div class="card-body">
           <div class="under-dev">
-            <div class="icon">🔧</div>
-            <h3>Welcome, Police Officer</h3>
-            <p>MLEF submission, evidence chain-of-custody tracking, and full report downloads will be integrated with the PostgreSQL backend in the next phase.</p>
+            <div class="icon">⚖️</div>
+            <h3>Role Segregation Enforced</h3>
+            <p>Police officers manage case registration, incident details, investigator assignment, evidence custody, and MLEF requests. <strong>You can view report statuses but cannot view detailed medical findings, opinions, or laboratory results directly without JMO authorization.</strong></p>
           </div>
         </div>
       </div>
