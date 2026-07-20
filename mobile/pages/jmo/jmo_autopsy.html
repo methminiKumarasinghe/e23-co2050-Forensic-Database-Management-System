@@ -32,6 +32,13 @@
     .yn-row .radio-group { flex-shrink: 0; }
 
     .maternal-sub { margin-left: 20px; margin-top: 10px; padding: 10px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0; }
+
+    .flow-steps { display: flex; gap: 8px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+    .flow-step { padding: 8px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+    .flow-step.active { background: var(--primary-color); color: white; }
+    .flow-step.upcoming { background: #e2e8f0; color: #94a3b8; }
+    .flow-step.done { background: #dcfce7; color: #166534; }
+    .flow-arrow { color: #94a3b8; font-size: 0.8rem; }
   </style>
 </head>
 <body>
@@ -55,40 +62,26 @@
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section-label">Main Menu</div>
-      <a class="nav-item" href="jmo.html" id="nav-dashboard">
-        <span class="nav-icon">🏠</span> Dashboard
-      </a>
-      <a class="nav-item" href="jmo_mlef.html" id="nav-pending-mlef">
-        <span class="nav-icon">📄</span> Assigned MLEF Cases
-        <span class="nav-badge">6</span>
-      </a>
+      <a class="nav-item" href="jmo.html"><span class="nav-icon">🏠</span> Dashboard</a>
+      <a class="nav-item" href="jmo_mlef.html"><span class="nav-icon">📄</span> Assigned MLEF Cases <span class="nav-badge">6</span></a>
 
       <div class="nav-section-label">Clinical Examination</div>
-      <a class="nav-item" href="jmo_vitals.html" id="nav-vital-signs">
-        <span class="nav-icon">❤️</span> Record Vital Signs
-      </a>
-      <a class="nav-item" href="jmo_injuries.html" id="nav-injuries">
-        <span class="nav-icon">🩹</span> Record Injuries
-      </a>
-      <a class="nav-item" href="jmo_photos.html" id="nav-injury-photos">
-        <span class="nav-icon">📷</span> Upload Injury Photos
-      </a>
+      <a class="nav-item" href="jmo_vitals.html"><span class="nav-icon">❤️</span> Record Vital Signs</a>
+      <a class="nav-item" href="jmo_injuries.html"><span class="nav-icon">🩹</span> Record Injuries</a>
+      <a class="nav-item" href="jmo_photos.html"><span class="nav-icon">📷</span> Upload Injury Photos</a>
       
       <div class="nav-section-label">Post-Mortem / Autopsy</div>
-      <a class="nav-item active" href="jmo_autopsy.html" id="nav-autopsy-record">
-        <span class="nav-icon">⚰️</span> Autopsy Notification
-      </a>
+      <a class="nav-item" href="jmo_autopsy_pending.html"><span class="nav-icon">📋</span> Pending Autopsies</a>
+      <a class="nav-item active" href="jmo_autopsy.html"><span class="nav-icon">📝</span> Notification (H.1328)</a>
+      <a class="nav-item" href="jmo_autopsy_exam.html"><span class="nav-icon">🔍</span> Perform Autopsy</a>
+      <a class="nav-item" href="jmo_autopsy_findings.html"><span class="nav-icon">🫀</span> Enter Findings</a>
+      <a class="nav-item" href="jmo_autopsy_cod.html"><span class="nav-icon">⚰️</span> Cause of Death</a>
+      <a class="nav-item" href="jmo_autopsy_report.html"><span class="nav-icon">📄</span> Autopsy Report</a>
       
       <div class="nav-section-label">Forensic Reports</div>
-      <a class="nav-item" href="jmo_lab.html" id="nav-lab-requests">
-        <span class="nav-icon">🧪</span> Lab Requests
-      </a>
-      <a class="nav-item" href="jmo_mlr.html" id="nav-mlr">
-        <span class="nav-icon">📑</span> Prepare MLR
-      </a>
-      <a class="nav-item" href="jmo_signature.html" id="nav-signature">
-        <span class="nav-icon">✒️</span> Digital Signature
-      </a>
+      <a class="nav-item" href="jmo_lab.html"><span class="nav-icon">🧪</span> Lab Requests</a>
+      <a class="nav-item" href="jmo_mlr.html"><span class="nav-icon">📑</span> Prepare MLR</a>
+      <a class="nav-item" href="jmo_signature.html"><span class="nav-icon">✒️</span> Digital Signature</a>
     </nav>
     <div class="sidebar-footer">
       <button class="btn-logout" onclick="logout()" id="btn-logout">
@@ -114,6 +107,23 @@
 
     <div class="dash-body">
 
+      <!-- Autopsy Workflow Steps -->
+      <div class="flow-steps">
+        <span class="flow-step done">1. Pending Autopsies</span>
+        <span class="flow-arrow">➜</span>
+        <span class="flow-step active">2. Open Notification</span>
+        <span class="flow-arrow">➜</span>
+        <span class="flow-step upcoming">3. Perform Autopsy</span>
+        <span class="flow-arrow">➜</span>
+        <span class="flow-step upcoming">4. Enter Findings</span>
+        <span class="flow-arrow">➜</span>
+        <span class="flow-step upcoming">5. Cause of Death</span>
+        <span class="flow-arrow">➜</span>
+        <span class="flow-step upcoming">6. Autopsy Report</span>
+        <span class="flow-arrow">➜</span>
+        <span class="flow-step upcoming">7. Sign</span>
+      </div>
+
       <div class="card">
         <div class="card-body">
           <div class="mlr-header">
@@ -122,7 +132,7 @@
             <p>Department of Health Services, Sri Lanka</p>
           </div>
 
-          <form onsubmit="event.preventDefault(); alert('Autopsy Notification saved. Proceed to Lab Requests or Sign.'); window.location.href='jmo_lab.html';">
+          <form onsubmit="event.preventDefault(); alert('Notification saved. Proceeding to Perform Autopsy.'); window.location.href='jmo_autopsy_exam.html';">
 
             <!-- 1–3: HEADER DETAILS -->
             <div class="form-row-3">
