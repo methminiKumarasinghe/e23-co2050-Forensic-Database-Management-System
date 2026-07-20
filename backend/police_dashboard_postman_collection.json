@@ -1,0 +1,76 @@
+{
+  "info": {
+    "name": "Police Dashboard API",
+    "description": "Postman collection for DFMIS Police Dashboard modules",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Module 1 - Dashboard",
+      "item": [
+        {
+          "name": "Get Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/police/dashboard",
+              "host": ["{{baseUrl}}"],
+              "path": ["police", "dashboard"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Module 2 - Police Case Management",
+      "item": [
+        {
+          "name": "Get Cases",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/police/cases",
+              "host": ["{{baseUrl}}"],
+              "path": ["police", "cases"]
+            }
+          }
+        },
+        {
+          "name": "Create Case",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"station_id\": \"b3c3c1e2-5a7a-4a2b-8c8a-1b4a2f8c5b1b\",\n  \"case_number\": \"POL/2026/001\",\n  \"case_type\": \"HOMICIDE\",\n  \"title\": \"Suspicious Death at Main St\",\n  \"description\": \"Body found in apartment\",\n  \"date_reported\": \"2026-07-20T10:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/police/cases",
+              "host": ["{{baseUrl}}"],
+              "path": ["police", "cases"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "token",
+      "value": "YOUR_JWT_TOKEN_HERE"
+    }
+  ]
+}
