@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JMO Dashboard — DFMIS</title>
+  <meta name="description" content="Judicial Medical Officer dashboard for the Digital Forensic Medical Information System." />
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+<div class="dash-layout">
+
+  <!-- ═══ Sidebar ════════════════════════════════════════════════════ -->
+  <aside class="sidebar" role="navigation" aria-label="Main Navigation">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">🔬</div>
+      <div class="sidebar-brand">
+        <h3>DFMIS Portal</h3>
+        <p>Sri Lanka Gov. System</p>
+      </div>
+    </div>
+
+    <div class="sidebar-user-card">
+      <div class="user-avatar">🩺</div>
+      <div class="user-info">
+        <div class="name">Dr. JMO</div>
+        <div class="role">Judicial Medical Officer</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main Menu</div>
+      <a class="nav-item active" href="jmo.html" id="nav-dashboard">
+        <span class="nav-icon">🏠</span> Dashboard
+      </a>
+      <a class="nav-item" href="#" id="nav-pending-mlef">
+        <span class="nav-icon">📄</span> Assigned MLEF Cases
+        <span class="nav-badge">6</span>
+      </a>
+
+      <div class="nav-section-label">Clinical Examination</div>
+      <a class="nav-item" href="#" id="nav-vital-signs">
+        <span class="nav-icon">❤️</span> Record Vital Signs
+      </a>
+      <a class="nav-item" href="#" id="nav-injuries">
+        <span class="nav-icon">🩹</span> Record Injuries
+      </a>
+      <a class="nav-item" href="#" id="nav-injury-photos">
+        <span class="nav-icon">📷</span> Upload Injury Photos
+      </a>
+      
+      <div class="nav-section-label">Forensic Reports</div>
+      <a class="nav-item" href="#" id="nav-lab-requests">
+        <span class="nav-icon">🧪</span> Lab Requests
+      </a>
+      <a class="nav-item" href="#" id="nav-mlr">
+        <span class="nav-icon">📑</span> Prepare MLR
+      </a>
+      <a class="nav-item" href="#" id="nav-signature">
+        <span class="nav-icon">✒️</span> Digital Signature
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="logout()" id="btn-logout">
+        <span>🚪</span> Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- ═══ Main Content ════════════════════════════════════════════════ -->
+  <div class="dash-content">
+
+    <div class="topbar">
+      <div class="topbar-left">
+        <div>
+          <div class="topbar-title">JMO Dashboard</div>
+          <div class="breadcrumb">
+            <span>DFMIS</span><span class="breadcrumb-sep">›</span><span>Dashboard</span>
+          </div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-time" id="dashClock"></div>
+        <div class="topbar-badge" title="Notifications">🔔<span class="badge-dot"></span></div>
+      </div>
+    </div>
+
+    <div class="dash-body">
+
+      <div class="welcome-banner">
+        <div class="welcome-text">
+          <h2>Welcome, Judicial Medical Officer 👋</h2>
+          <p>Clinical Examination, Lab Requests &amp; Medico-Legal Expert Opinion Portal</p>
+        </div>
+        <div class="welcome-icon">🩺</div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon blue">👤</div>
+          <div class="stat-info">
+            <div class="value">6</div>
+            <div class="label">Pending Examinations</div>
+            <div class="change down">↓ MLEF Assigned</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">🩹</div>
+          <div class="stat-info">
+            <div class="value">14</div>
+            <div class="label">Injuries Recorded</div>
+            <div class="change up">↑ Today</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon teal">🧪</div>
+          <div class="stat-info">
+            <div class="value">5</div>
+            <div class="label">Lab Tests Requested</div>
+            <div class="change up">↑ 2 completed</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple">📑</div>
+          <div class="stat-info">
+            <div class="value">9</div>
+            <div class="label">MLR Issued</div>
+            <div class="change up">↑ Digitally Signed</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="two-col" style="margin-bottom: 20px;">
+
+        <!-- Pending MLEF Exams -->
+        <div class="card">
+          <div class="card-header">
+            <h5>📄 Pending MLEF Examinations</h5>
+            <span class="badge badge-warning">6 Scheduled</span>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-wrap">
+              <table class="dash-table">
+                <thead>
+                  <tr><th>Time</th><th>Requesting Station</th><th>Case Reason</th><th>Priority</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>09:00 AM</td>
+                    <td>Kandy Police Station</td>
+                    <td>Assault Investigation</td>
+                    <td><span class="badge badge-danger">Urgent</span></td>
+                  </tr>
+                  <tr>
+                    <td>10:00 AM</td>
+                    <td>Peradeniya Police Station</td>
+                    <td>Suspicious Death (Autopsy)</td>
+                    <td><span class="badge badge-danger">Urgent</span></td>
+                  </tr>
+                  <tr>
+                    <td>01:00 PM</td>
+                    <td>Katugastota Police Station</td>
+                    <td>Sexual Assault</td>
+                    <td><span class="badge badge-warning">High</span></td>
+                  </tr>
+                  <tr>
+                    <td>03:00 PM</td>
+                    <td>Kandy Police Station</td>
+                    <td>MVA Injuries</td>
+                    <td><span class="badge badge-primary">Normal</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lab Requests -->
+        <div class="card">
+          <div class="card-header">
+            <h5>🧪 Lab Requests Status</h5>
+            <span class="badge badge-primary">5 Total</span>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-wrap">
+              <table class="dash-table">
+                <thead>
+                  <tr><th>Req. No.</th><th>Test Type</th><th>Sample</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>#LR-001</td>
+                    <td>Toxicology</td>
+                    <td>Blood</td>
+                    <td><span class="badge badge-success">Ready</span></td>
+                  </tr>
+                  <tr>
+                    <td>#LR-002</td>
+                    <td>DNA Analysis</td>
+                    <td>Buccal Swab</td>
+                    <td><span class="badge badge-warning">Pending</span></td>
+                  </tr>
+                  <tr>
+                    <td>#LR-003</td>
+                    <td>Blood Alcohol</td>
+                    <td>Blood</td>
+                    <td><span class="badge badge-success">Ready</span></td>
+                  </tr>
+                  <tr>
+                    <td>#LR-004</td>
+                    <td>Histopathology</td>
+                    <td>Tissue</td>
+                    <td><span class="badge badge-primary">In Progress</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h5>🚧 Medical Expert Authority</h5><span class="badge badge-secondary">UI Phase</span></div>
+        <div class="card-body">
+          <div class="under-dev">
+            <div class="icon">🩺</div>
+            <h3>Role Segregation Enforced</h3>
+            <p>JMOs conduct clinical examinations, document injuries (size, severity), record vital signs, order lab tests, and provide expert opinions in Medico-Legal Reports verified with digital signatures. <strong>JMOs do not create police cases, assign police officers, or manage legal evidence custody outside their medical purview.</strong></p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <footer class="dash-footer">
+      <span>Department of Forensic Medicine &nbsp;|&nbsp; University of Peradeniya</span>
+      <span>DFMIS v1.0 &nbsp;|&nbsp; &copy; 2026 Ministry of Health, Sri Lanka</span>
+    </footer>
+  </div>
+</div>
+
+<script>
+  function tick() {
+    const el = document.getElementById("dashClock");
+    if (el) el.textContent = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  }
+  tick(); setInterval(tick, 1000);
+  function logout() { sessionStorage.clear(); window.location.href = "../index.html"; }
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', function() {
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Administrator Dashboard — DFMIS</title>
+  <meta name="description" content="Administrator dashboard for the Digital Forensic Medical Information System." />
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+<div class="dash-layout">
+
+  <!-- ═══ Sidebar ════════════════════════════════════════════════════ -->
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main Navigation">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">🔬</div>
+      <div class="sidebar-brand">
+        <h3>DFMIS Portal</h3>
+        <p>Sri Lanka Gov. System</p>
+      </div>
+    </div>
+
+    <div class="sidebar-user-card">
+      <div class="user-avatar">👑</div>
+      <div class="user-info">
+        <div class="name">Administrator</div>
+        <div class="role">System Admin</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main Menu</div>
+      <a class="nav-item active" href="admin.html" id="nav-dashboard">
+        <span class="nav-icon">🏠</span> Dashboard
+      </a>
+      <a class="nav-item" href="#" id="nav-users">
+        <span class="nav-icon">👤</span> Users
+        <span class="nav-badge">5</span>
+      </a>
+      <a class="nav-item" href="#" id="nav-hospitals">
+        <span class="nav-icon">🏥</span> Hospitals
+      </a>
+      <a class="nav-item" href="#" id="nav-mlef">
+        <span class="nav-icon">📄</span> MLEF
+      </a>
+
+      <div class="nav-section-label">Clinical</div>
+      <a class="nav-item" href="#" id="nav-exam">
+        <span class="nav-icon">🩺</span> Examination
+      </a>
+      <a class="nav-item" href="#" id="nav-autopsy">
+        <span class="nav-icon">⚰️</span> Autopsy
+      </a>
+      <a class="nav-item" href="#" id="nav-lab">
+        <span class="nav-icon">🧪</span> Laboratory
+      </a>
+
+      <div class="nav-section-label">Administration</div>
+      <a class="nav-item" href="#" id="nav-reports">
+        <span class="nav-icon">📁</span> Reports
+      </a>
+      <a class="nav-item" href="#" id="nav-settings">
+        <span class="nav-icon">⚙️</span> Settings
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="logout()" id="btn-logout">
+        <span>🚪</span> Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- ═══ Main Content ════════════════════════════════════════════════ -->
+  <div class="dash-content">
+
+    <!-- Top Bar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <div>
+          <div class="topbar-title">Administrator Dashboard</div>
+          <div class="breadcrumb">
+            <span>DFMIS</span>
+            <span class="breadcrumb-sep">›</span>
+            <span>Dashboard</span>
+          </div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-time" id="dashClock"></div>
+        <div class="topbar-badge" title="Notifications">
+          🔔
+          <span class="badge-dot"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard Body -->
+    <div class="dash-body">
+
+      <!-- Welcome Banner -->
+      <div class="welcome-banner">
+        <div class="welcome-text">
+          <h2>Welcome, Administrator 👋</h2>
+          <p>Digital Forensic Medical Information System &nbsp;— &nbsp;Full System Access</p>
+        </div>
+        <div class="welcome-icon">👑</div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon blue">👤</div>
+          <div class="stat-info">
+            <div class="value">5</div>
+            <div class="label">System Users</div>
+            <div class="change up">↑ All Active</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">📋</div>
+          <div class="stat-info">
+            <div class="value">142</div>
+            <div class="label">Total Cases</div>
+            <div class="change up">↑ +8 this week</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon amber">📄</div>
+          <div class="stat-info">
+            <div class="value">38</div>
+            <div class="label">Pending MLEFs</div>
+            <div class="change down">↓ 3 overdue</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple">🏥</div>
+          <div class="stat-info">
+            <div class="value">7</div>
+            <div class="label">Linked Hospitals</div>
+            <div class="change up">↑ All Online</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon teal">🧪</div>
+          <div class="stat-info">
+            <div class="value">23</div>
+            <div class="label">Lab Requests</div>
+            <div class="change up">↑ 12 completed</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Two col -->
+      <div class="two-col" style="margin-bottom: 20px;">
+
+        <!-- Recent Cases -->
+        <div class="card">
+          <div class="card-header">
+            <h5>📋 Recent Cases</h5>
+            <span class="badge badge-primary">This Week</span>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-wrap">
+              <table class="dash-table">
+                <thead>
+                  <tr>
+                    <th>Case ID</th>
+                    <th>Patient</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>#C-2026-001</strong></td>
+                    <td>John Perera</td>
+                    <td>Autopsy</td>
+                    <td><span class="badge badge-success">Closed</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>#C-2026-002</strong></td>
+                    <td>Nalini Silva</td>
+                    <td>Examination</td>
+                    <td><span class="badge badge-warning">Pending</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>#C-2026-003</strong></td>
+                    <td>Ravi Kumar</td>
+                    <td>Lab</td>
+                    <td><span class="badge badge-primary">In Progress</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>#C-2026-004</strong></td>
+                    <td>Amara Jayasinghe</td>
+                    <td>MLEF</td>
+                    <td><span class="badge badge-danger">Overdue</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- System Users -->
+        <div class="card">
+          <div class="card-header">
+            <h5>👤 System Users</h5>
+            <span class="badge badge-success">All Active</span>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-wrap">
+              <table class="dash-table">
+                <thead>
+                  <tr>
+                    <th>Role</th>
+                    <th>Username</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>👑 Administrator</td>
+                    <td>admin</td>
+                    <td><span class="badge badge-success">Active</span></td>
+                  </tr>
+                  <tr>
+                    <td>🏥 Forensic Staff</td>
+                    <td>staff</td>
+                    <td><span class="badge badge-success">Active</span></td>
+                  </tr>
+                  <tr>
+                    <td>🚔 Police Officer</td>
+                    <td>police</td>
+                    <td><span class="badge badge-success">Active</span></td>
+                  </tr>
+                  <tr>
+                    <td>🩺 JMO</td>
+                    <td>jmo</td>
+                    <td><span class="badge badge-success">Active</span></td>
+                  </tr>
+                  <tr>
+                    <td>🧪 Lab Technician</td>
+                    <td>lab</td>
+                    <td><span class="badge badge-success">Active</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /two-col -->
+
+      <!-- Under Dev Modules -->
+      <div class="card">
+        <div class="card-header">
+          <h5>🔧 Module Status</h5>
+          <span class="badge badge-secondary">UI Phase</span>
+        </div>
+        <div class="card-body">
+          <div class="under-dev">
+            <div class="icon">🚧</div>
+            <h3>Full Modules Under Development</h3>
+            <p>The complete CRUD functionality for MLEF, Examination, Autopsy, Laboratory, and Reporting modules will be integrated with the PostgreSQL backend in the next phase.</p>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /dash-body -->
+
+    <!-- Footer -->
+    <footer class="dash-footer">
+      <span>Department of Forensic Medicine &nbsp;|&nbsp; University of Peradeniya</span>
+      <span>DFMIS v1.0 &nbsp;|&nbsp; &copy; 2026 Ministry of Health, Sri Lanka</span>
+    </footer>
+  </div><!-- /dash-content -->
+</div><!-- /dash-layout -->
+
+<script>
+  // Clock
+  function tick() {
+    const el = document.getElementById("dashClock");
+    if (el) el.textContent = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  }
+  tick(); setInterval(tick, 1000);
+
+  // Logout
+  function logout() {
+    sessionStorage.clear();
+    window.location.href = "../index.html";
+  }
+
+  // Nav active state
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', function() {
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
