@@ -19,12 +19,7 @@ const passwordInput = document.getElementById("password");
 const loginAlert   = document.getElementById("loginAlert");
 const loginForm    = document.getElementById("loginForm");
 
-// ── Toggle password visibility ─────────────────────────────────────────
-function togglePassword() {
-  const isText = passwordInput.type === "text";
-  passwordInput.type = isText ? "password" : "text";
-  document.getElementById("toggleIcon").textContent = isText ? "🙈" : "👁️";
-}
+
 
 // ── Checkbox: Show Password ────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
