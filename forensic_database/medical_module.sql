@@ -265,3 +265,6 @@ CREATE TABLE appointment (
     remarks TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE specimen ADD COLUMN storage_condition VARCHAR(100);
+ALTER TABLE specimen ADD COLUMN current_status VARCHAR(50);

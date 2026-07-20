@@ -96,3 +96,15 @@ CREATE TABLE laboratory_result (
         ON DELETE CASCADE
 );
 
+ALTER TABLE laboratory_request ADD COLUMN accepted_date TIMESTAMP;
+ALTER TABLE laboratory_request ADD COLUMN accepted_by UUID REFERENCES laboratory_technician(technician_id);
+
+ALTER TABLE laboratory_test ADD COLUMN test_category VARCHAR(100);
+ALTER TABLE laboratory_test ADD COLUMN expected_completion_date DATE;
+
+CREATE TABLE laboratory_attachment (
+    attachment_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    result_id UUID NOT NULL REFERENCES laboratory_result(result_id) ON DELETE CASCADE,
+    file_path TEXT NOT NULL,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
