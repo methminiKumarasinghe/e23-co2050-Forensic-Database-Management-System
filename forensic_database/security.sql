@@ -48,7 +48,10 @@ VALUES
 'Laboratory technician'),
 
 ('GOVERNMENT_ANALYST',
-'Government analyst');
+'Government analyst'),
+
+('FORENSIC_STAFF',
+'Forensic Staff');
 
 CREATE TABLE permissions (
 
