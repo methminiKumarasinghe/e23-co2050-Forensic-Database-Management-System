@@ -15,6 +15,7 @@ const adminAuditLogsRoutes = require('./routes/admin/auditlogs.routes');
 const adminNotificationsRoutes = require('./routes/admin/notifications.routes');
 const policeRoutes = require('./routes/police.routes');
 const jmoRoutes = require('./routes/jmo.routes');
+const laboratoryRoutes = require('./routes/laboratory.routes');
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use('/admin/notifications', adminNotificationsRoutes);
 
 app.use('/police', policeRoutes);
 app.use('/jmo', jmoRoutes);
+app.use('/laboratory', laboratoryRoutes);
 
 // Centralized Error Handling
 app.use(errorHandler);
