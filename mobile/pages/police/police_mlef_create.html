@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Issue MLEF — Police Dashboard</title>
+  <link rel="stylesheet" href="../../css/style.css" />
+  <style>
+    .form-group { margin-bottom: 15px; }
+    .form-label { display: block; margin-bottom: 5px; font-weight: 500; color: #334155; font-size: 0.9rem; }
+    .form-control { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+    .btn-save { background-color: var(--primary-color); color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 1.1rem; width: 100%; margin-top: 20px; }
+    .mlr-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; }
+    .mlr-header h2 { margin: 0; color: #0F4C81; text-transform: uppercase; letter-spacing: 1px; }
+    .mlr-header p { margin: 5px 0 0 0; color: #64748b; font-size: 0.9rem; }
+    .section-title { background: #f1f5f9; padding: 10px 15px; font-weight: bold; color: #334155; border-radius: 6px; margin: 25px 0 15px 0; border-left: 4px solid #94a3b8; text-transform: uppercase; font-size: 0.95rem; }
+    .radio-group { display: flex; gap: 20px; align-items: center; }
+  </style>
+</head>
+<body>
+<div class="dash-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" role="navigation">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">🏛️</div>
+      <div class="sidebar-brand">
+        <h3>DFMIS Portal</h3>
+        <p>Sri Lanka Gov. System</p>
+      </div>
+    </div>
+    <div class="sidebar-user-card">
+      <div class="user-avatar">👮</div>
+      <div class="user-info">
+        <div class="name">Inspector Silva</div>
+        <div class="role">Police Department</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main Menu</div>
+      <a class="nav-item" href="police.html" id="nav-dashboard">
+        <span class="nav-icon">🏠</span> Dashboard
+      </a>
+      
+      <div class="nav-section-label">Case Management</div>
+      <a class="nav-item" href="#">
+        <span class="nav-icon">📁</span> My Cases
+      </a>
+      <a class="nav-item" href="#">
+        <span class="nav-icon">🔍</span> Search Records
+      </a>
+      
+      <div class="nav-section-label">Forensic Requests</div>
+      <a class="nav-item active" href="police_mlef_create.html">
+        <span class="nav-icon">📄</span> Issue MLEF (Health 886)
+      </a>
+      <a class="nav-item" href="#">
+        <span class="nav-icon">📑</span> Completed Reports
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="logout()" id="btn-logout">
+        <span>🚪</span> Logout
+      </button>
+    </div>
+  </aside>
+
+  <div class="dash-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div>
+          <div class="topbar-title">Issue Medico-Legal Examination Form</div>
+          <div class="breadcrumb">
+            <span>DFMIS</span><span class="breadcrumb-sep">›</span><span>Police</span><span class="breadcrumb-sep">›</span><span>Issue MLEF</span>
+          </div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-time" id="dashClock"></div>
+      </div>
+    </div>
+
+    <div class="dash-body">
+      <div class="card">
+        <div class="card-body">
+          <div class="mlr-header">
+            <p>Part A (1-8): To be filled by Police Officer issuing MLEF</p>
+            <h2>Medico - Legal Examination Form</h2>
+            <p>Health 886</p>
+          </div>
+
+          <form onsubmit="event.preventDefault(); alert('MLEF successfully submitted to Hospital! Examinee must now present to the JMO.'); window.location.href='police.html';">
+            
+            <div class="form-row-3">
+              <div class="form-group">
+                <label class="form-label">1. Police Station</label>
+                <input type="text" class="form-control" value="Kandy Police Station" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">2. Date of Issue</label>
+                <input type="date" class="form-control" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">3. MLEF No.</label>
+                <input type="text" class="form-control" placeholder="Auto-generated: MLEF-2026-0814" />
+              </div>
+            </div>
+
+            <div class="section-title">Examinee Information</div>
+            
+            <div class="form-group">
+              <label class="form-label">4. Full Name of Examinee</label>
+              <input type="text" class="form-control" placeholder="e.g. Sunil Perera" required />
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Address of Examinee</label>
+              <input type="text" class="form-control" placeholder="e.g. 15, Peradeniya Road, Kandy" required />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">5. Age</label>
+                <input type="number" class="form-control" placeholder="e.g. 35" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Sex</label>
+                <select class="form-control">
+                  <option>Male</option>
+                  <option>Female</option>
+                  <option>Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="section-title">Case Details</div>
+
+            <div class="form-group">
+              <label class="form-label">6. Reason for referring for examination</label>
+              <textarea class="form-control" rows="3" placeholder="e.g. Assaulted by neighbor with a blunt weapon..."></textarea>
+            </div>
+
+            <div class="section-title">Officer Details</div>
+            
+            <div class="form-row-3">
+              <div class="form-group">
+                <label class="form-label">7. Name of Police Officer issuing</label>
+                <input type="text" class="form-control" value="S. Silva" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Rank</label>
+                <input type="text" class="form-control" value="Inspector" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">No.</label>
+                <input type="text" class="form-control" value="10442" required />
+              </div>
+            </div>
+
+            <button type="submit" class="btn-save">Submit to Hospital (JMO Dashboard) ➜</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function tick() {
+    const el = document.getElementById("dashClock");
+    if (el) el.textContent = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  }
+  tick(); setInterval(tick, 1000);
+  function logout() { sessionStorage.clear(); window.location.href = "../../index.html"; }
+</script>
+</body>
+</html>
