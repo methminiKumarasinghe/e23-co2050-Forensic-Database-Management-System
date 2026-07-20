@@ -244,6 +244,33 @@ const search = async (req, res, next) => {
   }
 };
 
+const getCourtHearings = async (req, res, next) => {
+  try {
+    const hearings = await policeService.getCourtHearings(req.params.id);
+    res.status(200).json(hearings);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const createCourtHearing = async (req, res, next) => {
+  try {
+    const hearing = await policeService.createCourtHearing(req.params.id, req.body, req.user.user_id);
+    res.status(201).json(hearing);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getReportsStatus = async (req, res, next) => {
+  try {
+    const reports = await policeService.getReportsStatus(req.user.user_id);
+    res.status(200).json(reports);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getDashboardStats,
   createCase, getCases, getCaseById, updateCase,
@@ -254,5 +281,7 @@ module.exports = {
   getChainOfCustody, transferEvidence,
   getMlefRequests, getMlefById, createMlefRequest,
   getCaseTimeline,
-  search
+  search,
+  getCourtHearings, createCourtHearing,
+  getReportsStatus
 };
