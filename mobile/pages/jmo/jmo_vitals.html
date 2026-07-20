@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lab Requests — JMO Dashboard</title>
-  <link rel="stylesheet" href="../css/style.css" />
+  <title>Record Vital Signs — JMO Dashboard</title>
+  <link rel="stylesheet" href="../../css/style.css" />
   <style>
     .patient-context { background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--primary-color); display: flex; justify-content: space-between; align-items: center; }
     .form-group { margin-bottom: 15px; }
@@ -17,7 +17,7 @@
 <body>
 <div class="dash-layout">
 
-  <!-- Sidebar -->
+  <!-- Sidebar (Same as jmo_mlef.html but different active state) -->
   <aside class="sidebar" role="navigation" aria-label="Main Navigation">
     <div class="sidebar-header">
       <div class="sidebar-logo">🔬</div>
@@ -44,7 +44,7 @@
       </a>
 
       <div class="nav-section-label">Clinical Examination</div>
-      <a class="nav-item" href="jmo_vitals.html" id="nav-vital-signs">
+      <a class="nav-item active" href="jmo_vitals.html" id="nav-vital-signs">
         <span class="nav-icon">❤️</span> Record Vital Signs
       </a>
       <a class="nav-item" href="jmo_injuries.html" id="nav-injuries">
@@ -60,7 +60,7 @@
       </a>
       
       <div class="nav-section-label">Forensic Reports</div>
-      <a class="nav-item active" href="jmo_lab.html" id="nav-lab-requests">
+      <a class="nav-item" href="jmo_lab.html" id="nav-lab-requests">
         <span class="nav-icon">🧪</span> Lab Requests
       </a>
       <a class="nav-item" href="jmo_mlr.html" id="nav-mlr">
@@ -81,9 +81,9 @@
     <div class="topbar">
       <div class="topbar-left">
         <div>
-          <div class="topbar-title">Lab Requests</div>
+          <div class="topbar-title">Record Vital Signs</div>
           <div class="breadcrumb">
-            <span>DFMIS</span><span class="breadcrumb-sep">›</span><span>JMO Dashboard</span><span class="breadcrumb-sep">›</span><span>Laboratory</span>
+            <span>DFMIS</span><span class="breadcrumb-sep">›</span><span>JMO Dashboard</span><span class="breadcrumb-sep">›</span><span>Vital Signs</span>
           </div>
         </div>
       </div>
@@ -98,102 +98,65 @@
         <div>
           <h4 style="margin:0 0 5px 0;" id="ctx-patient-name">Patient: Ravi Mendis</h4>
           <span class="badge badge-primary" id="ctx-case-type">Assault</span>
+          <span style="font-size: 0.85rem; color: #64748b; margin-left: 10px;">MLEF-2391</span>
         </div>
         <div>
-          <button class="action-btn btn-view" onclick="window.location.href='jmo_mlr.html'">Next: Prepare MLR ➡️</button>
+          <button class="action-btn btn-view" onclick="window.location.href='jmo_injuries.html'">Next: Record Injuries ➡️</button>
         </div>
       </div>
 
-      <div class="two-col" style="margin-bottom: 20px;">
-        <!-- Lab Request Form -->
-        <div class="card">
-          <div class="card-header">
-            <h5>🧪 Request Laboratory Test</h5>
-          </div>
-          <div class="card-body">
-            <form onsubmit="event.preventDefault(); alert('Lab request submitted to Government Analyst / Lab Tech.');">
+      <div class="card">
+        <div class="card-header">
+          <h5>❤️ Enter Clinical Vital Signs</h5>
+        </div>
+        <div class="card-body">
+          <form onsubmit="event.preventDefault(); alert('Vital signs saved successfully!'); window.location.href='jmo_injuries.html';">
+            
+            <div class="form-row">
               <div class="form-group">
-                <label class="form-label">Test Type</label>
-                <select class="form-control" required>
-                  <option value="">Select Test Type...</option>
-                  <option>Toxicology Analysis</option>
-                  <option>Blood Alcohol Concentration (BAC)</option>
-                  <option>DNA / Serology</option>
-                  <option>Histopathology</option>
-                  <option>Entomology</option>
+                <label class="form-label">Examination Date & Time</label>
+                <input type="datetime-local" class="form-control" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Level of Consciousness (GCS)</label>
+                <select class="form-control">
+                  <option>15/15 - Fully Conscious</option>
+                  <option>13/15 - Mild impairment</option>
+                  <option>9/15 - Moderate impairment</option>
+                  <option>3/15 - Unconscious</option>
                 </select>
               </div>
+            </div>
 
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label">Specimen Collected</label>
-                  <select class="form-control" required>
-                    <option value="">Select Specimen...</option>
-                    <option>Blood</option>
-                    <option>Urine</option>
-                    <option>Tissue</option>
-                    <option>Buccal Swab</option>
-                    <option>Hair</option>
-                    <option>Nail clippings</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Priority</label>
-                  <select class="form-control">
-                    <option>Normal</option>
-                    <option>High</option>
-                    <option>Urgent</option>
-                  </select>
-                </div>
-              </div>
-
+            <div class="form-row">
               <div class="form-group">
-                <label class="form-label">Specific Instructions for Laboratory</label>
-                <textarea class="form-control" rows="3" placeholder="Please test for..."></textarea>
+                <label class="form-label">Blood Pressure (mmHg)</label>
+                <input type="text" class="form-control" placeholder="e.g. 120/80" required />
               </div>
-
-              <button type="submit" class="btn-save">Submit Request</button>
-            </form>
-          </div>
-        </div>
-
-        <!-- Pending / Completed Lab Tests -->
-        <div class="card">
-          <div class="card-header">
-            <h5>📊 Case Lab Tests</h5>
-            <span class="badge badge-primary">2 Total</span>
-          </div>
-          <div class="card-body" style="padding: 0;">
-            <div class="table-wrap">
-              <table class="dash-table">
-                <thead>
-                  <tr>
-                    <th>Req No.</th>
-                    <th>Test Type</th>
-                    <th>Specimen</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>#LR-299</td>
-                    <td>Blood Alcohol</td>
-                    <td>Blood</td>
-                    <td><span class="badge badge-warning">Pending</span></td>
-                  </tr>
-                  <tr>
-                    <td>#LR-300</td>
-                    <td>Toxicology</td>
-                    <td>Urine</td>
-                    <td><span class="badge badge-success">Ready</span></td>
-                  </tr>
-                </tbody>
-              </table>
+              <div class="form-group">
+                <label class="form-label">Pulse Rate (bpm)</label>
+                <input type="number" class="form-control" placeholder="e.g. 72" required />
+              </div>
             </div>
-            <div style="padding: 15px; text-align: center;">
-              <button class="action-btn btn-view">View Results Report</button>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Respiratory Rate (breaths/min)</label>
+                <input type="number" class="form-control" placeholder="e.g. 16" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Temperature (°C)</label>
+                <input type="number" step="0.1" class="form-control" placeholder="e.g. 37.0" />
+              </div>
             </div>
-          </div>
+
+            <div class="form-group">
+              <label class="form-label">General Clinical Notes</label>
+              <textarea class="form-control" rows="3" placeholder="Any general observations before specific injury logging..."></textarea>
+            </div>
+
+            <button type="submit" class="btn-save">Save & Continue</button>
+          </form>
         </div>
       </div>
     </div>
@@ -206,8 +169,9 @@
     if (el) el.textContent = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   }
   tick(); setInterval(tick, 1000);
-  function logout() { sessionStorage.clear(); window.location.href = "../index.html"; }
+  function logout() { sessionStorage.clear(); window.location.href = "../../index.html"; }
 
+  // Load context if available
   document.addEventListener('DOMContentLoaded', () => {
     const patientName = sessionStorage.getItem('currentPatient');
     const caseType = sessionStorage.getItem('currentCaseType');

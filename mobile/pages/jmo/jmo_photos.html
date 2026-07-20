@@ -3,14 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Record Cause of Death — JMO Dashboard</title>
-  <link rel="stylesheet" href="../css/style.css" />
+  <title>Upload Injury Photos — JMO Dashboard</title>
+  <link rel="stylesheet" href="../../css/style.css" />
   <style>
     .patient-context { background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--primary-color); display: flex; justify-content: space-between; align-items: center; }
     .form-group { margin-bottom: 15px; }
     .form-label { display: block; margin-bottom: 5px; font-weight: 500; color: #334155; }
     .form-control { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
     .btn-save { background-color: var(--primary-color); color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; margin-top: 10px; }
+    .upload-box { border: 2px dashed #cbd5e1; padding: 40px; text-align: center; border-radius: 8px; background: #f8fafc; margin-bottom: 15px; cursor: pointer; }
+    .upload-box:hover { background: #f1f5f9; border-color: var(--primary-color); }
+    .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 20px; }
+    .photo-card { border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; text-align: center; background: white; }
+    .photo-card img { max-width: 100%; border-radius: 4px; background: #e2e8f0; height: 100px; object-fit: cover; }
+    .photo-meta { font-size: 0.8rem; color: #64748b; margin-top: 5px; }
   </style>
 </head>
 <body>
@@ -49,12 +55,12 @@
       <a class="nav-item" href="jmo_injuries.html" id="nav-injuries">
         <span class="nav-icon">🩹</span> Record Injuries
       </a>
-      <a class="nav-item" href="jmo_photos.html" id="nav-injury-photos">
+      <a class="nav-item active" href="jmo_photos.html" id="nav-injury-photos">
         <span class="nav-icon">📷</span> Upload Injury Photos
       </a>
       
       <div class="nav-section-label">Post-Mortem / Autopsy</div>
-      <a class="nav-item active" href="jmo_autopsy.html" id="nav-autopsy-record">
+      <a class="nav-item" href="jmo_autopsy.html" id="nav-autopsy-record">
         <span class="nav-icon">⚰️</span> Record Cause of Death
       </a>
       
@@ -80,9 +86,9 @@
     <div class="topbar">
       <div class="topbar-left">
         <div>
-          <div class="topbar-title">Record Cause of Death</div>
+          <div class="topbar-title">Upload Injury Photos</div>
           <div class="breadcrumb">
-            <span>DFMIS</span><span class="breadcrumb-sep">›</span><span>JMO Dashboard</span><span class="breadcrumb-sep">›</span><span>Autopsy</span>
+            <span>DFMIS</span><span class="breadcrumb-sep">›</span><span>JMO Dashboard</span><span class="breadcrumb-sep">›</span><span>Photos</span>
           </div>
         </div>
       </div>
@@ -92,52 +98,62 @@
     </div>
 
     <div class="dash-body">
-      <!-- Context Header -->
+      <!-- Patient Context Header -->
       <div class="patient-context">
         <div>
-          <h4 style="margin:0 0 5px 0;">Deceased: Unidentified Male</h4>
-          <span class="badge badge-primary">Suspicious Death (Autopsy)</span>
-          <span style="font-size: 0.85rem; color: #64748b; margin-left: 10px;">MLEF-2392</span>
+          <h4 style="margin:0 0 5px 0;" id="ctx-patient-name">Patient: Ravi Mendis</h4>
+          <span class="badge badge-primary" id="ctx-case-type">Assault</span>
         </div>
         <div>
           <button class="action-btn btn-view" onclick="window.location.href='jmo_lab.html'">Next: Lab Requests ➡️</button>
         </div>
       </div>
 
-      <div class="card">
+      <div class="card" style="margin-bottom: 20px;">
         <div class="card-header">
-          <h5>⚰️ Autopsy Findings & Cause of Death</h5>
+          <h5>📷 Attach Photo Evidence to Injuries</h5>
         </div>
         <div class="card-body">
-          <form onsubmit="event.preventDefault(); alert('Autopsy record saved successfully.'); window.location.href='jmo_lab.html';">
+          <form onsubmit="event.preventDefault(); alert('Photo uploaded successfully.');">
+            <div class="form-group">
+              <label class="form-label">Link to specific logged injury</label>
+              <select class="form-control" required>
+                <option value="">Select Injury...</option>
+                <option>Contusion (Bruise) - Right cheek</option>
+                <option>General / Unspecified</option>
+              </select>
+            </div>
             
-            <div class="form-group">
-              <label class="form-label">Date & Time of Autopsy</label>
-              <input type="datetime-local" class="form-control" required style="max-width: 300px;"/>
+            <div class="upload-box" onclick="document.getElementById('fileUpload').click()">
+              <div style="font-size: 2rem;">📥</div>
+              <p style="margin-top: 10px; color: #334155; font-weight: 500;">Click to browse or drag and drop photos here</p>
+              <p style="font-size: 0.85rem; color: #64748b;">Supports JPG, PNG, HEIC (Max 10MB)</p>
+              <input type="file" id="fileUpload" style="display: none;" accept="image/*" />
             </div>
 
-            <div class="form-group">
-              <label class="form-label">1(a). Primary Cause of Death</label>
-              <input type="text" class="form-control" placeholder="e.g. Asphyxiation due to strangulation" required />
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">1(b). Due to (or as a consequence of)</label>
-              <input type="text" class="form-control" placeholder="Optional underlying cause..." />
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">2. Secondary / Contributing Conditions</label>
-              <input type="text" class="form-control" placeholder="e.g. Severe blunt force trauma to the head" />
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Detailed Internal Findings</label>
-              <textarea class="form-control" rows="5" placeholder="Document specific organ damage, hemorrhage, etc."></textarea>
-            </div>
-
-            <button type="submit" class="btn-save">Save Autopsy Findings</button>
+            <button type="submit" class="btn-save">Upload Photo</button>
           </form>
+        </div>
+      </div>
+
+      <!-- Mock Gallery -->
+      <div class="card">
+        <div class="card-header">
+          <h5>📂 Attached Photos</h5>
+          <span class="badge badge-secondary">1 Uploaded</span>
+        </div>
+        <div class="card-body">
+          <div class="gallery">
+            <div class="photo-card">
+              <div style="height:100px; background:#e2e8f0; border-radius:4px; display:flex; align-items:center; justify-content:center; color:#94a3b8;">
+                [Image Mock]
+              </div>
+              <div class="photo-meta">
+                <strong>Right cheek contusion</strong><br/>
+                Uploaded: Today 10:15 AM
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -151,7 +167,14 @@
     if (el) el.textContent = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   }
   tick(); setInterval(tick, 1000);
-  function logout() { sessionStorage.clear(); window.location.href = "../index.html"; }
+  function logout() { sessionStorage.clear(); window.location.href = "../../index.html"; }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const patientName = sessionStorage.getItem('currentPatient');
+    const caseType = sessionStorage.getItem('currentCaseType');
+    if(patientName) document.getElementById('ctx-patient-name').textContent = 'Patient: ' + patientName;
+    if(caseType) document.getElementById('ctx-case-type').textContent = caseType;
+  });
 </script>
 </body>
 </html>

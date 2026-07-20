@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Record Injuries — JMO Dashboard</title>
-  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../../css/style.css" />
   <style>
     .patient-context { background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--primary-color); display: flex; justify-content: space-between; align-items: center; }
     .form-group { margin-bottom: 15px; }
@@ -200,7 +200,7 @@
     if (el) el.textContent = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   }
   tick(); setInterval(tick, 1000);
-  function logout() { sessionStorage.clear(); window.location.href = "../index.html"; }
+  function logout() { sessionStorage.clear(); window.location.href = "../../index.html"; }
 
   document.addEventListener('DOMContentLoaded', () => {
     const patientName = sessionStorage.getItem('currentPatient');

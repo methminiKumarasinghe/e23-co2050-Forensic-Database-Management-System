@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>JMO Dashboard — DFMIS</title>
   <meta name="description" content="Judicial Medical Officer dashboard for the Digital Forensic Medical Information System." />
-  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../../css/style.css" />
 </head>
 <body>
 <div class="dash-layout">
@@ -252,7 +252,7 @@
     if (el) el.textContent = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   }
   tick(); setInterval(tick, 1000);
-  function logout() { sessionStorage.clear(); window.location.href = "../index.html"; }
+  function logout() { sessionStorage.clear(); window.location.href = "../../index.html"; }
   document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', function() {
       document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Assigned MLEF Cases — JMO Dashboard</title>
   <meta name="description" content="Assigned MLEF Cases for JMO." />
-  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../../css/style.css" />
   <style>
     .action-btn { padding: 5px 10px; border-radius: 4px; border: none; cursor: pointer; font-size: 0.85rem; }
     .btn-start { background-color: var(--primary-color); color: white; }
@@ -185,7 +185,7 @@
     if (el) el.textContent = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   }
   tick(); setInterval(tick, 1000);
-  function logout() { sessionStorage.clear(); window.location.href = "../index.html"; }
+  function logout() { sessionStorage.clear(); window.location.href = "../../index.html"; }
   
   function startExam(patient, type) {
     sessionStorage.setItem('currentPatient', patient);

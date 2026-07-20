@@ -3,14 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Prepare MLR — JMO Dashboard</title>
-  <link rel="stylesheet" href="../css/style.css" />
+  <title>Digital Signature — JMO Dashboard</title>
+  <link rel="stylesheet" href="../../css/style.css" />
   <style>
     .patient-context { background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--primary-color); display: flex; justify-content: space-between; align-items: center; }
     .form-group { margin-bottom: 15px; }
     .form-label { display: block; margin-bottom: 5px; font-weight: 500; color: #334155; }
     .form-control { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
     .btn-save { background-color: var(--primary-color); color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; margin-top: 10px; }
+    
+    .report-preview { border: 1px solid #e2e8f0; border-radius: 6px; padding: 30px; background: white; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .report-preview h3 { text-align: center; text-transform: uppercase; margin-bottom: 20px; color: #0F4C81; }
+    .report-section { margin-bottom: 20px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 15px; }
+    .report-section:last-child { border-bottom: none; }
+    .sign-box { border: 2px solid #cbd5e1; border-radius: 6px; padding: 20px; background: #f8fafc; margin-top: 20px; }
+    .btn-sign { background-color: #10b981; color: white; font-weight: 700; width: 100%; padding: 15px; border: none; border-radius: 6px; font-size: 1.1rem; cursor: pointer; }
+    .btn-sign:hover { background-color: #059669; }
   </style>
 </head>
 <body>
@@ -62,10 +70,10 @@
       <a class="nav-item" href="jmo_lab.html" id="nav-lab-requests">
         <span class="nav-icon">🧪</span> Lab Requests
       </a>
-      <a class="nav-item active" href="jmo_mlr.html" id="nav-mlr">
+      <a class="nav-item" href="jmo_mlr.html" id="nav-mlr">
         <span class="nav-icon">📑</span> Prepare MLR
       </a>
-      <a class="nav-item" href="jmo_signature.html" id="nav-signature">
+      <a class="nav-item active" href="jmo_signature.html" id="nav-signature">
         <span class="nav-icon">✒️</span> Digital Signature
       </a>
     </nav>
@@ -80,9 +88,9 @@
     <div class="topbar">
       <div class="topbar-left">
         <div>
-          <div class="topbar-title">Prepare Medico-Legal Report (MLR)</div>
+          <div class="topbar-title">Digital Signature</div>
           <div class="breadcrumb">
-            <span>DFMIS</span><span class="breadcrumb-sep">›</span><span>JMO Dashboard</span><span class="breadcrumb-sep">›</span><span>Prepare MLR</span>
+            <span>DFMIS</span><span class="breadcrumb-sep">›</span><span>JMO Dashboard</span><span class="breadcrumb-sep">›</span><span>Sign Report</span>
           </div>
         </div>
       </div>
@@ -99,45 +107,64 @@
           <span class="badge badge-primary" id="ctx-case-type">Assault</span>
         </div>
         <div>
-          <button class="action-btn btn-view" onclick="window.location.href='jmo_signature.html'">Next: Digital Signature ➡️</button>
+          <button class="action-btn btn-view" onclick="window.location.href='jmo.html'">Return to Dashboard</button>
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <h5>📑 Draft Medico-Legal Report</h5>
+      <div class="two-col" style="margin-bottom: 20px;">
+        
+        <!-- Report Preview -->
+        <div class="card" style="grid-column: 1 / 2;">
+          <div class="card-header">
+            <h5>📑 Medico-Legal Report Preview</h5>
+          </div>
+          <div class="card-body">
+            <div class="report-preview">
+              <h3>Medico-Legal Report</h3>
+              <div class="report-section">
+                <strong>Patient Name:</strong> <span id="rep-name">Ravi Mendis</span><br/>
+                <strong>Case Ref:</strong> MLEF-2391<br/>
+                <strong>Exam Date:</strong> July 20, 2026
+              </div>
+              <div class="report-section">
+                <strong>Findings:</strong><br/>
+                Patient presented with one right cheek contusion (4cm diameter) and elevated blood pressure.
+              </div>
+              <div class="report-section">
+                <strong>Expert Opinion:</strong><br/>
+                The injuries observed are consistent with blunt force trauma. Category of hurt is Non-Grievous (Simple Hurt).
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="card-body">
-          <form onsubmit="event.preventDefault(); alert('Report Draft Saved!'); window.location.href='jmo_signature.html';">
-            <div class="form-group">
-              <label class="form-label">Summary of Clinical Findings</label>
-              <textarea class="form-control" rows="4" placeholder="Summarize the vital signs, overall condition, and observed injuries..."></textarea>
-            </div>
-            
-            <div class="form-group">
-              <label class="form-label">Lab Results / Investigations Summary</label>
-              <textarea class="form-control" rows="3" placeholder="Reference any toxicology or other lab results here..."></textarea>
-            </div>
 
-            <div class="form-group">
-              <label class="form-label">Category of Hurt (Expert Opinion)</label>
-              <select class="form-control" required>
-                <option value="">Select Category...</option>
-                <option>Non-Grievous (Simple Hurt)</option>
-                <option>Grievous Hurt</option>
-                <option>Fatal</option>
-                <option>Pending Lab Results</option>
-              </select>
-            </div>
+        <!-- Signature Box -->
+        <div class="card" style="grid-column: 2 / 3;">
+          <div class="card-header">
+            <h5>✒️ Finalize Document</h5>
+          </div>
+          <div class="card-body">
+            <p style="color: #64748b; font-size: 0.9rem;">
+              By applying your digital signature, this document will be locked. A cryptographic hash will be generated tying this report to your secure credential. It will immediately become available to the requesting Police Officer for court submission.
+            </p>
 
-            <div class="form-group">
-              <label class="form-label">Final Conclusion & Expert Medical Opinion</label>
-              <textarea class="form-control" rows="6" placeholder="Provide the final forensic opinion based on all evidence..." required></textarea>
-            </div>
+            <div class="sign-box">
+              <form onsubmit="event.preventDefault(); alert('Report Signed and Locked! The document is now official.'); window.location.href='jmo.html';">
+                <div class="form-group">
+                  <label class="form-label">JMO PIN / Secure Passphrase</label>
+                  <input type="password" class="form-control" placeholder="Enter secure PIN to sign" required />
+                </div>
+                
+                <label style="display: block; margin: 15px 0; font-size: 0.85rem; color: #334155;">
+                  <input type="checkbox" required /> I affirm that this report represents my true expert medical opinion.
+                </label>
 
-            <button type="submit" class="btn-save">Save Draft & Proceed to Signature</button>
-          </form>
+                <button type="submit" class="btn-sign">✒️ Sign & Submit Report</button>
+              </form>
+            </div>
+          </div>
         </div>
+
       </div>
 
     </div>
@@ -150,12 +177,15 @@
     if (el) el.textContent = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   }
   tick(); setInterval(tick, 1000);
-  function logout() { sessionStorage.clear(); window.location.href = "../index.html"; }
+  function logout() { sessionStorage.clear(); window.location.href = "../../index.html"; }
 
   document.addEventListener('DOMContentLoaded', () => {
     const patientName = sessionStorage.getItem('currentPatient');
     const caseType = sessionStorage.getItem('currentCaseType');
-    if(patientName) document.getElementById('ctx-patient-name').textContent = 'Patient: ' + patientName;
+    if(patientName) {
+      document.getElementById('ctx-patient-name').textContent = 'Patient: ' + patientName;
+      document.getElementById('rep-name').textContent = patientName;
+    }
     if(caseType) document.getElementById('ctx-case-type').textContent = caseType;
   });
 </script>
