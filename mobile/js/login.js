@@ -8,7 +8,7 @@
 const ACCOUNTS = [
   { username: "admin",  password: "admin123",  redirect: "pages/admin.html",      role: "Administrator" },
   { username: "staff",  password: "staff123",  redirect: "pages/staff.html",      role: "Forensic Staff" },
-  { username: "police", password: "police123", redirect: "pages/police.html",     role: "Police Officer" },
+  { username: "police", password: "police123", redirect: "pages/police/police.html", role: "Police Officer" },
   { username: "jmo",    password: "jmo123",    redirect: "pages/jmo/jmo.html",    role: "Judicial Medical Officer" },
   { username: "lab",    password: "lab123",    redirect: "pages/laboratory.html", role: "Laboratory Technician" },
 ];
