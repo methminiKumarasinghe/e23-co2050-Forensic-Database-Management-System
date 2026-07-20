@@ -135,6 +135,33 @@ const search = async (userId, searchParams) => {
   return await jmoRepository.search(jmo.jmo_id, jmo.hospital_id, searchParams);
 };
 
+// --- MODULE 10.5: Autopsy ---
+const getPendingAutopsies = async (userId) => {
+  const jmo = await getJmoData(userId);
+  return await jmoRepository.getPendingAutopsies(jmo.jmo_id, jmo.hospital_id);
+};
+
+const createAutopsyNotification = async (userId, data) => {
+  const jmo = await getJmoData(userId);
+  return await jmoRepository.createAutopsyNotification(jmo.jmo_id, jmo.hospital_id, data, userId);
+};
+
+const updateAutopsyExternal = async (userId, autopsyId, data) => {
+  return await jmoRepository.updateAutopsyExternal(autopsyId, data, userId);
+};
+
+const updateAutopsyInternal = async (userId, autopsyId, data) => {
+  return await jmoRepository.updateAutopsyInternal(autopsyId, data, userId);
+};
+
+const recordCauseOfDeath = async (userId, autopsyId, data) => {
+  return await jmoRepository.recordCauseOfDeath(autopsyId, data, userId);
+};
+
+const generateAutopsyReport = async (userId, autopsyId, data) => {
+  return await jmoRepository.generateAutopsyReport(autopsyId, data, userId);
+};
+
 module.exports = {
   getDashboardStats,
   getMlefRequests, getMlefById,
@@ -145,6 +172,7 @@ module.exports = {
   getSpecimens, createSpecimen,
   getLabRequests, createLabRequest,
   getLabResults, getLabResultById,
+  getPendingAutopsies, createAutopsyNotification, updateAutopsyExternal, updateAutopsyInternal, recordCauseOfDeath, generateAutopsyReport,
   getReports, getReportById, createReport, updateReport, signReport,
   getAppointments, createAppointment, updateAppointment,
   search

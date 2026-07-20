@@ -318,6 +318,65 @@ const search = async (req, res, next) => {
     next(error);
   }
 };
+// --- MODULE 10.5: Autopsy ---
+const getPendingAutopsies = async (req, res, next) => {
+  try {
+    const autopsies = await jmoService.getPendingAutopsies(req.user.user_id);
+    res.json(autopsies);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const createAutopsyNotification = async (req, res, next) => {
+  if (handleValidationErrors(req, res)) return;
+  try {
+    const notification = await jmoService.createAutopsyNotification(req.user.user_id, req.body);
+    res.status(201).json(notification);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateAutopsyExternal = async (req, res, next) => {
+  if (handleValidationErrors(req, res)) return;
+  try {
+    const updated = await jmoService.updateAutopsyExternal(req.user.user_id, req.params.id, req.body);
+    res.json(updated);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateAutopsyInternal = async (req, res, next) => {
+  if (handleValidationErrors(req, res)) return;
+  try {
+    const updated = await jmoService.updateAutopsyInternal(req.user.user_id, req.params.id, req.body);
+    res.json(updated);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const recordCauseOfDeath = async (req, res, next) => {
+  if (handleValidationErrors(req, res)) return;
+  try {
+    const cod = await jmoService.recordCauseOfDeath(req.user.user_id, req.params.id, req.body);
+    res.status(201).json(cod);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const generateAutopsyReport = async (req, res, next) => {
+  if (handleValidationErrors(req, res)) return;
+  try {
+    const report = await jmoService.generateAutopsyReport(req.user.user_id, req.params.id, req.body);
+    res.status(201).json(report);
+  } catch (error) {
+    next(error);
+  }
+};
 
 module.exports = {
   getDashboardStats,
@@ -329,6 +388,7 @@ module.exports = {
   getSpecimens, createSpecimen,
   getLabRequests, createLabRequest,
   getLabResults, getLabResultById,
+  getPendingAutopsies, createAutopsyNotification, updateAutopsyExternal, updateAutopsyInternal, recordCauseOfDeath, generateAutopsyReport,
   getReports, getReportById, createReport, updateReport, signReport,
   getAppointments, createAppointment, updateAppointment,
   search
