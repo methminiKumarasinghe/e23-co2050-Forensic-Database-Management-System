@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const { authenticateToken, authorizeRole } = require('../middleware/auth.middleware');
+const { authenticateToken, authorizeRole, authorizePermission } = require('../middleware/auth.middleware');
 const { checkLabRequestAssignment } = require('../middleware/laboratory.middleware');
 const controller = require('../controllers/laboratory.controller');
 const validators = require('../validators/laboratory.validators');
@@ -39,34 +39,34 @@ router.use(authorizeRole('LAB_TECHNICIAN', 'ADMIN')); // Admin might need access
 router.use(['/requests/:id', '/tests/:id', '/results/:id'], checkLabRequestAssignment);
 
 // Module 1 - Dashboard
-router.get('/dashboard', controller.getDashboardStats);
+router.get('/dashboard', authorizePermission('VIEW_CASE'), controller.getDashboardStats);
 
 // Module 2 - Laboratory Requests
-router.get('/requests', controller.getLabRequests);
-router.get('/requests/:id', controller.getLabRequestById);
+router.get('/requests', authorizePermission('VIEW_CASE'), controller.getLabRequests);
+router.get('/requests/:id', authorizePermission('VIEW_CASE'), controller.getLabRequestById);
 
 // Module 3 - Accept / Reject Request
-router.put('/requests/:id/status', validators.updateRequestStatusValidator, controller.updateRequestStatus);
+router.put('/requests/:id/status', authorizePermission('UPLOAD_LAB_RESULT'), validators.updateRequestStatusValidator, controller.updateRequestStatus);
 
 // Module 4 - Specimen Management
 router.get('/specimens', controller.getSpecimens);
 router.get('/specimens/:id', checkLabRequestAssignment, controller.getSpecimenById);
 
 // Module 5 - Laboratory Tests
-router.get('/tests', controller.getTests);
-router.post('/tests', checkLabRequestAssignment, validators.createTestValidator, controller.createTest);
-router.put('/tests/:id', validators.updateTestValidator, controller.updateTest);
+router.get('/tests', authorizePermission('VIEW_CASE'), controller.getTests);
+router.post('/tests', checkLabRequestAssignment, authorizePermission('UPLOAD_LAB_RESULT'), validators.createTestValidator, controller.createTest);
+router.put('/tests/:id', authorizePermission('UPLOAD_LAB_RESULT'), validators.updateTestValidator, controller.updateTest);
 
 // Module 6 - Laboratory Results
-router.get('/results', controller.getResults);
-router.post('/results', checkLabRequestAssignment, validators.createResultValidator, controller.createResult);
-router.put('/results/:id', validators.updateResultValidator, controller.updateResult);
+router.get('/results', authorizePermission('VIEW_CASE'), controller.getResults);
+router.post('/results', checkLabRequestAssignment, authorizePermission('UPLOAD_LAB_RESULT'), validators.createResultValidator, controller.createResult);
+router.put('/results/:id', authorizePermission('UPLOAD_LAB_RESULT'), validators.updateResultValidator, controller.updateResult);
 
 // Module 7 - Upload Result Attachments
-router.post('/results/:id/files', upload.single('attachment'), controller.uploadAttachment);
+router.post('/results/:id/files', upload.single('attachment'), authorizePermission('UPLOAD_LAB_RESULT'), controller.uploadAttachment);
 
 // Module 8 - Complete Laboratory Test
-router.put('/tests/:id/complete', controller.completeTest);
+router.put('/tests/:id/complete', authorizePermission('UPLOAD_LAB_RESULT'), controller.completeTest);
 
 // Module 9 - Search
 router.get('/search', controller.search);

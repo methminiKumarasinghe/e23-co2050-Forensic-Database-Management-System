@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
+const verifyAndSeed = require('./database/db_verify_seed');
+
 
 const { errorHandler } = require('./middleware/error.middleware');
 
@@ -44,8 +46,9 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 
 if (require.main === module) {
-  app.listen(PORT, () => {
+  app.listen(PORT, async () => {
     console.log(`Server is running on port ${PORT}`);
+    await verifyAndSeed();
   });
 }
 

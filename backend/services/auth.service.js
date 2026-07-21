@@ -45,6 +45,7 @@ class AuthService {
     // 6. Generate JWT
     const payload = {
       userId: user.user_id,
+      user_id: user.user_id,
       username: user.username,
       roles: roles
     };
