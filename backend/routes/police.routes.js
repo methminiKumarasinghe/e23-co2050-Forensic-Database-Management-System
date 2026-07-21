@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 
-const { authenticateToken, authorizeRole } = require('../middleware/auth.middleware');
+const { authenticateToken, authorizeRole, authorizePermission } = require('../middleware/auth.middleware');
 const { checkCaseAssignment } = require('../middleware/police.middleware');
 
 const policeController = require('../controllers/police.controller');
@@ -54,10 +54,10 @@ router.post('/mlef', policeValidators.createMlefValidator, policeController.crea
 router.get('/mlef/:id', policeController.getMlefById);
 
 // MODULE 2 - Case Management
-router.get('/cases', policeController.getCases);
-router.post('/cases', policeValidators.createCaseValidator, policeController.createCase);
-router.get('/cases/:id', checkCaseAssignment, policeController.getCaseById);
-router.put('/cases/:id', checkCaseAssignment, policeValidators.updateCaseValidator, policeController.updateCase);
+router.get('/cases', authorizePermission('VIEW_CASE'), policeController.getCases);
+router.post('/cases', authorizePermission('CREATE_CASE'), policeValidators.createCaseValidator, policeController.createCase);
+router.get('/cases/:id', checkCaseAssignment, authorizePermission('VIEW_CASE'), policeController.getCaseById);
+router.put('/cases/:id', checkCaseAssignment, authorizePermission('UPDATE_CASE'), policeValidators.updateCaseValidator, policeController.updateCase);
 
 // MODULE 3 - Case Assignment
 router.post('/cases/:id/assign', checkCaseAssignment, policeValidators.assignCaseValidator, policeController.assignOfficer);
@@ -71,10 +71,10 @@ router.post('/cases/:id/incidents', checkCaseAssignment, policeValidators.create
 router.put('/incidents/:id', policeValidators.updateIncidentValidator, policeController.updateIncident);
 
 // MODULE 5 - Evidence Management
-router.get('/cases/:id/evidence', checkCaseAssignment, policeController.getEvidence);
-router.post('/cases/:id/evidence', checkCaseAssignment, policeValidators.createEvidenceValidator, policeController.createEvidence);
+router.get('/cases/:id/evidence', checkCaseAssignment, authorizePermission('VIEW_EVIDENCE'), policeController.getEvidence);
+router.post('/cases/:id/evidence', checkCaseAssignment, authorizePermission('ADD_EVIDENCE'), policeValidators.createEvidenceValidator, policeController.createEvidence);
 // PUT /police/evidence/:id
-router.put('/evidence/:id', policeValidators.updateEvidenceValidator, policeController.updateEvidence);
+router.put('/evidence/:id', authorizePermission('ADD_EVIDENCE'), policeValidators.updateEvidenceValidator, policeController.updateEvidence);
 
 // MODULE 6 - Evidence Photos
 // POST /police/evidence/:id/photos
