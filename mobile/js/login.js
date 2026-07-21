@@ -56,7 +56,7 @@ function showAlert(message) {
 }
 
 // ── Main login function ────────────────────────────────────────────────
-function login() {
+async function login() {
   const username = usernameInput.value.trim().toLowerCase();
   const password = passwordInput.value;
 
@@ -64,27 +64,72 @@ function login() {
   if (!username) { showAlert("Please enter your username."); usernameInput.focus(); return; }
   if (!password) { showAlert("Please enter your password."); passwordInput.focus(); return; }
 
-  // Match credentials
-  const match = ACCOUNTS.find(a => a.username === username && a.password === password);
+  const btn = document.getElementById("loginBtn");
+  const originalText = btn.textContent;
+  btn.textContent = "Authenticating…";
+  btn.disabled = true;
 
-  if (match) {
+  try {
+    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:5000'
+      : 'https://forensic-website.azurewebsites.net'; // Replace with your actual Azure Web App URL if different
+
+    const response = await fetch(`${API_URL}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ username, password })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Invalid username or password');
+    }
+
+    const data = await response.json();
+    
     // Store session info (session storage — cleared on tab close)
     sessionStorage.setItem("loggedIn", "true");
-    sessionStorage.setItem("username", match.username);
-    sessionStorage.setItem("role", match.role);
+    sessionStorage.setItem("token", data.token);
+    sessionStorage.setItem("username", data.profile.username);
+    
+    // Determine user role and redirect
+    const userRole = data.roles[0]; // e.g. 'ADMIN', 'FORENSIC_STAFF', 'POLICE', 'JMO', 'LAB_TECHNICIAN'
+    
+    let redirect = "pages/public.html";
+    let friendlyRole = "Guest";
+    
+    if (userRole === "ADMIN") {
+      redirect = "pages/admin.html";
+      friendlyRole = "Administrator";
+    } else if (userRole === "FORENSIC_STAFF") {
+      redirect = "pages/staff.html";
+      friendlyRole = "Forensic Staff";
+    } else if (userRole === "POLICE") {
+      redirect = "pages/police/police.html";
+      friendlyRole = "Police Officer";
+    } else if (userRole === "JMO") {
+      redirect = "pages/jmo/jmo.html";
+      friendlyRole = "Judicial Medical Officer";
+    } else if (userRole === "LAB_TECHNICIAN") {
+      redirect = "pages/laboratory.html";
+      friendlyRole = "Laboratory Technician";
+    }
+    
+    sessionStorage.setItem("role", friendlyRole);
+    sessionStorage.setItem("raw_role", userRole);
 
-    // Brief loading feedback
-    const btn = document.getElementById("loginBtn");
-    btn.textContent = "Authenticating…";
-    btn.disabled = true;
-
-    setTimeout(() => { window.location.href = match.redirect; }, 600);
-  } else {
-    showAlert("Invalid username or password. Please try again.");
+    setTimeout(() => { window.location.href = redirect; }, 600);
+  } catch (error) {
+    showAlert(error.message || "Connection error. Please try again.");
+    btn.textContent = originalText;
+    btn.disabled = false;
     passwordInput.value = "";
     passwordInput.focus();
   }
 }
+
 
 // ── Fill demo credentials ──────────────────────────────────────────────
 function fillDemo(username, password) {
