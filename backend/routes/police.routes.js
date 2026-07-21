@@ -91,6 +91,11 @@ router.post('/evidence/:id/transfer', policeValidators.transferEvidenceValidator
 router.get('/cases/:id/timeline', checkCaseAssignment, policeController.getCaseTimeline);
 
 
+
+// MODULE 12 - Reports Status
+router.get('/reports-status', policeController.getReportsStatus);
+
+
 // Error handling for Multer
 router.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {

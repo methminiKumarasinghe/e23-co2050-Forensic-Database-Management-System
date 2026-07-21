@@ -96,6 +96,11 @@ const search = async (userId, searchParams) => {
   return await policeRepo.search(officerId, searchParams);
 };
 
+const getReportsStatus = async (userId) => {
+  const officerId = await getOfficerId(userId);
+  return await policeRepo.getReportsStatus(officerId);
+};
+
 module.exports = {
   getDashboardStats,
   createCase, getCases, getCaseById, updateCase,
@@ -106,5 +111,6 @@ module.exports = {
   getChainOfCustody, transferEvidence,
   getMlefRequests, getMlefById, createMlefRequest,
   getCaseTimeline,
-  search
+  search,
+  getReportsStatus
 };

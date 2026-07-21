@@ -76,6 +76,13 @@ router.post('/laboratory-requests', jmoValidators.createLabRequestValidator, jmo
 // --- MODULE 10: Laboratory Results ---
 router.get('/laboratory-results', jmoController.getLabResults);
 router.get('/laboratory-results/:id', jmoController.getLabResultById);
+// --- MODULE 10.5: Autopsy ---
+router.get('/autopsies/pending', jmoController.getPendingAutopsies);
+router.post('/autopsies', jmoController.createAutopsyNotification);
+router.put('/autopsies/:id/external', jmoController.updateAutopsyExternal);
+router.put('/autopsies/:id/internal', jmoController.updateAutopsyInternal);
+router.post('/autopsies/:id/cause-of-death', jmoController.recordCauseOfDeath);
+router.post('/autopsies/:id/report', jmoController.generateAutopsyReport);
 
 // --- MODULE 11: Medico-Legal Reports ---
 router.get('/reports', jmoController.getReports);

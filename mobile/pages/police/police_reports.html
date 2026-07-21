@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reports Status — Police Dashboard</title>
+  <link rel="stylesheet" href="../../css/style.css" />
+  <style>
+    .dash-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; }
+    .dash-table th, .dash-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+    .dash-table th { background-color: #f8fafc; font-weight: 600; color: #475569; }
+    .btn-view { background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: 600;}
+    .btn-view:disabled { background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; cursor: not-allowed; }
+    .report-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 15px; background: #fff;}
+    .report-card h4 { margin: 0 0 10px 0; color: #0F4C81; }
+  </style>
+</head>
+<body>
+<div class="dash-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" role="navigation">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">🔬</div>
+      <div class="sidebar-brand">
+        <h3>DFMIS Portal</h3>
+        <p>Sri Lanka Gov. System</p>
+      </div>
+    </div>
+    <div class="sidebar-user-card">
+      <div class="user-avatar">🚔</div>
+      <div class="user-info">
+        <div class="name">Police Officer</div>
+        <div class="role">Law Enforcement</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main Menu</div>
+      <a class="nav-item" href="police.html" id="nav-dashboard">
+        <span class="nav-icon">🏠</span> Dashboard
+      </a>
+      
+      <div class="nav-section-label">Cases</div>
+      <a class="nav-item" href="police_case_create.html" id="nav-create-case">
+        <span class="nav-icon">➕</span> Create Case
+      </a>
+      <a class="nav-item" href="police_incident_add.html" id="nav-add-incident">
+        <span class="nav-icon">📝</span> Add Incident Details
+      </a>
+      <a class="nav-item" href="police_assign_officers.html" id="nav-assign-officers">
+        <span class="nav-icon">👮</span> Assign Officers
+      </a>
+      
+      <div class="nav-section-label">Investigation</div>
+      <a class="nav-item" href="police_evidence.html" id="nav-evidence">
+        <span class="nav-icon">🧾</span> Evidence (Custody)
+      </a>
+      <a class="nav-item" href="police_mlef_create.html" id="nav-mlef">
+        <span class="nav-icon">📄</span> Request MLEF (Health 886)
+      </a>
+      <a class="nav-item active" href="police_reports.html" id="nav-reports">
+        <span class="nav-icon">📁</span> Reports (Status View)
+      </a>
+
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="logout()" id="btn-logout">
+        <span>🚪</span> Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="dash-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div>
+          <div class="topbar-title">Forensic Reports Status</div>
+          <div class="breadcrumb"><span>DFMIS</span><span class="breadcrumb-sep">›</span><span>Police</span><span class="breadcrumb-sep">›</span><span>Reports</span></div>
+        </div>
+      </div>
+      <div class="topbar-right"><div class="topbar-time" id="dashClock"></div></div>
+    </div>
+
+    <div class="dash-body">
+      
+      <div class="card">
+        <div class="card-header">
+          <h5>📁 JMO Report Status Tracker</h5>
+          <span class="badge badge-primary">Showing Active Requests</span>
+        </div>
+        <div class="card-body">
+          <p style="color: #64748b; margin-bottom: 20px; font-size: 0.95rem;">Track the status of Medico-Legal Examination Forms (MLEF) and Autopsy reports requested from the Judicial Medical Officer.</p>
+          
+          <div class="table-wrap">
+            <table class="dash-table">
+              <thead>
+                <tr>
+                  <th>Case No.</th>
+                  <th>Request Type</th>
+                  <th>Subject/Victim</th>
+                  <th>Request Date</th>
+                  <th>JMO Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>C-2026-0045</strong></td>
+                  <td>Autopsy (H.1328)</td>
+                  <td>Unidentified Male</td>
+                  <td>Jul 18, 2026</td>
+                  <td><span class="badge badge-warning">Pending Investigation</span></td>
+                  <td><button class="btn-view" disabled>Not Ready</button></td>
+                </tr>
+                <tr>
+                  <td><strong>C-2026-0046</strong></td>
+                  <td>MLEF (H.886)</td>
+                  <td>Kasun Perera</td>
+                  <td>Jul 19, 2026</td>
+                  <td><span class="badge badge-success">Report Available</span></td>
+                  <td><button class="btn-view" onclick="alert('Viewing Medico-Legal Report (Draft Mode)')">👁️ View Report</button></td>
+                </tr>
+                <tr>
+                  <td><strong>C-2026-0047</strong></td>
+                  <td>MLEF (H.886)</td>
+                  <td>Nimal Silva</td>
+                  <td>Jul 20, 2026</td>
+                  <td><span class="badge badge-primary">Under Examination</span></td>
+                  <td><button class="btn-view" disabled>Not Ready</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  function tick() { const el = document.getElementById("dashClock"); if (el) el.textContent = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" }); }
+  tick(); setInterval(tick, 1000);
+  function logout() { sessionStorage.clear(); window.location.href = "../../index.html"; }
+</script>
+</body>
+</html>

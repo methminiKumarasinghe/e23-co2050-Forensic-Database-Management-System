@@ -6,14 +6,52 @@
   <title>Laboratory Dashboard — DFMIS</title>
   <meta name="description" content="Laboratory Technician dashboard for the Digital Forensic Medical Information System." />
   <link rel="stylesheet" href="../css/style.css" />
+  <!-- Include Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Include Chart.js for charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Additional Styles for the enhanced Dashboard */
+    .view-section { display: none; animation: fadeIn 0.3s ease; }
+    .view-section.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Modals */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; }
+    .modal-overlay.active { display: flex; animation: fadeIn 0.2s ease; }
+    .modal-content { background: var(--surface); width: 100%; max-width: 600px; border-radius: 16px; box-shadow: var(--shadow-lg); overflow: hidden; }
+    .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-body { padding: 24px; max-height: 70vh; overflow-y: auto; }
+    .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 12px; background: #fafbfc; }
+    
+    .btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-primary); }
+    .btn-outline:hover { background: #f1f5f9; }
+    .btn-success { background: var(--success); color: white; }
+    .btn-danger { background: var(--danger); color: white; }
+
+    /* Cards */
+    .req-card { border: 1px solid var(--border); border-radius: 12px; padding: 20px; background: var(--surface); display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; }
+    .req-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .progress-bar-bg { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-top: 8px; }
+    .progress-bar-fill { height: 100%; background: var(--primary); transition: width 0.5s ease; }
+
+    .chart-container { position: relative; height: 250px; width: 100%; }
+    
+    .search-input { width: 100%; padding: 10px 14px 10px 36px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; }
+    .search-wrap { position: relative; width: 300px; }
+    .search-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); width: 16px; }
+  </style>
 </head>
 <body>
 <div class="dash-layout">
 
   <!-- ═══ Sidebar ════════════════════════════════════════════════════ -->
-  <aside class="sidebar" role="navigation" aria-label="Main Navigation">
+  <aside class="sidebar" role="navigation">
     <div class="sidebar-header">
-      <div class="sidebar-logo">🔬</div>
+      <div class="sidebar-logo"><i data-lucide="microscope"></i></div>
       <div class="sidebar-brand">
         <h3>DFMIS Portal</h3>
         <p>Sri Lanka Gov. System</p>
@@ -21,7 +59,7 @@
     </div>
 
     <div class="sidebar-user-card">
-      <div class="user-avatar">🧪</div>
+      <div class="user-avatar" style="font-size:18px"><i data-lucide="flask-conical"></i></div>
       <div class="user-info">
         <div class="name">Lab Technician</div>
         <div class="role">Forensic Laboratory</div>
@@ -30,24 +68,45 @@
 
     <nav class="sidebar-nav">
       <div class="nav-section-label">Main Menu</div>
-      <a class="nav-item active" href="laboratory.html" id="nav-dashboard">
-        <span class="nav-icon">🏠</span> Dashboard
+      <a class="nav-item active" href="#" onclick="switchView('dashboard', this)">
+        <i data-lucide="layout-dashboard" class="nav-icon"></i> Dashboard
       </a>
-      <a class="nav-item" href="#" id="nav-requests">
-        <span class="nav-icon">🧪</span> Test Requests
+      <a class="nav-item" href="#" onclick="switchView('pending', this)">
+        <i data-lucide="clipboard-list" class="nav-icon"></i> Pending Requests
         <span class="nav-badge">6</span>
       </a>
-      <a class="nav-item" href="#" id="nav-tests">
-        <span class="nav-icon">🧬</span> Tests
+      <a class="nav-item" href="#" onclick="switchView('active', this)">
+        <i data-lucide="activity" class="nav-icon"></i> Active Tests
       </a>
-      <a class="nav-item" href="#" id="nav-results">
-        <span class="nav-icon">📊</span> Results
+      <a class="nav-item" href="#" onclick="switchView('completed', this)">
+        <i data-lucide="check-circle" class="nav-icon"></i> Completed Tests
+      </a>
+      <a class="nav-item" href="#" onclick="switchView('results', this)">
+        <i data-lucide="file-text" class="nav-icon"></i> Laboratory Results
+      </a>
+      <a class="nav-item" href="#" onclick="switchView('specimens', this)">
+        <i data-lucide="archive" class="nav-icon"></i> Specimen Management
+      </a>
+      <a class="nav-item" href="#" onclick="switchView('search', this)">
+        <i data-lucide="search" class="nav-icon"></i> Search
+      </a>
+
+      <div class="nav-section-label" style="margin-top:20px">Account</div>
+      <a class="nav-item" href="#" onclick="switchView('notifications', this)">
+        <i data-lucide="bell" class="nav-icon"></i> Notifications
+        <span class="nav-badge bg-danger" style="background:var(--danger)">2</span>
+      </a>
+      <a class="nav-item" href="#" onclick="switchView('profile', this)">
+        <i data-lucide="user" class="nav-icon"></i> Profile
+      </a>
+      <a class="nav-item" href="#">
+        <i data-lucide="settings" class="nav-icon"></i> Settings
       </a>
     </nav>
 
     <div class="sidebar-footer">
-      <button class="btn-logout" onclick="logout()" id="btn-logout">
-        <span>🚪</span> Logout
+      <button class="btn-logout" onclick="logout()">
+        <i data-lucide="log-out"></i> Logout
       </button>
     </div>
   </aside>
@@ -58,161 +117,621 @@
     <div class="topbar">
       <div class="topbar-left">
         <div>
-          <div class="topbar-title">Laboratory Dashboard</div>
+          <div class="topbar-title" id="pageTitle">Dashboard</div>
           <div class="breadcrumb">
-            <span>DFMIS</span><span class="breadcrumb-sep">›</span><span>Dashboard</span>
+            <span>DFMIS</span><span class="breadcrumb-sep">›</span><span id="breadcrumbTitle">Dashboard</span>
           </div>
         </div>
       </div>
       <div class="topbar-right">
-        <div class="topbar-time" id="dashClock"></div>
-        <div class="topbar-badge" title="Notifications">🔔<span class="badge-dot"></span></div>
+        <div class="search-wrap" style="width: 250px;">
+          <i data-lucide="search"></i>
+          <input type="text" class="search-input" placeholder="Global search..." style="padding: 6px 14px 6px 36px; height:36px; font-size:13px;" />
+        </div>
+        <div class="topbar-badge" title="Toggle Theme"><i data-lucide="moon" style="width:18px;height:18px"></i></div>
+        <div class="topbar-badge" title="Notifications" onclick="switchView('notifications', document.querySelector('.nav-item:nth-child(9)'))">
+          <i data-lucide="bell" style="width:18px;height:18px"></i><span class="badge-dot"></span>
+        </div>
+        <div class="user-avatar" style="width:36px;height:36px;cursor:pointer"><i data-lucide="user" style="width:18px;height:18px;color:#fff"></i></div>
       </div>
     </div>
 
     <div class="dash-body">
 
-      <div class="welcome-banner">
-        <div class="welcome-text">
-          <h2>Welcome, Laboratory Technician 👋</h2>
-          <p>Forensic Test Management &amp; Results Portal</p>
+      <!-- ================= DASHBOARD VIEW ================= -->
+      <div id="dashboard" class="view-section active">
+        <div class="welcome-banner">
+          <div class="welcome-text">
+            <h2>Welcome, Laboratory Technician 👋</h2>
+            <p>Forensic Test Management &amp; Results Portal</p>
+          </div>
+          <div class="welcome-icon"><i data-lucide="flask-conical" style="width:64px;height:64px"></i></div>
         </div>
-        <div class="welcome-icon">🧪</div>
+
+        <div class="stats-row" style="grid-template-columns: repeat(5, 1fr);">
+          <div class="stat-card">
+            <div class="stat-icon amber"><i data-lucide="clipboard-list" style="color:var(--warning)"></i></div>
+            <div class="stat-info">
+              <div class="value">6</div>
+              <div class="label">Pending Requests</div>
+              <div class="change down">Action needed</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue"><i data-lucide="activity" style="color:var(--primary)"></i></div>
+            <div class="stat-info">
+              <div class="value">14</div>
+              <div class="label">Tests in Progress</div>
+              <div class="change up">5 completing today</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green"><i data-lucide="check-circle" style="color:var(--success)"></i></div>
+            <div class="stat-info">
+              <div class="value">9</div>
+              <div class="label">Completed Today</div>
+              <div class="change up">Ready for dispatch</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon red"><i data-lucide="alert-circle" style="color:var(--danger)"></i></div>
+            <div class="stat-info">
+              <div class="value">3</div>
+              <div class="label">High Priority</div>
+              <div class="change down">Urgent requests</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple"><i data-lucide="archive" style="color:#805ad5"></i></div>
+            <div class="stat-info">
+              <div class="value">22</div>
+              <div class="label">Specimens Received</div>
+              <div class="change up">+4 vs yesterday</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="two-col" style="margin-bottom: 24px;">
+          <div class="card">
+            <div class="card-header"><h5>Laboratory Requests by Month</h5></div>
+            <div class="card-body">
+              <div class="chart-container"><canvas id="barChart"></canvas></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h5>Test Completion Rate</h5></div>
+            <div class="card-body">
+              <div class="chart-container"><canvas id="doughnutChart"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h5>Recent Laboratory Requests</h5>
+            <div class="flex gap-2">
+              <div class="search-wrap" style="width:200px">
+                <i data-lucide="search"></i>
+                <input type="text" class="search-input" placeholder="Search..." style="padding: 6px 14px 6px 36px; height:32px" />
+              </div>
+              <button class="btn btn-outline" style="padding: 6px 12px;"><i data-lucide="filter" style="width:14px"></i> Filter</button>
+            </div>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-wrap">
+              <table class="dash-table">
+                <thead>
+                  <tr>
+                    <th>Request ID</th>
+                    <th>Case Number</th>
+                    <th>Patient Name</th>
+                    <th>Specimen</th>
+                    <th>Test Type</th>
+                    <th>Priority</th>
+                    <th>Requested Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>LR-001</strong></td>
+                    <td>CAS-2026-001</td>
+                    <td>John Doe</td>
+                    <td>Blood</td>
+                    <td>Toxicology Screen</td>
+                    <td><span class="badge badge-danger">Urgent</span></td>
+                    <td>2026-07-20 08:00</td>
+                    <td><span class="badge badge-warning">Pending</span></td>
+                    <td>
+                      <button class="btn btn-outline" style="padding:4px 8px; font-size:11px" onclick="openModal('reqModal')">View</button>
+                      <button class="btn btn-primary" style="padding:4px 8px; font-size:11px">Accept</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>LR-002</strong></td>
+                    <td>CAS-2026-002</td>
+                    <td>Jane Smith</td>
+                    <td>Buccal Swab</td>
+                    <td>DNA Analysis</td>
+                    <td><span class="badge badge-warning">High</span></td>
+                    <td>2026-07-19 10:00</td>
+                    <td><span class="badge badge-primary">Processing</span></td>
+                    <td>
+                      <button class="btn btn-outline" style="padding:4px 8px; font-size:11px" onclick="openModal('reqModal')">View</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>LR-003</strong></td>
+                    <td>CAS-2026-003</td>
+                    <td>Kamal Perera</td>
+                    <td>Tissue</td>
+                    <td>Histopathology</td>
+                    <td><span class="badge badge-secondary">Normal</span></td>
+                    <td>2026-07-18 14:00</td>
+                    <td><span class="badge badge-success">Completed</span></td>
+                    <td>
+                      <button class="btn btn-outline" style="padding:4px 8px; font-size:11px" onclick="openModal('resultModal')">View Result</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="stats-row">
-        <div class="stat-card">
-          <div class="stat-icon blue">🧪</div>
-          <div class="stat-info">
-            <div class="value">6</div>
-            <div class="label">Pending Requests</div>
-            <div class="change down">↓ Action needed</div>
+      <!-- ================= PENDING REQUESTS VIEW ================= -->
+      <div id="pending" class="view-section">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px;">
+          <h2 style="font-size:20px; font-weight:700">Pending Laboratory Requests</h2>
+          <span class="badge badge-warning" style="font-size:14px; padding:6px 12px">6 Pending</span>
+        </div>
+        
+        <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
+          <!-- Request Card -->
+          <div class="req-card">
+            <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
+              <div>
+                <h4 style="color:var(--primary); font-size:16px; font-weight:700">LR-001</h4>
+                <p style="font-size:12px; color:var(--text-muted)">CAS-2026-001</p>
+              </div>
+              <span class="badge badge-danger">Urgent</span>
+            </div>
+            <div style="font-size:13px; margin-bottom:20px; line-height: 1.8;">
+              <div style="display:flex; justify-content:space-between">
+                <span style="color:var(--text-muted)">Patient:</span> <span style="font-weight:600">John Doe</span>
+              </div>
+              <div style="display:flex; justify-content:space-between">
+                <span style="color:var(--text-muted)">Test:</span> <span style="font-weight:600">Toxicology Screen</span>
+              </div>
+              <div style="display:flex; justify-content:space-between">
+                <span style="color:var(--text-muted)">Specimen:</span> <span style="font-weight:600">Blood</span>
+              </div>
+              <div style="display:flex; justify-content:space-between">
+                <span style="color:var(--text-muted)">JMO:</span> <span style="font-weight:600">Dr. Wickrama</span>
+              </div>
+              <div style="display:flex; justify-content:space-between">
+                <span style="color:var(--text-muted)">Requested:</span> <span>2026-07-20 08:00</span>
+              </div>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:auto">
+              <button class="btn btn-outline" style="flex:1; justify-content:center" onclick="openModal('reqModal')">View Details</button>
+              <button class="btn btn-danger" style="flex:1; justify-content:center">Reject</button>
+              <button class="btn btn-primary" style="flex:1; justify-content:center">Accept</button>
+            </div>
           </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon green">🧬</div>
-          <div class="stat-info">
-            <div class="value">14</div>
-            <div class="label">Tests In Progress</div>
-            <div class="change up">↑ 5 completing today</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon amber">📊</div>
-          <div class="stat-info">
-            <div class="value">9</div>
-            <div class="label">Results Ready</div>
-            <div class="change up">↑ For dispatch</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon purple">📋</div>
-          <div class="stat-info">
-            <div class="value">48</div>
-            <div class="label">Total This Month</div>
-            <div class="change up">↑ +12 vs last month</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Full-width test requests table -->
-      <div class="card" style="margin-bottom: 20px;">
-        <div class="card-header">
-          <h5>🧪 Incoming Test Requests</h5>
-          <span class="badge badge-danger">6 Pending</span>
-        </div>
-        <div class="card-body" style="padding: 0;">
-          <div class="table-wrap">
-            <table class="dash-table">
-              <thead>
-                <tr><th>Req. No.</th><th>Test Type</th><th>Sample</th><th>Requested By</th><th>Priority</th><th>Status</th></tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><strong>#LR-001</strong></td>
-                  <td>Toxicology Screen</td>
-                  <td>Blood</td>
-                  <td>Dr. Wickrama (JMO)</td>
-                  <td><span class="badge badge-danger">Urgent</span></td>
-                  <td><span class="badge badge-success">Completed</span></td>
-                </tr>
-                <tr>
-                  <td><strong>#LR-002</strong></td>
-                  <td>DNA Analysis</td>
-                  <td>Buccal Swab</td>
-                  <td>Dr. Jayasinghe (JMO)</td>
-                  <td><span class="badge badge-warning">High</span></td>
-                  <td><span class="badge badge-primary">In Progress</span></td>
-                </tr>
-                <tr>
-                  <td><strong>#LR-003</strong></td>
-                  <td>Blood Alcohol Level</td>
-                  <td>Blood</td>
-                  <td>Dr. Wickrama (JMO)</td>
-                  <td><span class="badge badge-primary">Normal</span></td>
-                  <td><span class="badge badge-success">Completed</span></td>
-                </tr>
-                <tr>
-                  <td><strong>#LR-004</strong></td>
-                  <td>Histopathology</td>
-                  <td>Tissue</td>
-                  <td>Dr. Kumara (JMO)</td>
-                  <td><span class="badge badge-warning">High</span></td>
-                  <td><span class="badge badge-primary">In Progress</span></td>
-                </tr>
-                <tr>
-                  <td><strong>#LR-005</strong></td>
-                  <td>Serology</td>
-                  <td>Serum</td>
-                  <td>Dr. Jayasinghe (JMO)</td>
-                  <td><span class="badge badge-primary">Normal</span></td>
-                  <td><span class="badge badge-warning">Pending</span></td>
-                </tr>
-                <tr>
-                  <td><strong>#LR-006</strong></td>
-                  <td>Trace Evidence</td>
-                  <td>Hair/Fibre</td>
-                  <td>Dr. Wickrama (JMO)</td>
-                  <td><span class="badge badge-danger">Urgent</span></td>
-                  <td><span class="badge badge-warning">Pending</span></td>
-                </tr>
-              </tbody>
-            </table>
+          
+          <div class="req-card">
+            <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
+              <div>
+                <h4 style="color:var(--primary); font-size:16px; font-weight:700">LR-004</h4>
+                <p style="font-size:12px; color:var(--text-muted)">CAS-2026-004</p>
+              </div>
+              <span class="badge badge-secondary">Normal</span>
+            </div>
+            <div style="font-size:13px; margin-bottom:20px; line-height: 1.8;">
+              <div style="display:flex; justify-content:space-between">
+                <span style="color:var(--text-muted)">Patient:</span> <span style="font-weight:600">Saman Silva</span>
+              </div>
+              <div style="display:flex; justify-content:space-between">
+                <span style="color:var(--text-muted)">Test:</span> <span style="font-weight:600">Trace Evidence</span>
+              </div>
+              <div style="display:flex; justify-content:space-between">
+                <span style="color:var(--text-muted)">Specimen:</span> <span style="font-weight:600">Hair/Fibre</span>
+              </div>
+              <div style="display:flex; justify-content:space-between">
+                <span style="color:var(--text-muted)">JMO:</span> <span style="font-weight:600">Dr. Wickrama</span>
+              </div>
+              <div style="display:flex; justify-content:space-between">
+                <span style="color:var(--text-muted)">Requested:</span> <span>2026-07-20 09:00</span>
+              </div>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:auto">
+              <button class="btn btn-outline" style="flex:1; justify-content:center" onclick="openModal('reqModal')">View Details</button>
+              <button class="btn btn-danger" style="flex:1; justify-content:center">Reject</button>
+              <button class="btn btn-primary" style="flex:1; justify-content:center">Accept</button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header"><h5>🚧 Advanced Features</h5><span class="badge badge-secondary">UI Phase</span></div>
-        <div class="card-body">
-          <div class="under-dev">
-            <div class="icon">🔧</div>
-            <h3>Welcome, Laboratory Technician</h3>
-            <p>Digital result entry, chain-of-custody for samples, automated notifications to JMOs, and result PDF generation will be available after backend integration.</p>
+      <!-- ================= ACTIVE TESTS VIEW ================= -->
+      <div id="active" class="view-section">
+        <h2 style="font-size:20px; font-weight:700; margin-bottom: 24px;">Active Laboratory Tests</h2>
+        <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 20px;">
+          <!-- Active Test Card -->
+          <div class="req-card">
+            <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
+              <div>
+                <h4 style="color:var(--primary); font-size:16px; font-weight:700">TST-001</h4>
+                <p style="font-size:12px; color:var(--text-muted)">Req: LR-002 | CAS-2026-002</p>
+              </div>
+              <span class="badge badge-primary">Processing</span>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; font-size:13px; margin-bottom:20px;">
+              <div>
+                <div style="color:var(--text-muted); font-size:11px">Patient Name</div>
+                <div style="font-weight:600">Jane Smith</div>
+              </div>
+              <div>
+                <div style="color:var(--text-muted); font-size:11px">Test Type</div>
+                <div style="font-weight:600">DNA Analysis</div>
+              </div>
+              <div>
+                <div style="color:var(--text-muted); font-size:11px">Technician</div>
+                <div style="font-weight:600">Tech. Silva</div>
+              </div>
+              <div>
+                <div style="color:var(--text-muted); font-size:11px">Est. Completion</div>
+                <div style="font-weight:600">2026-07-21 10:00</div>
+              </div>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:600; margin-bottom:4px;">
+                <span>Progress</span> <span>45%</span>
+              </div>
+              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 45%;"></div></div>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:auto">
+              <button class="btn btn-outline" style="flex:1; justify-content:center"><i data-lucide="refresh-cw" style="width:16px"></i> Update</button>
+              <button class="btn btn-primary" style="flex:1; justify-content:center"><i data-lucide="upload" style="width:16px"></i> Findings</button>
+              <button class="btn btn-success" style="flex:1; justify-content:center"><i data-lucide="check" style="width:16px"></i> Complete</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= COMPLETED TESTS VIEW ================= -->
+      <div id="completed" class="view-section">
+        <h2 style="font-size:20px; font-weight:700; margin-bottom: 24px;">Completed Tests</h2>
+        <div class="under-dev">
+          <div class="icon"><i data-lucide="check-circle" style="width:64px;height:64px"></i></div>
+          <h3>Completed Tests History</h3>
+          <p>List of tests that have been successfully finished.</p>
+        </div>
+      </div>
+
+      <!-- ================= RESULTS VIEW ================= -->
+      <div id="results" class="view-section">
+        <h2 style="font-size:20px; font-weight:700; margin-bottom: 24px;">Laboratory Results</h2>
+        <div class="card">
+          <div class="card-header">
+            <h5>Completed Reports</h5>
+            <div class="search-wrap" style="width:250px">
+              <i data-lucide="search"></i>
+              <input type="text" class="search-input" placeholder="Search results..." style="padding: 6px 14px 6px 36px; height:32px" />
+            </div>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-wrap">
+              <table class="dash-table">
+                <thead>
+                  <tr>
+                    <th>Result ID</th>
+                    <th>Test ID</th>
+                    <th>Patient</th>
+                    <th>Test Type</th>
+                    <th>Completion Date</th>
+                    <th>Verified By</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>RES-001</strong></td>
+                    <td>TST-003</td>
+                    <td>Kamal Perera</td>
+                    <td>Histopathology</td>
+                    <td>2026-07-18 16:00</td>
+                    <td>Dr. Senanayake</td>
+                    <td><span class="badge badge-success">Verified</span></td>
+                    <td>
+                      <button class="btn btn-outline" style="padding:4px 8px; font-size:11px" onclick="openModal('resultModal')">View</button>
+                      <button class="btn btn-outline" style="padding:4px 8px; font-size:11px"><i data-lucide="download" style="width:14px"></i></button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= SPECIMEN MANAGEMENT VIEW ================= -->
+      <div id="specimens" class="view-section">
+        <h2 style="font-size:20px; font-weight:700; margin-bottom: 24px;">Specimen Management</h2>
+        <div class="card">
+          <div class="card-body" style="padding: 0;">
+            <div class="table-wrap">
+              <table class="dash-table">
+                <thead>
+                  <tr>
+                    <th>Specimen ID</th>
+                    <th>Barcode</th>
+                    <th>Specimen Type</th>
+                    <th>Patient</th>
+                    <th>Collection Date</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>SPC-001</strong></td>
+                    <td>123456789012</td>
+                    <td>Blood</td>
+                    <td>John Doe</td>
+                    <td>2026-07-20 07:30</td>
+                    <td>Cold Room A, Shelf 2</td>
+                    <td><span class="badge badge-primary">Stored</span></td>
+                    <td>
+                      <button class="btn btn-outline" style="padding:4px 8px; font-size:11px"><i data-lucide="printer" style="width:14px"></i> Print</button>
+                      <button class="btn btn-outline" style="padding:4px 8px; font-size:11px">Transfer</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= SEARCH VIEW ================= -->
+      <div id="search" class="view-section">
+        <h2 style="font-size:20px; font-weight:700; margin-bottom: 24px;">Search Cases &amp; Results</h2>
+        <div class="card">
+          <div class="card-body">
+            <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:16px; margin-bottom: 20px;">
+              <div>
+                <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">Case Number</label>
+                <input type="text" class="form-control" placeholder="e.g. CAS-2026..." />
+              </div>
+              <div>
+                <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">Patient Name</label>
+                <input type="text" class="form-control" placeholder="Search by name" />
+              </div>
+              <div>
+                <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">Status</label>
+                <select class="form-control">
+                  <option>All Statuses</option>
+                  <option>Pending</option>
+                  <option>Completed</option>
+                </select>
+              </div>
+              <div style="display:flex; align-items:flex-end;">
+                <button class="btn btn-primary" style="width:100%; justify-content:center; height:42px;"><i data-lucide="search"></i> Search</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= NOTIFICATIONS VIEW ================= -->
+      <div id="notifications" class="view-section">
+        <h2 style="font-size:20px; font-weight:700; margin-bottom: 24px;">Notifications</h2>
+        <div style="max-width: 600px; display:flex; flex-direction:column; gap:12px;">
+          <div class="req-card" style="padding: 16px; display:flex; flex-direction:row; align-items:flex-start; gap:16px; background:#fff5f5; border-color:#fc8181">
+            <div style="width:40px; height:40px; border-radius:50%; background:var(--danger); color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <i data-lucide="alert-triangle" style="width:20px"></i>
+            </div>
+            <div style="flex:1">
+              <h4 style="font-size:14px; font-weight:700; margin-bottom:4px; color:var(--danger)">Urgent Test Request</h4>
+              <p style="font-size:13px; color:var(--text-secondary); margin-bottom:8px;">A new urgent toxicology screen has been requested by Dr. Wickrama.</p>
+              <div style="font-size:11px; color:var(--text-muted)">10 mins ago</div>
+            </div>
+            <span style="width:10px; height:10px; background:var(--danger); border-radius:50%"></span>
+          </div>
+          
+          <div class="req-card" style="padding: 16px; display:flex; flex-direction:row; align-items:flex-start; gap:16px;">
+            <div style="width:40px; height:40px; border-radius:50%; background:var(--success); color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <i data-lucide="check-circle" style="width:20px"></i>
+            </div>
+            <div style="flex:1">
+              <h4 style="font-size:14px; font-weight:700; margin-bottom:4px;">Result Approved</h4>
+              <p style="font-size:13px; color:var(--text-secondary); margin-bottom:8px;">Test results for CAS-2026-003 have been approved and finalized.</p>
+              <div style="font-size:11px; color:var(--text-muted)">2 hours ago</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= PROFILE VIEW ================= -->
+      <div id="profile" class="view-section">
+        <h2 style="font-size:20px; font-weight:700; margin-bottom: 24px;">Technician Profile</h2>
+        <div class="card" style="max-width: 600px;">
+          <div class="card-body" style="display:flex; flex-direction:column; align-items:center; text-align:center; padding: 40px 20px;">
+            <div style="width:100px; height:100px; border-radius:50%; background:var(--primary); color:#fff; display:flex; align-items:center; justify-content:center; font-size:40px; margin-bottom:20px;">
+              <i data-lucide="user" style="width:48px;height:48px"></i>
+            </div>
+            <h3 style="font-size:22px; font-weight:700; margin-bottom:4px">Nimal Perera</h3>
+            <p style="color:var(--text-muted); margin-bottom:20px">Senior Laboratory Technician (ID: EMP-8834)</p>
+            
+            <div style="width:100%; display:grid; grid-template-columns:1fr 1fr; gap:20px; text-align:left; margin-bottom:30px; border-top:1px solid var(--border); padding-top:20px">
+              <div>
+                <div style="font-size:12px; color:var(--text-muted); margin-bottom:4px">Hospital / Location</div>
+                <div style="font-weight:600; font-size:14px">National Hospital, Colombo</div>
+              </div>
+              <div>
+                <div style="font-size:12px; color:var(--text-muted); margin-bottom:4px">Department</div>
+                <div style="font-weight:600; font-size:14px">Forensic Toxicology Dept.</div>
+              </div>
+              <div>
+                <div style="font-size:12px; color:var(--text-muted); margin-bottom:4px">Email Address</div>
+                <div style="font-weight:600; font-size:14px">nimal.p@gov.health.lk</div>
+              </div>
+              <div>
+                <div style="font-size:12px; color:var(--text-muted); margin-bottom:4px">Phone Number</div>
+                <div style="font-weight:600; font-size:14px">+94 71 234 5678</div>
+              </div>
+            </div>
+            
+            <div style="display:flex; gap:12px">
+              <button class="btn btn-primary">Edit Profile</button>
+              <button class="btn btn-outline">Change Password</button>
+            </div>
           </div>
         </div>
       </div>
 
     </div>
 
-    <footer class="dash-footer">
+    <footer class="dash-footer" style="padding: 16px 28px; border-top: 1px solid var(--border); display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted); background:var(--bg)">
       <span>Department of Forensic Medicine &nbsp;|&nbsp; University of Peradeniya</span>
       <span>DFMIS v1.0 &nbsp;|&nbsp; &copy; 2026 Ministry of Health, Sri Lanka</span>
     </footer>
   </div>
 </div>
 
+<!-- ================= MODALS ================= -->
+<!-- Request Details Modal -->
+<div id="reqModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 style="font-size:16px; font-weight:700">Request Details: LR-001</h3>
+      <button onclick="closeModal('reqModal')" style="background:none; border:none; cursor:pointer; color:var(--text-muted)"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body" style="font-size:13px; line-height:1.6">
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:20px">
+        <div><strong style="color:var(--text-muted); display:block; font-size:11px">Patient Information</strong> John Doe (Male, 34 yrs)</div>
+        <div><strong style="color:var(--text-muted); display:block; font-size:11px">Case Information</strong> CAS-2026-001</div>
+        <div><strong style="color:var(--text-muted); display:block; font-size:11px">Specimen Details</strong> Blood (Collected 2026-07-20 07:30)</div>
+        <div><strong style="color:var(--text-muted); display:block; font-size:11px">Requested Tests</strong> Toxicology Screen</div>
+        <div><strong style="color:var(--text-muted); display:block; font-size:11px">Hospital</strong> National Hospital</div>
+        <div><strong style="color:var(--text-muted); display:block; font-size:11px">JMO</strong> Dr. Wickrama</div>
+      </div>
+      <div style="border-top:1px solid var(--border); padding-top:16px">
+        <strong style="color:var(--text-muted); display:block; font-size:11px; margin-bottom:8px">Attached Documents</strong>
+        <a href="#" style="display:flex; align-items:center; gap:8px; color:var(--primary); font-weight:600"><i data-lucide="file-text" style="width:16px"></i> Initial_Report.pdf</a>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('reqModal')">Close</button>
+      <button class="btn btn-danger" onclick="closeModal('reqModal')">Reject</button>
+      <button class="btn btn-primary" onclick="closeModal('reqModal')">Accept</button>
+    </div>
+  </div>
+</div>
+
+<!-- Result Details Modal -->
+<div id="resultModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 style="font-size:16px; font-weight:700">Laboratory Result: RES-001</h3>
+      <button onclick="closeModal('resultModal')" style="background:none; border:none; cursor:pointer; color:var(--text-muted)"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body" style="font-size:13px; line-height:1.6">
+      <div style="display:flex; justify-content:space-between; margin-bottom:20px; align-items:center">
+        <div><span style="font-size:20px; font-weight:700; color:var(--primary)">Histopathology Report</span></div>
+        <span class="badge badge-success">Verified</span>
+      </div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:20px">
+        <div><strong style="color:var(--text-muted); display:block; font-size:11px">Test Information</strong> TST-003</div>
+        <div><strong style="color:var(--text-muted); display:block; font-size:11px">Patient</strong> Kamal Perera</div>
+        <div><strong style="color:var(--text-muted); display:block; font-size:11px">Completion Date</strong> 2026-07-18 16:00</div>
+        <div><strong style="color:var(--text-muted); display:block; font-size:11px">Verified By</strong> Dr. Senanayake</div>
+      </div>
+      <div>
+        <strong style="color:var(--text-muted); display:block; font-size:11px; margin-bottom:8px">Findings</strong>
+        <p style="background:#f7f8fa; padding:12px; border-radius:8px; border:1px solid var(--border)">No abnormal cellular structures detected in the tissue sample. Tissue architecture appears normal.</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('resultModal')">Close</button>
+      <button class="btn btn-outline"><i data-lucide="printer" style="width:16px"></i> Print</button>
+      <button class="btn btn-primary"><i data-lucide="download" style="width:16px"></i> Download PDF</button>
+    </div>
+  </div>
+</div>
+
 <script>
-  function tick() {
-    const el = document.getElementById("dashClock");
-    if (el) el.textContent = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  // Initialize Lucide Icons
+  lucide.createIcons();
+
+  // Navigation Logic
+  function switchView(viewId, el) {
+    // Hide all views
+    document.querySelectorAll('.view-section').forEach(section => {
+      section.classList.remove('active');
+    });
+    // Show selected view
+    document.getElementById(viewId).classList.add('active');
+    
+    // Update active nav item
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.classList.remove('active');
+    });
+    if(el) el.classList.add('active');
+
+    // Update Page Title
+    const titleText = el ? el.innerText.trim() : 'Dashboard';
+    document.getElementById('pageTitle').innerText = titleText;
+    document.getElementById('breadcrumbTitle').innerText = titleText;
   }
-  tick(); setInterval(tick, 1000);
+
+  // Modal Logic
+  function openModal(id) {
+    document.getElementById(id).classList.add('active');
+  }
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+  }
+
   function logout() { sessionStorage.clear(); window.location.href = "../index.html"; }
-  document.querySelectorAll('.nav-item').forEach(item => {
-    item.addEventListener('click', function() {
-      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-      this.classList.add('active');
+
+  // Charts Initialization (Dummy Data)
+  document.addEventListener("DOMContentLoaded", function() {
+    const barCtx = document.getElementById('barChart').getContext('2d');
+    new Chart(barCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Requests',
+          data: [40, 30, 45, 50, 35, 60],
+          backgroundColor: '#0F4C81',
+          borderRadius: 4
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+    });
+
+    const dogCtx = document.getElementById('doughnutChart').getContext('2d');
+    new Chart(dogCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Completed', 'Processing', 'Pending'],
+        datasets: [{
+          data: [65, 20, 15],
+          backgroundColor: ['#38a169', '#1a6bb5', '#d69e2e'],
+          borderWidth: 0
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, cutout: '75%' }
     });
   });
 </script>

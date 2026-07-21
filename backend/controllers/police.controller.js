@@ -244,6 +244,16 @@ const search = async (req, res, next) => {
   }
 };
 
+
+const getReportsStatus = async (req, res, next) => {
+  try {
+    const reports = await policeService.getReportsStatus(req.user.user_id);
+    res.status(200).json(reports);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getDashboardStats,
   createCase, getCases, getCaseById, updateCase,
@@ -254,5 +264,6 @@ module.exports = {
   getChainOfCustody, transferEvidence,
   getMlefRequests, getMlefById, createMlefRequest,
   getCaseTimeline,
-  search
+  search,
+  getReportsStatus
 };

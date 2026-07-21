@@ -239,3 +239,32 @@ CREATE TABLE case_activity (
         REFERENCES users(user_id)
         ON DELETE SET NULL
 );
+
+CREATE TABLE court_hearing (
+    hearing_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    case_id UUID NOT NULL,
+    court_name VARCHAR(200) NOT NULL,
+    hearing_date TIMESTAMP NOT NULL,
+    status VARCHAR(50) DEFAULT 'SCHEDULED',
+    remarks TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_hearing_case
+        FOREIGN KEY(case_id)
+        REFERENCES police_case(case_id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE incident_person (
+    incident_person_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    incident_id UUID NOT NULL,
+    person_id UUID NOT NULL,
+    role VARCHAR(50) NOT NULL,
+    CONSTRAINT fk_ip_incident
+        FOREIGN KEY(incident_id)
+        REFERENCES incident(incident_id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_ip_person
+        FOREIGN KEY(person_id)
+        REFERENCES person(person_id)
+        ON DELETE RESTRICT
+);
