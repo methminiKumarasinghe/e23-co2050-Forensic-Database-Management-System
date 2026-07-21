@@ -6,6 +6,11 @@
   <title>Forensic Staff Dashboard — DFMIS</title>
   <meta name="description" content="Forensic Staff dashboard for the Digital Forensic Medical Information System." />
   <link rel="stylesheet" href="../css/style.css" />
+  <script>
+    if (sessionStorage.getItem("loggedIn") !== "true" || sessionStorage.getItem("raw_role") !== "FORENSIC_STAFF") {
+      window.location.href = "../index.html";
+    }
+  </script>
   <script src="../js/api.js"></script>
 </head>
 <body>

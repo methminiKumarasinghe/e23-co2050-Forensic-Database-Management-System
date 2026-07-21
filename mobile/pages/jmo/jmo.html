@@ -6,6 +6,11 @@
   <title>JMO Dashboard — DFMIS</title>
   <meta name="description" content="Judicial Medical Officer dashboard for the Digital Forensic Medical Information System." />
   <link rel="stylesheet" href="../../css/style.css" />
+  <script>
+    if (sessionStorage.getItem("loggedIn") !== "true" || sessionStorage.getItem("raw_role") !== "JMO") {
+      window.location.href = "../../index.html";
+    }
+  </script>
 </head>
 <body>
 <div class="dash-layout">

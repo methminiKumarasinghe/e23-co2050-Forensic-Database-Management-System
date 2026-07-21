@@ -6,6 +6,11 @@
   <title>Laboratory Dashboard — DFMIS</title>
   <meta name="description" content="Laboratory Technician dashboard for the Digital Forensic Medical Information System." />
   <link rel="stylesheet" href="../css/style.css" />
+  <script>
+    if (sessionStorage.getItem("loggedIn") !== "true" || sessionStorage.getItem("raw_role") !== "LAB_TECHNICIAN") {
+      window.location.href = "../index.html";
+    }
+  </script>
   <!-- Include Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Include Chart.js for charts -->
