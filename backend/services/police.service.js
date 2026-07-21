@@ -96,14 +96,6 @@ const search = async (userId, searchParams) => {
   return await policeRepo.search(officerId, searchParams);
 };
 
-const getCourtHearings = async (caseId) => {
-  return await policeRepo.getCourtHearings(caseId);
-};
-
-const createCourtHearing = async (caseId, hearingData, userId) => {
-  return await policeRepo.createCourtHearing(caseId, hearingData, userId);
-};
-
 const getReportsStatus = async (userId) => {
   const officerId = await getOfficerId(userId);
   return await policeRepo.getReportsStatus(officerId);
@@ -120,6 +112,5 @@ module.exports = {
   getMlefRequests, getMlefById, createMlefRequest,
   getCaseTimeline,
   search,
-  getCourtHearings, createCourtHearing,
   getReportsStatus
 };

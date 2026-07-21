@@ -523,23 +523,6 @@ const getOfficerIdByUserId = async (userId) => {
 };
 
 
-// --- MODULE 11: Court Hearings ---
-const getCourtHearings = async (caseId) => {
-  const query = `SELECT * FROM court_hearing WHERE case_id = $1 ORDER BY hearing_date ASC`;
-  const result = await pool.query(query, [caseId]);
-  return result.rows;
-};
-
-const createCourtHearing = async (caseId, hearingData, userId) => {
-  const query = `
-    INSERT INTO court_hearing (case_id, court_name, hearing_date, status, remarks)
-    VALUES ($1, $2, $3, $4, $5) RETURNING *
-  `;
-  const values = [caseId, hearingData.court_name, hearingData.hearing_date, hearingData.status || 'SCHEDULED', hearingData.remarks];
-  const result = await pool.query(query, values);
-  return result.rows[0];
-};
-
 // --- MODULE 12: Reports Status ---
 const getReportsStatus = async (officerId) => {
   const mlefQuery = `
@@ -565,6 +548,5 @@ module.exports = {
   getCaseTimeline,
   search,
   getOfficerIdByUserId,
-  getCourtHearings, createCourtHearing,
   getReportsStatus
 };
