@@ -68,6 +68,35 @@ function login() {
   const match = ACCOUNTS.find(a => a.username === username && a.password === password);
 
   if (match) {
+    // If it's Forensic Staff, attempt real backend authentication
+    if (match.role === "Forensic Staff") {
+      const btn = document.getElementById("loginBtn");
+      btn.textContent = "Authenticating…";
+      btn.disabled = true;
+      fetch('http://localhost:5000/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+      }).then(res => res.json()).then(data => {
+          if (data.token) {
+              sessionStorage.setItem("jwt_token", data.token);
+              sessionStorage.setItem("loggedIn", "true");
+              sessionStorage.setItem("username", match.username);
+              sessionStorage.setItem("role", match.role);
+              setTimeout(() => { window.location.href = match.redirect; }, 600);
+          } else {
+              btn.textContent = "Login";
+              btn.disabled = false;
+              showAlert(data.error || "Invalid username or password.");
+          }
+      }).catch(err => {
+          btn.textContent = "Login";
+          btn.disabled = false;
+          showAlert("Server error. Please check if backend is running.");
+      });
+      return;
+    }
+
     // Store session info (session storage — cleared on tab close)
     sessionStorage.setItem("loggedIn", "true");
     sessionStorage.setItem("username", match.username);
