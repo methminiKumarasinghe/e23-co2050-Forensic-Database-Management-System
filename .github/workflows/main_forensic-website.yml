@@ -52,7 +52,6 @@ jobs:
     needs: build
 
     permissions:
-      id-token: write
       contents: read
 
     steps:
@@ -67,17 +66,11 @@ jobs:
           ls -la
           du -sh .
 
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_17D1447544EB427BB0DCBFCA329D05BA }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_BB8D8B03B4A54432AB50950B3D10027B }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_AFF3251132EF4042BF18D150CA26BD88 }}
-
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'forensic-website'
           slot-name: 'Production'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: .
