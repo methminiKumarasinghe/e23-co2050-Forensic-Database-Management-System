@@ -89,7 +89,7 @@ const layout = `<!DOCTYPE html>
     </div>
 
     <footer class="dash-footer">
-      <span>Department of Forensic Medicine &nbsp;|&nbsp; University of Peradeniya</span>
+      <span>Department of Forensic Medicine </span>
       <span>DFMIS v1.0 &nbsp;|&nbsp; &copy; 2026 Ministry of Health, Sri Lanka</span>
     </footer>
   </div>
