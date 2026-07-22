@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>System Notifications — DFMIS</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <script>
+    if (sessionStorage.getItem("loggedIn") !== "true" || sessionStorage.getItem("raw_role") !== "ADMIN") {
+      window.location.href = "../index.html";
+    }
+  </script>
+  <script src="../js/api.js"></script>
+  <style>
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+  </style>
+</head>
+<body>
+<div class="dash-layout">
+
+  <!-- ═══ Sidebar ════════════════════════════════════════════════════ -->
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main Navigation">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">🔬</div>
+      <div class="sidebar-brand">
+        <h3>DFMIS Portal</h3>
+        <p>Sri Lanka Gov. System</p>
+      </div>
+    </div>
+    <div class="sidebar-user-card">
+      <div class="user-avatar">👑</div>
+      <div class="user-info">
+        <div class="name">Administrator</div>
+        <div class="role">System Admin</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main Menu</div>
+      <a class="nav-item" href="admin.html" id="nav-dashboard">
+        <span class="nav-icon">🏠</span> Dashboard
+      </a>
+      <a class="nav-item" href="admin-users.html" id="nav-users">
+        <span class="nav-icon">👤</span> Users
+      </a>
+      <a class="nav-item" href="admin-hospitals.html" id="nav-hospitals">
+        <span class="nav-icon">🏥</span> Hospitals
+      </a>
+      <a class="nav-item" href="admin-police-stations.html" id="nav-police-stations">
+        <span class="nav-icon">🏢</span> Police Stations
+      </a>
+      <a class="nav-item" href="admin-staff.html" id="nav-staff">
+        <span class="nav-icon">👮</span> Staff
+      </a>
+      <a class="nav-item" href="admin-laboratories.html" id="nav-laboratories">
+        <span class="nav-icon">🔬</span> Laboratories
+      </a>
+      <a class="nav-item" href="admin-cases.html" id="nav-cases">
+        <span class="nav-icon">📂</span> Case Monitoring
+      </a>
+      <div class="nav-section-label">Management</div>
+      <a class="nav-item" href="admin-documents.html" id="nav-documents">
+        <span class="nav-icon">📁</span> Documents
+      </a>
+      <a class="nav-item active" href="admin-notifications.html" id="nav-notifications">
+        <span class="nav-icon">🔔</span> Notifications
+      </a>
+      <div class="nav-section-label">Logs & Reports</div>
+      <a class="nav-item" href="admin-audit-logs.html" id="nav-audit-logs">
+        <span class="nav-icon">📝</span> Audit Logs
+      </a>
+      <a class="nav-item" href="admin-access-logs.html" id="nav-access-logs">
+        <span class="nav-icon">🔐</span> Access Logs
+      </a>
+      <a class="nav-item" href="admin-reports.html" id="nav-reports">
+        <span class="nav-icon">📊</span> Reports & Stats
+      </a>
+      <a class="nav-item" href="admin-settings.html" id="nav-settings">
+        <span class="nav-icon">⚙️</span> Settings
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="logout()" id="btn-logout">
+        <span>🚪</span> Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- ═══ Main Content ════════════════════════════════════════════════ -->
+  <div class="dash-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div>
+          <div class="topbar-title">System Notifications</div>
+          <div class="breadcrumb">
+            <span>DFMIS</span><span class="breadcrumb-sep">›</span><span>Notifications</span>
+          </div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-time" id="dashClock"></div>
+        <div class="topbar-badge" title="Notifications" onclick="window.location.href='admin-notifications.html'">🔔<span class="badge-dot"></span></div>
+      </div>
+    </div>
+
+    <div class="dash-body">
+      <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px;">
+        
+        <!-- Broadcast Form -->
+        <div class="card">
+          <div class="card-header">
+            <h5>📣 Broadcast Announcement</h5>
+          </div>
+          <div class="card-body">
+            <form id="broadcastForm">
+              <div class="form-group">
+                <label for="recipientType">Recipient Category</label>
+                <select id="recipientType" onchange="onRecipientTypeChanged()">
+                  <option value="ALL">All Active Users</option>
+                  <option value="ROLE">Specific Role</option>
+                  <option value="USER">Specific User</option>
+                </select>
+              </div>
+
+              <div class="form-group" id="group-role" style="display:none;">
+                <label for="recipientRole">Target User Role</label>
+                <select id="recipientRole">
+                  <option value="1">ADMIN</option>
+                  <option value="2">POLICE</option>
+                  <option value="3">JMO</option>
+                  <option value="4">MEDICAL_OFFICER</option>
+                  <option value="5">LAB_TECHNICIAN</option>
+                  <option value="6">GOVERNMENT_ANALYST</option>
+                  <option value="7">FORENSIC_STAFF</option>
+                </select>
+              </div>
+
+              <div class="form-group" id="group-user" style="display:none;">
+                <label for="recipientUser">Select User Account</label>
+                <select id="recipientUser"></select>
+              </div>
+
+              <div class="form-group">
+                <label for="notifType">Alert Type</label>
+                <select id="notifType">
+                  <option value="ANNOUNCEMENT">ANNOUNCEMENT</option>
+                  <option value="ALERT">CRITICAL ALERT</option>
+                  <option value="MAINTENANCE">SYSTEM MAINTENANCE</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="notifMessage">Announcement Message</label>
+                <textarea id="notifMessage" rows="5" placeholder="Enter notification message text..." required></textarea>
+              </div>
+
+              <button type="submit" class="btn btn-primary" style="width:100%;">Broadcast Announcement</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- History -->
+        <div class="card">
+          <div class="card-header">
+            <h5>🕒 Broadcast History</h5>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-wrap" id="historyContainer">
+              <table class="dash-table">
+                <thead>
+                  <tr>
+                    <th>Recipients</th>
+                    <th>Message</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Broadcast Date</th>
+                  </tr>
+                </thead>
+                <tbody id="historyTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <footer class="dash-footer">
+      <span>Department of Forensic Medicine &nbsp;|&nbsp; University of Peradeniya</span>
+      <span>DFMIS v1.0 &nbsp;|&nbsp; &copy; 2026 Ministry of Health, Sri Lanka</span>
+    </footer>
+  </div>
+</div>
+
+<script>
+  function tick() {
+    const el = document.getElementById("dashClock");
+    if (el) el.textContent = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  }
+  tick(); setInterval(tick, 1000);
+  function logout() { sessionStorage.clear(); window.location.href = "../index.html"; }
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    fetchUsersList();
+    fetchHistory();
+  });
+
+  async function fetchUsersList() {
+    try {
+      const users = await fetchAPI('/admin/users');
+      const el = document.getElementById('recipientUser');
+      if (el) {
+        el.innerHTML = users.map(u => `<option value="${u.user_id}">${u.username}</option>`).join('');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  function onRecipientTypeChanged() {
+    const type = document.getElementById('recipientType').value;
+    document.getElementById('group-role').style.display = type === 'ROLE' ? 'block' : 'none';
+    document.getElementById('group-user').style.display = type === 'USER' ? 'block' : 'none';
+  }
+
+  async function fetchHistory() {
+    setTableLoading('historyTableBody', true);
+    try {
+      const data = await fetchAPI('/admin/notifications');
+      const tbody = document.getElementById('historyTableBody');
+      if (data && data.length > 0) {
+        tbody.innerHTML = data.map(n => `
+          <tr>
+            <td><strong>${n.username || 'System'}</strong></td>
+            <td>${n.message}</td>
+            <td><span class="badge badge-primary">${n.notification_type}</span></td>
+            <td><span class="badge ${n.is_read ? 'badge-success' : 'badge-warning'}">${n.is_read ? 'Read' : 'Unread'}</span></td>
+            <td>${new Date(n.created_at).toLocaleString()}</td>
+          </tr>
+        `).join('');
+      } else {
+        setTableEmpty('historyTableBody');
+      }
+    } catch (err) {
+      setTableError('historyTableBody', err.message);
+    } finally {
+      setTableLoading('historyTableBody', false);
+    }
+  }
+
+  document.getElementById('broadcastForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const type = document.getElementById('recipientType').value;
+    const alertType = document.getElementById('notifType').value;
+    const message = document.getElementById('notifMessage').value;
+
+    const payload = {
+      message,
+      notification_type: alertType
+    };
+
+    if (type === 'ALL') {
+      payload.all_users = true;
+    } else if (type === 'ROLE') {
+      payload.role_id = parseInt(document.getElementById('recipientRole').value, 10);
+    } else if (type === 'USER') {
+      payload.user_id = document.getElementById('recipientUser').value;
+    }
+
+    try {
+      await API.post('/admin/notifications', payload);
+      alert('Broadcast announcement dispatched successfully');
+      document.getElementById('notifMessage').value = '';
+      fetchHistory();
+    } catch (err) {
+      alert('Broadcast failed: ' + err.message);
+    }
+  });
+</script>
+</body>
+</html>

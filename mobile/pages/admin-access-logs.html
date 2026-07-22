@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Access Logs — DFMIS</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <script>
+    if (sessionStorage.getItem("loggedIn") !== "true" || sessionStorage.getItem("raw_role") !== "ADMIN") {
+      window.location.href = "../index.html";
+    }
+  </script>
+  <script src="../js/api.js"></script>
+  <style>
+    .filter-row { display: flex; gap: 15px; margin-bottom: 15px; }
+    .filter-row input, .filter-row select { padding: 8px; border-radius: 4px; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+<div class="dash-layout">
+
+  <!-- ═══ Sidebar ════════════════════════════════════════════════════ -->
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main Navigation">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">🔬</div>
+      <div class="sidebar-brand">
+        <h3>DFMIS Portal</h3>
+        <p>Sri Lanka Gov. System</p>
+      </div>
+    </div>
+    <div class="sidebar-user-card">
+      <div class="user-avatar">👑</div>
+      <div class="user-info">
+        <div class="name">Administrator</div>
+        <div class="role">System Admin</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main Menu</div>
+      <a class="nav-item" href="admin.html" id="nav-dashboard">
+        <span class="nav-icon">🏠</span> Dashboard
+      </a>
+      <a class="nav-item" href="admin-users.html" id="nav-users">
+        <span class="nav-icon">👤</span> Users
+      </a>
+      <a class="nav-item" href="admin-hospitals.html" id="nav-hospitals">
+        <span class="nav-icon">🏥</span> Hospitals
+      </a>
+      <a class="nav-item" href="admin-police-stations.html" id="nav-police-stations">
+        <span class="nav-icon">🏢</span> Police Stations
+      </a>
+      <a class="nav-item" href="admin-staff.html" id="nav-staff">
+        <span class="nav-icon">👮</span> Staff
+      </a>
+      <a class="nav-item" href="admin-laboratories.html" id="nav-laboratories">
+        <span class="nav-icon">🔬</span> Laboratories
+      </a>
+      <a class="nav-item" href="admin-cases.html" id="nav-cases">
+        <span class="nav-icon">📂</span> Case Monitoring
+      </a>
+      <div class="nav-section-label">Management</div>
+      <a class="nav-item" href="admin-documents.html" id="nav-documents">
+        <span class="nav-icon">📁</span> Documents
+      </a>
+      <a class="nav-item" href="admin-notifications.html" id="nav-notifications">
+        <span class="nav-icon">🔔</span> Notifications
+      </a>
+      <div class="nav-section-label">Logs & Reports</div>
+      <a class="nav-item" href="admin-audit-logs.html" id="nav-audit-logs">
+        <span class="nav-icon">📝</span> Audit Logs
+      </a>
+      <a class="nav-item active" href="admin-access-logs.html" id="nav-access-logs">
+        <span class="nav-icon">🔐</span> Access Logs
+      </a>
+      <a class="nav-item" href="admin-reports.html" id="nav-reports">
+        <span class="nav-icon">📊</span> Reports & Stats
+      </a>
+      <a class="nav-item" href="admin-settings.html" id="nav-settings">
+        <span class="nav-icon">⚙️</span> Settings
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="logout()" id="btn-logout">
+        <span>🚪</span> Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- ═══ Main Content ════════════════════════════════════════════════ -->
+  <div class="dash-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div>
+          <div class="topbar-title">Access Logs Monitor</div>
+          <div class="breadcrumb">
+            <span>DFMIS</span><span class="breadcrumb-sep">›</span><span>Access Logs</span>
+          </div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-time" id="dashClock"></div>
+        <div class="topbar-badge" title="Notifications" onclick="window.location.href='admin-notifications.html'">🔔<span class="badge-dot"></span></div>
+      </div>
+    </div>
+
+    <div class="dash-body">
+      <div class="card" style="margin-bottom: 20px;">
+        <div class="card-body">
+          <div class="filter-row">
+            <input type="text" id="filterUser" placeholder="Search Username..." />
+            <select id="filterAction">
+              <option value="">All Actions</option>
+              <option value="LOGIN_SUCCESS">LOGIN_SUCCESS</option>
+              <option value="LOGIN_FAILED">LOGIN_FAILED</option>
+              <option value="REPORT_ACCESS">REPORT_ACCESS</option>
+            </select>
+            <button class="btn btn-primary" onclick="fetchAccessLogs()">Apply Filters</button>
+            <button class="btn" onclick="resetFilters()">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h5>🔐 User Authentication Access History Log</h5>
+        </div>
+        <div class="card-body">
+          <div class="table-wrap" id="accessContainer">
+            <table class="dash-table">
+              <thead>
+                <tr>
+                  <th>Log ID</th>
+                  <th>Username Entered</th>
+                  <th>Action</th>
+                  <th>User ID Link</th>
+                  <th>Status Detail</th>
+                  <th>Timestamp</th>
+                </tr>
+              </thead>
+              <tbody id="accessTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="dash-footer">
+      <span>Department of Forensic Medicine &nbsp;|&nbsp; University of Peradeniya</span>
+      <span>DFMIS v1.0 &nbsp;|&nbsp; &copy; 2026 Ministry of Health, Sri Lanka</span>
+    </footer>
+  </div>
+</div>
+
+<script>
+  function tick() {
+    const el = document.getElementById("dashClock");
+    if (el) el.textContent = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  }
+  tick(); setInterval(tick, 1000);
+  function logout() { sessionStorage.clear(); window.location.href = "../index.html"; }
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", fetchAccessLogs);
+
+  async function fetchAccessLogs() {
+    setTableLoading('accessTableBody', true);
+    
+    const username = document.getElementById('filterUser').value.trim();
+    const action = document.getElementById('filterAction').value;
+    
+    let queryParams = [];
+    if (username) queryParams.push(`username=${encodeURIComponent(username)}`);
+    if (action) queryParams.push(`action=${encodeURIComponent(action)}`);
+    
+    const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
+
+    try {
+      const logs = await fetchAPI(`/admin/accesslogs${queryString}`);
+      const tbody = document.getElementById('accessTableBody');
+      if (logs && logs.length > 0) {
+        tbody.innerHTML = logs.map(l => `
+          <tr>
+            <td><small>${l.access_id.substring(0, 8)}...</small></td>
+            <td><strong>${l.username}</strong></td>
+            <td>
+              <span class="badge ${l.action === 'LOGIN_SUCCESS' ? 'badge-success' : 'badge-danger'}">
+                ${l.action}
+              </span>
+            </td>
+            <td><small>${l.user_id ? l.user_id.substring(0, 8) + '...' : 'None'}</small></td>
+            <td>${l.details || '-'}</td>
+            <td>${new Date(l.created_at).toLocaleString()}</td>
+          </tr>
+        `).join('');
+      } else {
+        setTableEmpty('accessTableBody');
+      }
+    } catch (err) {
+      setTableError('accessTableBody', err.message);
+    } finally {
+      setTableLoading('accessTableBody', false);
+    }
+  }
+
+  function resetFilters() {
+    document.getElementById('filterUser').value = '';
+    document.getElementById('filterAction').value = '';
+    fetchAccessLogs();
+  }
+</script>
+</body>
+</html>

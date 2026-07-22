@@ -139,17 +139,16 @@ function setTableLoading(containerId, isLoading) {
     if (tbody) container = tbody;
   }
 
+  const isTbody = container.tagName === 'TBODY';
+
   if (isLoading) {
-    if (container.tagName === 'TBODY') {
-      container.innerHTML = `<tr><td colspan="100" style="text-align: center; padding: 2rem; color: #666;"><div class="spinner" style="font-size: 2rem; margin-bottom: 1rem;">⏳</div><p>Loading data...</p></td></tr>`;
-    } else {
-      container.innerHTML = `
-        <div style="padding: 2rem; text-align: center; color: #666;">
-            <div class="spinner" style="font-size: 2rem; margin-bottom: 1rem;">⏳</div>
-            <p>Loading data...</p>
-        </div>
-      `;
-    }
+    const content = `
+            <div style="padding: 2rem; text-align: center; color: #666;">
+                <div class="spinner" style="font-size: 2rem; margin-bottom: 1rem;">⏳</div>
+                <p>Loading data...</p>
+            </div>
+        `;
+    container.innerHTML = isTbody ? `<tr><td colspan="100">${content}</td></tr>` : content;
   }
 }
 
@@ -161,15 +160,13 @@ function setTableEmpty(containerId, message = 'No records found.') {
     if (tbody) container = tbody;
   }
 
-  if (container.tagName === 'TBODY') {
-    container.innerHTML = `<tr><td colspan="100" style="text-align: center; padding: 2rem; color: #666;">${message}</td></tr>`;
-  } else {
-    container.innerHTML = `
+  const isTbody = container.tagName === 'TBODY';
+  const content = `
         <div style="padding: 2rem; text-align: center; color: #666;">
             <p>${message}</p>
         </div>
     `;
-  }
+  container.innerHTML = isTbody ? `<tr><td colspan="100">${content}</td></tr>` : content;
 }
 
 function setTableError(containerId, error) {
@@ -180,16 +177,14 @@ function setTableError(containerId, error) {
     if (tbody) container = tbody;
   }
 
-  if (container.tagName === 'TBODY') {
-    container.innerHTML = `<tr><td colspan="100" style="text-align: center; padding: 2rem; color: #e74c3c;"><p>⚠ Failed to load data</p><p style="font-size: 0.9em;">${error}</p></td></tr>`;
-  } else {
-    container.innerHTML = `
+  const isTbody = container.tagName === 'TBODY';
+  const content = `
         <div style="padding: 2rem; text-align: center; color: #e74c3c;">
             <p>⚠ Failed to load data</p>
             <p style="font-size: 0.9em;">${error}</p>
         </div>
     `;
-  }
+  container.innerHTML = isTbody ? `<tr><td colspan="100">${content}</td></tr>` : content;
 }
 
 window.fetchAPI = fetchAPI;
@@ -197,18 +192,45 @@ window.setTableLoading = setTableLoading;
 window.setTableEmpty = setTableEmpty;
 window.setTableError = setTableError;
 
-document.addEventListener("DOMContentLoaded", () => {
-  const un = sessionStorage.getItem("username");
-  const ro = sessionStorage.getItem("role");
+// Auto-wire notifications badge logic globally
+document.addEventListener("DOMContentLoaded", async () => {
+  const badge = document.querySelector('.topbar-badge[title="Notifications"]');
+  if (!badge) return;
+
+  badge.style.cursor = 'pointer';
   
-  if (un) {
-      document.querySelectorAll('.user-info .name').forEach(el => el.textContent = un);
-      const welcomeText = document.querySelector('.welcome-text h2');
-      if (welcomeText && welcomeText.innerHTML.includes('Welcome,')) {
-          welcomeText.innerHTML = `Welcome, ${un} 👋`;
+  // Bind click navigation based on user's current directory path
+  badge.addEventListener('click', (e) => {
+    e.preventDefault();
+    const path = window.location.pathname;
+    if (path.includes('/jmo/') || path.includes('_jmo')) {
+      window.location.href = 'jmo_notifications.html';
+    } else if (path.includes('/police/') || path.includes('_police')) {
+      window.location.href = 'police_notifications.html';
+    } else if (path.includes('staff')) {
+      window.location.href = 'staff-notifications.html';
+    } else if (path.includes('admin') || path.includes('/admin.html')) {
+      window.location.href = 'admin-notifications.html';
+    } else if (path.includes('laboratory.html')) {
+      // In single page app, switch view inline
+      if (typeof switchView === 'function') {
+        const navItem = document.querySelector('.nav-item[onclick*="notifications"]');
+        switchView('notifications', navItem);
       }
-  }
-  if (ro) {
-      document.querySelectorAll('.user-info .role').forEach(el => el.textContent = ro);
+    }
+  });
+
+  // Dynamically update the red badge dot if there are unread notifications
+  try {
+    const notifications = await window.API.get('/notifications');
+    if (notifications && Array.isArray(notifications)) {
+      const hasUnread = notifications.some(n => !n.is_read);
+      const dot = badge.querySelector('.badge-dot');
+      if (dot) {
+        dot.style.display = hasUnread ? 'block' : 'none';
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to auto-load notifications status:', e);
   }
 });

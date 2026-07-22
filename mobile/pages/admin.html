@@ -11,6 +11,7 @@
       window.location.href = "../index.html";
     }
   </script>
+  <script src="../js/api.js"></script>
 </head>
 <body>
 <div class="dash-layout">
@@ -38,33 +39,44 @@
       <a class="nav-item active" href="admin.html" id="nav-dashboard">
         <span class="nav-icon">🏠</span> Dashboard
       </a>
-      <a class="nav-item" href="#" id="nav-users">
+      <a class="nav-item" href="admin-users.html" id="nav-users">
         <span class="nav-icon">👤</span> Users
-        <span class="nav-badge">5</span>
       </a>
-      <a class="nav-item" href="#" id="nav-hospitals">
+      <a class="nav-item" href="admin-hospitals.html" id="nav-hospitals">
         <span class="nav-icon">🏥</span> Hospitals
       </a>
-      <a class="nav-item" href="#" id="nav-mlef">
-        <span class="nav-icon">📄</span> MLEF
+      <a class="nav-item" href="admin-police-stations.html" id="nav-police-stations">
+        <span class="nav-icon">🏢</span> Police Stations
+      </a>
+      <a class="nav-item" href="admin-staff.html" id="nav-staff">
+        <span class="nav-icon">👮</span> Staff
+      </a>
+      <a class="nav-item" href="admin-laboratories.html" id="nav-laboratories">
+        <span class="nav-icon">🔬</span> Laboratories
+      </a>
+      <a class="nav-item" href="admin-cases.html" id="nav-cases">
+        <span class="nav-icon">📂</span> Case Monitoring
       </a>
 
-      <div class="nav-section-label">Clinical</div>
-      <a class="nav-item" href="#" id="nav-exam">
-        <span class="nav-icon">🩺</span> Examination
+      <div class="nav-section-label">Management</div>
+      <a class="nav-item" href="admin-documents.html" id="nav-documents">
+        <span class="nav-icon">📁</span> Documents
       </a>
-      <a class="nav-item" href="#" id="nav-autopsy">
-        <span class="nav-icon">⚰️</span> Autopsy
-      </a>
-      <a class="nav-item" href="#" id="nav-lab">
-        <span class="nav-icon">🧪</span> Laboratory
+      <a class="nav-item" href="admin-notifications.html" id="nav-notifications">
+        <span class="nav-icon">🔔</span> Notifications
       </a>
 
-      <div class="nav-section-label">Administration</div>
-      <a class="nav-item" href="#" id="nav-reports">
-        <span class="nav-icon">📁</span> Reports
+      <div class="nav-section-label">Logs & Reports</div>
+      <a class="nav-item" href="admin-audit-logs.html" id="nav-audit-logs">
+        <span class="nav-icon">📝</span> Audit Logs
       </a>
-      <a class="nav-item" href="#" id="nav-settings">
+      <a class="nav-item" href="admin-access-logs.html" id="nav-access-logs">
+        <span class="nav-icon">🔐</span> Access Logs
+      </a>
+      <a class="nav-item" href="admin-reports.html" id="nav-reports">
+        <span class="nav-icon">📊</span> Reports & Stats
+      </a>
+      <a class="nav-item" href="admin-settings.html" id="nav-settings">
         <span class="nav-icon">⚙️</span> Settings
       </a>
     </nav>
@@ -93,7 +105,7 @@
       </div>
       <div class="topbar-right">
         <div class="topbar-time" id="dashClock"></div>
-        <div class="topbar-badge" title="Notifications">
+        <div class="topbar-badge" title="Notifications" onclick="window.location.href='admin-notifications.html'">
           🔔
           <span class="badge-dot"></span>
         </div>
@@ -199,120 +211,42 @@
         </div>
       </div>
 
-      <!-- Two col -->
-      <div class="two-col" style="margin-bottom: 20px;">
-
-        <!-- Recent Cases -->
-        <div class="card">
-          <div class="card-header">
-            <h5>📋 Recent Cases</h5>
-            <span class="badge badge-primary">This Week</span>
-          </div>
-          <div class="card-body" style="padding: 0;">
-            <div class="table-wrap">
-              <table class="dash-table">
-                <thead>
-                  <tr>
-                    <th>Case ID</th>
-                    <th>Patient</th>
-                    <th>Type</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td><strong>#C-2026-001</strong></td>
-                    <td>John Perera</td>
-                    <td>Autopsy</td>
-                    <td><span class="badge badge-success">Closed</span></td>
-                  </tr>
-                  <tr>
-                    <td><strong>#C-2026-002</strong></td>
-                    <td>Nalini Silva</td>
-                    <td>Examination</td>
-                    <td><span class="badge badge-warning">Pending</span></td>
-                  </tr>
-                  <tr>
-                    <td><strong>#C-2026-003</strong></td>
-                    <td>Ravi Kumar</td>
-                    <td>Lab</td>
-                    <td><span class="badge badge-primary">In Progress</span></td>
-                  </tr>
-                  <tr>
-                    <td><strong>#C-2026-004</strong></td>
-                    <td>Amara Jayasinghe</td>
-                    <td>MLEF</td>
-                    <td><span class="badge badge-danger">Overdue</span></td>
-                  </tr>
-                </tbody>
-              </table>
+      <!-- Shortcut Navigation Cards -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 20px;">
+        
+        <a href="admin-cases.html" class="stat-card" style="text-decoration: none; color: inherit; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid var(--primary); transition: transform 0.2s;">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="stat-icon blue" style="font-size: 1.5rem; width: 44px; height: 44px;">📂</div>
+            <div>
+              <h5 style="font-weight: 700; margin-bottom: 2px;">Case Monitoring</h5>
+              <p style="font-size: 0.8em; color: var(--text-muted);">Track active cases & timelines</p>
             </div>
           </div>
-        </div>
+          <div style="font-size: 1.2rem; color: var(--primary); margin-left: 10px;">➔</div>
+        </a>
 
-        <!-- System Users -->
-        <div class="card">
-          <div class="card-header">
-            <h5>👤 System Users</h5>
-            <span class="badge badge-success">All Active</span>
-          </div>
-          <div class="card-body" style="padding: 0;">
-            <div class="table-wrap">
-              <table class="dash-table">
-                <thead>
-                  <tr>
-                    <th>Role</th>
-                    <th>Username</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>👑 Administrator</td>
-                    <td>admin</td>
-                    <td><span class="badge badge-success">Active</span></td>
-                  </tr>
-                  <tr>
-                    <td>🏥 Forensic Staff</td>
-                    <td>staff</td>
-                    <td><span class="badge badge-success">Active</span></td>
-                  </tr>
-                  <tr>
-                    <td>🚔 Police Officer</td>
-                    <td>police</td>
-                    <td><span class="badge badge-success">Active</span></td>
-                  </tr>
-                  <tr>
-                    <td>🩺 JMO</td>
-                    <td>jmo</td>
-                    <td><span class="badge badge-success">Active</span></td>
-                  </tr>
-                  <tr>
-                    <td>🧪 Lab Technician</td>
-                    <td>lab</td>
-                    <td><span class="badge badge-success">Active</span></td>
-                  </tr>
-                </tbody>
-              </table>
+        <a href="admin-users.html" class="stat-card" style="text-decoration: none; color: inherit; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid var(--success); transition: transform 0.2s;">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="stat-icon green" style="font-size: 1.5rem; width: 44px; height: 44px;">👤</div>
+            <div>
+              <h5 style="font-weight: 700; margin-bottom: 2px;">User Accounts</h5>
+              <p style="font-size: 0.8em; color: var(--text-muted);">Manage roles, locks, and status</p>
             </div>
           </div>
-        </div>
+          <div style="font-size: 1.2rem; color: var(--success); margin-left: 10px;">➔</div>
+        </a>
 
-      </div><!-- /two-col -->
-
-      <!-- Under Dev Modules -->
-      <div class="card">
-        <div class="card-header">
-          <h5>🔧 Module Status</h5>
-          <span class="badge badge-secondary">UI Phase</span>
-        </div>
-        <div class="card-body">
-          <div class="under-dev">
-            <div class="icon">🚧</div>
-            <h3>Full Modules Under Development</h3>
-            <p>The complete CRUD functionality for MLEF, Examination, Autopsy, Laboratory, and Reporting modules will be integrated with the PostgreSQL backend in the next phase.</p>
+        <a href="admin-access-logs.html" class="stat-card" style="text-decoration: none; color: inherit; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid var(--accent); transition: transform 0.2s;">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="stat-icon amber" style="font-size: 1.5rem; width: 44px; height: 44px;">🔐</div>
+            <div>
+              <h5 style="font-weight: 700; margin-bottom: 2px;">Access Logs</h5>
+              <p style="font-size: 0.8em; color: var(--text-muted);">Audit user logins & activity</p>
+            </div>
           </div>
-        </div>
+          <div style="font-size: 1.2rem; color: var(--accent); margin-left: 10px;">➔</div>
+        </a>
+
       </div>
 
     </div><!-- /dash-body -->
