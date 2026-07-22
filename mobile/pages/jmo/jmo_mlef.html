@@ -43,7 +43,7 @@
       <div class="nav-section-label">Clinical Examination</div>
       <a class="nav-item active" href="jmo_mlef.html" id="nav-pending-mlef">
         <span class="nav-icon">📄</span> Assigned MLEF Cases
-        <span class="nav-badge">6</span>
+        <span class="nav-badge" id="badge-pendingExams">6</span>
       </a>
       <a class="nav-item" href="jmo_vitals.html" id="nav-vital-signs">
         <span class="nav-icon">❤️</span> Record Vital Signs
@@ -101,7 +101,7 @@
       <div class="card">
         <div class="card-header">
           <h5>📄 Pending MLEF Examinations Queue</h5>
-          <span class="badge badge-warning">6 Scheduled</span>
+          <span class="badge badge-warning" id="badge-mlef-count">0 Scheduled</span>
         </div>
         <div class="card-body" style="padding: 0;">
           <div class="table-wrap">
@@ -116,48 +116,8 @@
                   <th>Action</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td><strong>#MLEF-2391</strong></td>
-                  <td>Ravi Mendis</td>
-                  <td>Assault Investigation</td>
-                  <td>Kandy Police Station</td>
-                  <td><span class="badge badge-danger">Urgent</span></td>
-                  <td>
-                    <button class="action-btn btn-start" onclick="startExam('Ravi Mendis', 'Assault')">Start Exam</button>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td><strong>#MLEF-2393</strong></td>
-                  <td>Priya Fernando</td>
-                  <td>Sexual Assault</td>
-                  <td>Katugastota Police Station</td>
-                  <td><span class="badge badge-warning">High</span></td>
-                  <td>
-                    <button class="action-btn btn-start" onclick="startExam('Priya Fernando', 'Sexual Assault')">Start Exam</button>
-                  </td>
-                </tr>
-                <tr>
-                  <td><strong>#MLEF-2394</strong></td>
-                  <td>Amara Perera</td>
-                  <td>MVA Injuries</td>
-                  <td>Kandy Police Station</td>
-                  <td><span class="badge badge-primary">Normal</span></td>
-                  <td>
-                    <button class="action-btn btn-start" onclick="startExam('Amara Perera', 'MVA')">Start Exam</button>
-                  </td>
-                </tr>
-                <tr>
-                  <td><strong>#MLEF-2380</strong></td>
-                  <td>Nuwan Silva</td>
-                  <td>Assault Investigation</td>
-                  <td>Peradeniya Police Station</td>
-                  <td><span class="badge badge-success">Completed</span></td>
-                  <td>
-                    <button class="action-btn btn-view" onclick="window.location.href='jmo_mlr.html'">View MLR</button>
-                  </td>
-                </tr>
+              <tbody id="mlef-tbody">
+                <tr><td colspan="6" style="text-align:center; padding:15px; color:#64748b;">Loading cases...</td></tr>
               </tbody>
             </table>
           </div>
@@ -172,6 +132,7 @@
   </div>
 </div>
 
+<script src="../../js/api.js"></script>
 <script>
   function tick() {
     const el = document.getElementById("dashClock");
@@ -180,11 +141,78 @@
   tick(); setInterval(tick, 1000);
   function logout() { sessionStorage.clear(); window.location.href = "../../index.html"; }
   
-  function startExam(patient, type) {
+  async function loadMlefQueue() {
+    try {
+      const mlefs = await API.get('/jmo/mlef');
+      
+      const badge = document.getElementById('badge-mlef-count');
+      if (badge) {
+        const pendingCount = mlefs.filter(m => m.status === 'PENDING').length;
+        badge.textContent = `${pendingCount} Scheduled`;
+      }
+      
+      const sidebarBadge = document.getElementById('badge-pendingExams');
+      if (sidebarBadge) {
+        sidebarBadge.textContent = mlefs.filter(m => m.status === 'PENDING').length;
+      }
+      
+      const userProfile = await API.get('/auth/me');
+      if (userProfile && userProfile.profile) {
+        const nameEl = document.querySelector('.sidebar-user-card .name');
+        if (nameEl) nameEl.textContent = 'Dr. ' + (userProfile.profile.username || 'JMO');
+      }
+
+      const tbody = document.getElementById('mlef-tbody');
+      if (tbody) {
+        tbody.innerHTML = '';
+        if (!mlefs || mlefs.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:15px; color:#64748b;">No assigned MLEF cases.</td></tr>';
+        } else {
+          mlefs.forEach(m => {
+            const mlefRef = `#MLEF-${m.mlef_id.substring(0, 8).toUpperCase()}`;
+            const patientName = `${m.first_name || ''} ${m.last_name || ''}`.trim() || 'Unknown';
+            const reason = m.reason || 'Not specified';
+            const station = 'Police Department';
+            
+            const isUrgent = reason.toLowerCase().includes('urgent');
+            const priorityText = isUrgent ? 'Urgent' : 'Normal';
+            const priorityBadge = `<span class="badge badge-${isUrgent ? 'danger' : 'primary'}">${priorityText}</span>`;
+            
+            let actionBtn = '';
+            if (m.status === 'PENDING') {
+              actionBtn = `<button class="action-btn btn-start" onclick="startExam('${patientName.replace(/'/g, "\\'")}', '${reason.replace(/'/g, "\\'")}', '${m.mlef_id}')">Start Exam</button>`;
+            } else if (m.status === 'IN_PROGRESS') {
+              actionBtn = `<button class="action-btn btn-start" style="background-color:#d69e2e" onclick="startExam('${patientName.replace(/'/g, "\\'")}', '${reason.replace(/'/g, "\\'")}', '${m.mlef_id}')">Resume Exam</button>`;
+            } else {
+              actionBtn = `<button class="action-btn btn-view" onclick="window.location.href='jmo_mlr.html'">View MLR</button>`;
+            }
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td><strong>${mlefRef}</strong></td>
+              <td>${patientName}</td>
+              <td>${reason}</td>
+              <td>${station}</td>
+              <td>${priorityBadge}</td>
+              <td>${actionBtn}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load MLEF queue:', err);
+    }
+  }
+
+  function startExam(patient, type, mlefId) {
     sessionStorage.setItem('currentPatient', patient);
     sessionStorage.setItem('currentCaseType', type);
+    sessionStorage.setItem('currentMlefId', mlefId);
     window.location.href = 'jmo_mlef_exam.html';
   }
+
+  document.addEventListener('DOMContentLoaded', loadMlefQueue);
 </script>
 </body>
 </html>

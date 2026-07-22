@@ -104,7 +104,7 @@
             <p>Health 886</p>
           </div>
 
-          <form onsubmit="event.preventDefault(); alert('MLEF saved! You can now proceed to take Vital Signs or record specific injuries.'); window.location.href='jmo_vitals.html';">
+          <form onsubmit="saveExam(event)">
 
             <!-- MEDICAL OFFICER'S NOTE (Left side of form) -->
             <div class="section-title">Medical Officer's Note (Identification & Consent)</div>
@@ -284,6 +284,7 @@
   </div>
 </div>
 
+<script src="../../js/api.js"></script>
 <script>
   function tick() {
     const el = document.getElementById("dashClock");
@@ -292,12 +293,139 @@
   tick(); setInterval(tick, 1000);
   function logout() { sessionStorage.clear(); window.location.href = "../../index.html"; }
 
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
     const patientName = sessionStorage.getItem('currentPatient');
     const caseType = sessionStorage.getItem('currentCaseType');
+    const mlefId = sessionStorage.getItem('currentMlefId');
+    
     if(patientName) document.getElementById('ctx-patient-name').textContent = 'Examinee: ' + patientName;
     if(caseType) document.getElementById('ctx-case-type').textContent = caseType;
+    
+    const userProfile = await API.get('/auth/me');
+    if (userProfile && userProfile.profile) {
+      const nameEl = document.querySelector('.sidebar-user-card .name');
+      if (nameEl) nameEl.textContent = 'Dr. ' + (userProfile.profile.username || 'JMO');
+    }
+    
+    // Set default value for exam date time
+    const examDateInput = document.querySelector('input[type="datetime-local"]');
+    if (examDateInput) {
+      const now = new Date();
+      // Format to YYYY-MM-DDTHH:MM
+      const localStr = now.getFullYear() + '-' + 
+                       String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                       String(now.getDate()).padStart(2, '0') + 'T' + 
+                       String(now.getHours()).padStart(2, '0') + ':' + 
+                       String(now.getMinutes()).padStart(2, '0');
+      examDateInput.value = localStr;
+    }
   });
+
+  async function saveExam(event) {
+    event.preventDefault();
+    try {
+      const mlefId = sessionStorage.getItem('currentMlefId');
+      if (!mlefId) {
+        alert('No active MLEF case in context. Please select a case from the Assigned MLEF Cases queue.');
+        window.location.href = 'jmo_mlef.html';
+        return;
+      }
+      
+      const nic = document.querySelector('input[placeholder="e.g. 851234567V"]')?.value || '';
+      const consent = document.querySelector('input[name="consent"]:checked')?.value || 'given';
+      const producedBy = document.querySelector('input[placeholder*="Name, Rank, No."]')?.value || '';
+      const hospital = document.querySelector('input[value="Teaching Hospital Kandy"]')?.value || '';
+      const ward = document.querySelector('input[placeholder="e.g. Ward 5"]')?.value || '';
+      const bht = document.querySelector('input[placeholder="Bed Head Ticket No."]')?.value || '';
+      
+      const dateInputs = document.querySelectorAll('input[type="date"]');
+      const admissionDate = dateInputs[0]?.value || '';
+      const dischargeDate = dateInputs[1]?.value || '';
+      
+      const examDateTime = document.querySelector('input[type="datetime-local"]')?.value || new Date().toISOString();
+      
+      const harmCheckboxes = document.querySelectorAll('.check-group')[0]?.querySelectorAll('input[type="checkbox"]:checked') || [];
+      const harmSelected = Array.from(harmCheckboxes).map(cb => cb.parentElement.textContent.trim()).join(', ');
+      
+      const internalInjuries = document.querySelector('input[placeholder="Specify if any"]')?.value || '';
+      
+      const weaponCheckboxes = document.querySelectorAll('.check-group')[1]?.querySelectorAll('input[type="checkbox"]:checked') || [];
+      const weaponsSelected = Array.from(weaponCheckboxes).map(cb => cb.parentElement.textContent.trim()).join(', ');
+      
+      const hurtCat = document.querySelector('input[name="hurtCat"]:checked')?.value || 'non-grievous';
+      const endangerLife = document.querySelector('input[name="endanger"]:checked')?.value || 'no';
+      
+      const alcoholCheckboxes = document.querySelectorAll('.check-group')[2]?.querySelectorAll('input[type="checkbox"]:checked') || [];
+      const alcoholSelected = Array.from(alcoholCheckboxes).map(cb => cb.parentElement.textContent.trim()).join(', ');
+      
+      const saCheckboxes = document.querySelectorAll('.check-group')[3]?.querySelectorAll('input[type="checkbox"]:checked') || [];
+      const saSelected = Array.from(saCheckboxes).map(cb => cb.parentElement.textContent.trim()).join(', ');
+      
+      const textareas = document.querySelectorAll('textarea');
+      const history = textareas[0]?.value || '';
+      const remarks = textareas[1]?.value || '';
+      
+      const inputs = document.querySelectorAll('input[type="text"]');
+      const investigations = document.querySelector('input[placeholder="e.g. X-Ray Chest"]')?.value || '';
+      const referrals = document.querySelector('input[placeholder="e.g. Surgical clinic"]')?.value || '';
+      const otherOpinions = inputs[inputs.length - 1]?.value || '';
+
+      const examinationNotes = `
+Medical Officer's Note (Identification & Consent):
+- NIC/Passport: ${nic}
+- Consent: ${consent}
+
+Admission & Production Details:
+- Officer Produced By: ${producedBy}
+- Hospital: ${hospital}
+- Ward: ${ward}
+- B.H.T. No.: ${bht}
+- Date of Admission: ${admissionDate}
+- Date of Discharge: ${dischargeDate}
+
+Nature of Bodily Harm:
+- Harmonic injuries: ${harmSelected}
+- Internal injuries: ${internalInjuries}
+
+Nature of Causative Weapon & Category of Hurt:
+- Causative Weapon: ${weaponsSelected}
+- Category of Hurt: ${hurtCat}
+- Endangers Life: ${endangerLife}
+
+Alcohol/Drugs & Sexual Assault:
+- Alcohol Exam: ${alcoholSelected}
+- Alleged Sexual Assault: ${saSelected}
+- History: ${history}
+
+Conclusions & Recommendations:
+- Investigations: ${investigations}
+- Referrals: ${referrals}
+- Other Opinions: ${otherOpinions}
+- Remarks: ${remarks}
+      `.trim();
+
+      const body = {
+        mlef_id: mlefId,
+        examination_date: new Date(examDateTime).toISOString(),
+        examination_notes: examinationNotes,
+        conclusion: `Category: ${hurtCat}. Recommendations: ${otherOpinions || 'None'}. Remarks: ${remarks || 'None'}`
+      };
+
+      console.log('Sending examination data:', body);
+      const res = await API.post('/jmo/examinations', body);
+      console.log('Examination created:', res);
+      
+      if (res && res.examination_id) {
+        sessionStorage.setItem('currentExaminationId', res.examination_id);
+      }
+      
+      alert('Examination details saved successfully!');
+      window.location.href = 'jmo_vitals.html';
+    } catch (err) {
+      console.error(err);
+      alert('Failed to save examination: ' + err.message);
+    }
+  }
 </script>
 </body>
 </html>
