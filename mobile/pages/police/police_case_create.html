@@ -93,18 +93,18 @@
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label">Case Number (E-Diary No)</label>
-                <input type="text" class="form-control" placeholder="e.g. C-2026-0045" required>
+                <input type="text" id="case_number" class="form-control" placeholder="e.g. C-2026-0045" required>
               </div>
               <div class="form-group">
                 <label class="form-label">Police Station / Division</label>
-                <input type="text" class="form-control" placeholder="e.g. Peradeniya Police Station" required>
+                <input type="text" id="station_name" class="form-control" readonly style="background-color: #e2e8f0; cursor: not-allowed;">
               </div>
             </div>
 
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label">Case Type / Offense Category</label>
-                <select class="form-control" required>
+                <select id="case_type" class="form-control" required>
                   <option value="">-- Select Case Type --</option>
                   <option value="Homicide">Homicide / Murder</option>
                   <option value="Assault">Assault / Grievous Hurt</option>
@@ -116,18 +116,18 @@
               </div>
               <div class="form-group">
                 <label class="form-label">Date Reported</label>
-                <input type="date" class="form-control" required>
+                <input type="date" id="date_reported" class="form-control" required>
               </div>
             </div>
 
             <div class="form-group">
               <label class="form-label">Initial Case Summary</label>
-              <textarea class="form-control" rows="4" placeholder="Brief summary of the case as reported..." required></textarea>
+              <textarea id="description" class="form-control" rows="4" placeholder="Brief summary of the case as reported..." required></textarea>
             </div>
 
             <div class="form-group">
               <label class="form-label">Priority Level</label>
-              <select class="form-control">
+              <select id="priority" class="form-control">
                 <option value="Normal">Normal</option>
                 <option value="High">High</option>
                 <option value="Critical">Critical</option>
@@ -142,15 +142,58 @@
   </div>
 </div>
 
+<script src="../../js/api.js"></script>
 <script>
   function tick() { const el = document.getElementById("dashClock"); if (el) el.textContent = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" }); }
   tick(); setInterval(tick, 1000);
   function logout() { sessionStorage.clear(); window.location.href = "../../index.html"; }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Populate police station info from sessionStorage (retrieved when dashboard loaded)
+    const stationName = sessionStorage.getItem('stationName') || 'Colombo Fort Police Station';
+    const stationId = sessionStorage.getItem('stationId') || 's1111111-1111-1111-1111-111111111111';
+    
+    document.getElementById('station_name').value = stationName;
+    document.getElementById('date_reported').valueAsDate = new Date(); // Default to today
+  });
   
-  document.getElementById('createCaseForm').addEventListener('submit', function(e) {
+  document.getElementById('createCaseForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    alert('Case created successfully! Redirecting to add incident details.');
-    window.location.href = 'police_incident_add.html';
+
+    const caseNumber = document.getElementById('case_number').value.trim();
+    const caseType = document.getElementById('case_type').value;
+    const dateReported = document.getElementById('date_reported').value;
+    const description = document.getElementById('description').value.trim();
+    const stationId = sessionStorage.getItem('stationId') || 's1111111-1111-1111-1111-111111111111';
+
+    const btn = document.querySelector('.btn-save');
+    const originalText = btn.textContent;
+    btn.textContent = 'Registering Case...';
+    btn.disabled = true;
+
+    try {
+      const payload = {
+        station_id: stationId,
+        case_number: caseNumber,
+        case_type: caseType,
+        title: `${caseType} Investigation for #${caseNumber}`,
+        description: description,
+        date_reported: new Date(dateReported).toISOString()
+      };
+
+      const newCase = await API.post('/police/cases', payload);
+      if (newCase && newCase.case_id) {
+        sessionStorage.setItem('currentCaseId', newCase.case_id);
+        sessionStorage.setItem('currentCaseNumber', newCase.case_number);
+        sessionStorage.setItem('currentCaseType', newCase.case_type);
+        alert('Case registered successfully! Redirecting to add incident details.');
+        window.location.href = 'police_incident_add.html';
+      }
+    } catch (err) {
+      alert(err.message || 'Error occurred while creating case.');
+      btn.textContent = originalText;
+      btn.disabled = false;
+    }
   });
 </script>
 </body>
