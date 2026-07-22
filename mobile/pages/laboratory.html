@@ -606,12 +606,13 @@
             const dateStr = new Date(r.request_date).toLocaleDateString('en-US');
             const statusClass = r.status === 'ACCEPTED' ? 'primary' : (r.status === 'REJECTED' ? 'danger' : 'warning');
             const priorityClass = r.priority === 'HIGH' || r.priority === 'URGENT' ? 'danger' : 'secondary';
+            const patientName = `${r.patient_first_name || ''} ${r.patient_last_name || ''}`.trim() || 'Unknown';
             
             const tr = document.createElement('tr');
             tr.innerHTML = `
               <td><strong>LR-${r.request_id.substring(0, 6).toUpperCase()}</strong></td>
-              <td>CAS-${r.request_id.substring(0, 4).toUpperCase()}</td>
-              <td>Patient</td>
+              <td>${r.case_number || 'N/A'}</td>
+              <td>${patientName}</td>
               <td>${r.specimen_type || 'Blood'}</td>
               <td>${r.laboratory_name || 'Lab Test'}</td>
               <td><span class="badge badge-${priorityClass}">${r.priority || 'Normal'}</span></td>
@@ -637,6 +638,7 @@
           pendingRequests.forEach(r => {
             const div = document.createElement('div');
             div.className = 'req-card';
+            const patientName = `${r.patient_first_name || ''} ${r.patient_last_name || ''}`.trim() || 'Unknown';
             div.innerHTML = `
               <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
                 <div>
@@ -646,6 +648,9 @@
                 <span class="badge badge-${r.priority === 'HIGH' || r.priority === 'URGENT' ? 'danger' : 'secondary'}">${r.priority || 'Normal'}</span>
               </div>
               <div style="font-size:13px; margin-bottom:20px; line-height: 1.8;">
+                <div style="display:flex; justify-content:space-between">
+                  <span style="color:var(--text-muted)">Patient:</span> <span style="font-weight:600">${patientName}</span>
+                </div>
                 <div style="display:flex; justify-content:space-between">
                   <span style="color:var(--text-muted)">Test:</span> <span style="font-weight:600">${r.laboratory_name || 'Lab Test'}</span>
                 </div>
@@ -679,6 +684,7 @@
           activeTests.forEach(t => {
             const div = document.createElement('div');
             div.className = 'req-card';
+            const patientName = `${t.patient_first_name || ''} ${t.patient_last_name || ''}`.trim() || 'Unknown';
             div.innerHTML = `
               <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
                 <div>
@@ -688,6 +694,10 @@
                 <span class="badge badge-primary">${t.status}</span>
               </div>
               <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; font-size:13px; margin-bottom:20px;">
+                <div>
+                  <div style="color:var(--text-muted); font-size:11px">Patient Name</div>
+                  <div style="font-weight:600">${patientName}</div>
+                </div>
                 <div>
                   <div style="color:var(--text-muted); font-size:11px">Test Type</div>
                   <div style="font-weight:600">${t.test_name || 'Lab Test'}</div>
@@ -717,11 +727,12 @@
         } else {
           specimens.forEach(s => {
             const tr = document.createElement('tr');
+            const patientName = `${s.patient_first_name || ''} ${s.patient_last_name || ''}`.trim() || 'Unknown';
             tr.innerHTML = `
               <td><strong>SPC-${s.specimen_id.substring(0, 6).toUpperCase()}</strong></td>
               <td>Barcode</td>
               <td>${s.specimen_type || 'N/A'}</td>
-              <td>Patient</td>
+              <td>${patientName}</td>
               <td>${new Date(s.collection_datetime).toLocaleDateString('en-US')}</td>
               <td>${s.storage_condition || 'Cold storage'}</td>
               <td><span class="badge badge-primary">${s.current_status || 'Stored'}</span></td>
@@ -745,10 +756,11 @@
         } else {
           results.forEach(res => {
             const tr = document.createElement('tr');
+            const patientName = `${res.patient_first_name || ''} ${res.patient_last_name || ''}`.trim() || 'Unknown';
             tr.innerHTML = `
               <td><strong>RES-${res.result_id.substring(0, 6).toUpperCase()}</strong></td>
               <td>TST-${res.test_id.substring(0, 6).toUpperCase()}</td>
-              <td>Patient</td>
+              <td>${patientName}</td>
               <td>Result Report</td>
               <td>${new Date(res.created_at || Date.now()).toLocaleDateString('en-US')}</td>
               <td>Technician</td>
