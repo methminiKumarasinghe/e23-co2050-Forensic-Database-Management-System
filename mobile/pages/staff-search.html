@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Global Search — DFMIS</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <script src="../js/api.js"></script>
+  <style>
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+    .modal.show { display: flex; align-items: center; justify-content: center; }
+    .modal-content { background: #fff; padding: 20px; border-radius: 8px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 20px; }
+    .modal-close { cursor: pointer; font-size: 1.5rem; background: none; border: none; }
+  </style>
+</head>
+<body>
+<div class="dash-layout">
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main Navigation">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">🔬</div>
+      <div class="sidebar-brand">
+        <h3>DFMIS Portal</h3>
+        <p>Sri Lanka Gov. System</p>
+      </div>
+    </div>
+    <div class="sidebar-user-card">
+      <div class="user-avatar">🏥</div>
+      <div class="user-info">
+        <div class="name">Forensic Staff</div>
+        <div class="role">Registration Officer</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main Menu</div>
+      <a class="nav-item " href="staff.html" id="nav-dashboard">
+        <span class="nav-icon">🏠</span> Dashboard
+      </a>
+      <a class="nav-item " href="staff-cases.html" id="nav-cases">
+        <span class="nav-icon">📂</span> Case Monitoring
+      </a>
+      <a class="nav-item " href="staff-mlef.html" id="nav-mlef">
+        <span class="nav-icon">📄</span> MLEF Monitoring
+      </a>
+      <a class="nav-item " href="staff-examinations.html" id="nav-examinations">
+        <span class="nav-icon">🩺</span> Examinations
+      </a>
+      <a class="nav-item " href="staff-laboratory.html" id="nav-laboratory">
+        <span class="nav-icon">🔬</span> Laboratory
+      </a>
+      <a class="nav-item " href="staff-appointments.html" id="nav-appointments">
+        <span class="nav-icon">📅</span> Appointments
+      </a>
+      <a class="nav-item " href="staff-documents.html" id="nav-documents">
+        <span class="nav-icon">📁</span> Documents
+      </a>
+      <a class="nav-item active" href="staff-search.html" id="nav-search">
+        <span class="nav-icon">🔍</span> Global Search
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="logout()" id="btn-logout">
+        <span>🚪</span> Logout
+      </button>
+    </div>
+  </aside>
+
+  <div class="dash-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div>
+          <div class="topbar-title">Global Search</div>
+          <div class="breadcrumb">
+            <span>DFMIS</span><span class="breadcrumb-sep">›</span><span>Global Search</span>
+          </div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-time" id="dashClock"></div>
+        <div class="topbar-badge" title="Notifications">🔔<span class="badge-dot"></span></div>
+      </div>
+    </div>
+
+    <div class="dash-body">
+      
+      <div class="card" style="margin-bottom: 20px;">
+        <div class="card-body">
+          <div style="display:flex; gap:10px;">
+            <input type="text" id="searchInput" placeholder="Search by case number, patient name, NIC, MLEF ID..." style="flex:1; padding:10px; font-size:1rem; border:1px solid #ccc; border-radius:4px;" />
+            <button class="btn" onclick="doSearch()">Search</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h5>🔍 Search Results</h5>
+        </div>
+        <div class="card-body">
+          <div class="table-wrap" id="dataContainer">
+            <table class="dash-table">
+              <thead><tr><th>Entity Type</th><th>ID / Number</th><th>Details</th></tr></thead>
+              <tbody id="dataTableBody">
+                <tr><td colspan="3" style="text-align:center;">Enter a search term above.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    
+    </div>
+
+    <footer class="dash-footer">
+      <span>Department of Forensic Medicine &nbsp;|&nbsp; University of Peradeniya</span>
+      <span>DFMIS v1.0 &nbsp;|&nbsp; &copy; 2026 Ministry of Health, Sri Lanka</span>
+    </footer>
+  </div>
+</div>
+
+<script>
+  function tick() {
+    const el = document.getElementById("dashClock");
+    if (el) el.textContent = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  }
+  tick(); setInterval(tick, 1000);
+  function logout() { sessionStorage.clear(); window.location.href = "../index.html"; }
+</script>
+
+<script>
+  async function doSearch() {
+    const q = document.getElementById('searchInput').value.trim();
+    if (!q) return;
+
+    setTableLoading('dataContainer', true);
+    try {
+      const data = await fetchAPI(`/staff/search?q=${encodeURIComponent(q)}`);
+      const tbody = document.getElementById('dataTableBody');
+      if (data && data.length > 0) {
+        tbody.innerHTML = data.map(d => `
+          <tr>
+            <td><span class="badge badge-primary">${d.entity_type}</span></td>
+            <td><strong>${d.case_number}</strong></td>
+            <td>${d.details}</td>
+          </tr>
+        `).join('');
+      } else {
+        setTableEmpty('dataContainer', 'No results found for "' + q + '"');
+      }
+    } catch (err) {
+      setTableError('dataContainer', err.message);
+    } finally {
+      setTableLoading('dataContainer', false);
+    }
+  }
+
+  document.getElementById('searchInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') doSearch();
+  });
+</script>
+    
+</body>
+</html>

@@ -1,102 +1,174 @@
 /**
- * api.js
- * Unified DFMIS API Client Utility
- * Handles token inclusion, automatic base URL determination, and authentication redirects.
+ * Digital Forensic Medical Information System
+ * Reusable utility for handling frontend API calls.
  */
 
-const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? 'http://localhost:5000'
   : 'https://forensic-website.azurewebsites.net';
 
+function getAuthToken() {
+  return sessionStorage.getItem('token') || sessionStorage.getItem('jwt_token');
+}
+
+function getLoginRedirectDepth() {
+  return window.location.pathname.includes('/pages/police/') || window.location.pathname.includes('/pages/jmo/') ? '../../' : '../';
+}
+
+function handleUnauthorized() {
+  if (sessionStorage.getItem('loggedIn') === 'true') {
+    sessionStorage.clear();
+    alert('Session expired or access denied. Redirecting to login.');
+    window.location.href = `${getLoginRedirectDepth()}index.html`;
+  }
+}
+
+async function readResponse(response) {
+  if (response.status === 204) {
+    return null;
+  }
+
+  const contentType = response.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    return response.json();
+  }
+
+  return response.text();
+}
+
+async function request(endpoint, options = {}) {
+  const token = getAuthToken();
+  const headers = {
+    'Content-Type': 'application/json',
+    ...options.headers
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    ...options,
+    headers
+  });
+
+  if (response.status === 401 || response.status === 403) {
+    handleUnauthorized();
+    return;
+  }
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || errorData.message || `HTTP Error ${response.status}`);
+  }
+
+  return readResponse(response);
+}
+
 window.API = {
   getHeaders() {
-    const token = sessionStorage.getItem('token');
+    const token = getAuthToken();
     return {
       'Content-Type': 'application/json',
       ...(token ? { 'Authorization': `Bearer ${token}` } : {})
     };
   },
 
-  async request(endpoint, options = {}) {
-    const url = `${API_URL}${endpoint}`;
-    const headers = {
-      ...this.getHeaders(),
-      ...options.headers
-    };
-
-    const response = await fetch(url, {
-      ...options,
-      headers
-    });
-
-    if (response.status === 401 || response.status === 403) {
-      // Session expired or unauthorized role access
-      const depth = window.location.pathname.includes('/pages/police/') || window.location.pathname.includes('/pages/jmo/') ? '../../' : '../';
-      if (sessionStorage.getItem('loggedIn') === 'true') {
-        sessionStorage.clear();
-        alert('Session expired or access denied. Redirecting to login.');
-        window.location.href = `${depth}index.html`;
-      }
-      return;
-    }
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `HTTP Error ${response.status}`);
-    }
-
-    return response.json();
-  },
+  request,
 
   get(endpoint) {
-    return this.request(endpoint, { method: 'GET' });
+    return request(endpoint, { method: 'GET' });
   },
 
   post(endpoint, body) {
-    return this.request(endpoint, {
+    return request(endpoint, {
       method: 'POST',
       body: JSON.stringify(body)
     });
   },
 
   put(endpoint, body) {
-    return this.request(endpoint, {
+    return request(endpoint, {
       method: 'PUT',
       body: JSON.stringify(body)
     });
   },
 
   delete(endpoint) {
-    return this.request(endpoint, { method: 'DELETE' });
+    return request(endpoint, { method: 'DELETE' });
   },
 
-  // Helper for uploading files using FormData (where boundary header must be determined by the browser)
   async postMultipart(endpoint, formData) {
-    const url = `${API_URL}${endpoint}`;
-    const token = sessionStorage.getItem('token');
+    const token = getAuthToken();
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
-    const response = await fetch(url, {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'POST',
       headers,
       body: formData
     });
 
     if (response.status === 401 || response.status === 403) {
-      const depth = window.location.pathname.includes('/pages/police/') || window.location.pathname.includes('/pages/jmo/') ? '../../' : '../';
-      if (sessionStorage.getItem('loggedIn') === 'true') {
-        sessionStorage.clear();
-        alert('Session expired or access denied. Redirecting to login.');
-        window.location.href = `${depth}index.html`;
-      }
+      handleUnauthorized();
       return;
     }
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `HTTP Error ${response.status}`);
+      throw new Error(errorData.error || errorData.message || `HTTP Error ${response.status}`);
     }
 
-    return response.json();
+    return readResponse(response);
   }
 };
+
+async function fetchAPI(endpoint, options = {}) {
+  try {
+    return await request(endpoint, options);
+  } catch (error) {
+    console.error('API Request Failed:', error);
+    throw error;
+  }
+}
+
+function setTableLoading(containerId, isLoading) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  if (isLoading) {
+    container.innerHTML = `
+            <div style="padding: 2rem; text-align: center; color: #666;">
+                <div class="spinner" style="font-size: 2rem; margin-bottom: 1rem;">⏳</div>
+                <p>Loading data...</p>
+            </div>
+        `;
+  }
+}
+
+function setTableEmpty(containerId, message = 'No records found.') {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  container.innerHTML = `
+        <div style="padding: 2rem; text-align: center; color: #666;">
+            <p>${message}</p>
+        </div>
+    `;
+}
+
+function setTableError(containerId, error) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  container.innerHTML = `
+        <div style="padding: 2rem; text-align: center; color: #e74c3c;">
+            <p>⚠ Failed to load data</p>
+            <p style="font-size: 0.9em;">${error}</p>
+        </div>
+    `;
+}
+
+window.fetchAPI = fetchAPI;
+window.setTableLoading = setTableLoading;
+window.setTableEmpty = setTableEmpty;
+window.setTableError = setTableError;

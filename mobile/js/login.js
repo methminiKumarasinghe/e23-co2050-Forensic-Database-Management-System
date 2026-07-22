@@ -4,14 +4,6 @@
  * Handles login form logic with hardcoded credentials (UI demo phase)
  */
 
-// ── Hardcoded accounts (replace with API call when backend is ready) ──
-const ACCOUNTS = [
-  { username: "admin",  password: "admin123",  redirect: "pages/admin.html",      role: "Administrator" },
-  { username: "staff",  password: "staff123",  redirect: "pages/staff.html",      role: "Forensic Staff" },
-  { username: "police", password: "police123", redirect: "pages/police/police.html", role: "Police Officer" },
-  { username: "jmo",    password: "jmo123",    redirect: "pages/jmo/jmo.html",    role: "Judicial Medical Officer" },
-  { username: "lab",    password: "lab123",    redirect: "pages/laboratory.html", role: "Laboratory Technician" },
-];
 
 // ── DOM references ────────────────────────────────────────────────────
 const usernameInput = document.getElementById("username");
@@ -72,7 +64,7 @@ async function login() {
   try {
     const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
       ? 'http://localhost:5000'
-      : 'https://forensic-website.azurewebsites.net'; // Replace with your actual Azure Web App URL if different
+      : 'https://forensic-website.azurewebsites.net';
 
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',

@@ -56,7 +56,8 @@ a { text-decoration: none; color: inherit; }
   flex-direction: column;
   background: linear-gradient(160deg, #0a2d4d 0%, #0F4C81 45%, #1a6bb5 100%);
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Background pattern */
