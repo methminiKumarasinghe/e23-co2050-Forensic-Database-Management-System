@@ -213,12 +213,12 @@
           </tr>
         `).join('');
       } else {
-        setTableEmpty('stationsContainer');
+        setTableEmpty('stationsTableBody');
       }
     } catch (err) {
-      setTableError('stationsContainer', err.message);
+      setTableError('stationsTableBody', err.message);
     } finally {
-      setTableLoading('stationsContainer', false);
+      setTableLoading('stationsTableBody', false);
     }
   }
 

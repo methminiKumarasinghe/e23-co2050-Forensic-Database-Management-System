@@ -235,12 +235,12 @@
           </tr>
         `).join('');
       } else {
-        setTableEmpty('labsContainer');
+        setTableEmpty('labsTableBody');
       }
     } catch (err) {
-      setTableError('labsContainer', err.message);
+      setTableError('labsTableBody', err.message);
     } finally {
-      setTableLoading('labsContainer', false);
+      setTableLoading('labsTableBody', false);
     }
   }
 

@@ -215,12 +215,12 @@
           `;
         }).join('');
       } else {
-        setTableEmpty('docsContainer');
+        setTableEmpty('docsTableBody');
       }
     } catch (err) {
-      setTableError('docsContainer', err.message);
+      setTableError('docsTableBody', err.message);
     } finally {
-      setTableLoading('docsContainer', false);
+      setTableLoading('docsTableBody', false);
     }
   }
 

@@ -234,12 +234,12 @@
           </tr>
         `).join('');
       } else {
-        setTableEmpty('hospitalsContainer');
+        setTableEmpty('hospitalsTableBody');
       }
     } catch (err) {
-      setTableError('hospitalsContainer', err.message);
+      setTableError('hospitalsTableBody', err.message);
     } finally {
-      setTableLoading('hospitalsContainer', false);
+      setTableLoading('hospitalsTableBody', false);
     }
   }
 

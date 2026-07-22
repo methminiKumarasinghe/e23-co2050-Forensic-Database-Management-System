@@ -255,12 +255,12 @@
           </tr>
         `).join('');
       } else {
-        setTableEmpty('usersContainer');
+        setTableEmpty('usersTableBody');
       }
     } catch (err) {
-      setTableError('usersContainer', err.message);
+      setTableError('usersTableBody', err.message);
     } finally {
-      setTableLoading('usersContainer', false);
+      setTableLoading('usersTableBody', false);
     }
   }
 
