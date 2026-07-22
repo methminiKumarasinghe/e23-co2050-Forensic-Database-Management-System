@@ -48,9 +48,19 @@ const getDashboardStats = async (officerId) => {
   `;
   const recentActivitiesResult = await pool.query(recentActivitiesQuery, [officerId]);
   
+  const officerDetailsQuery = `
+    SELECT p.first_name, p.last_name, po.rank, po.badge_number, ps.station_name, ps.station_id
+    FROM police_officer po
+    JOIN person p ON po.person_id = p.person_id
+    JOIN police_station ps ON po.station_id = ps.station_id
+    WHERE po.officer_id = $1
+  `;
+  const officerDetailsResult = await pool.query(officerDetailsQuery, [officerId]);
+  
   return {
     stats: result.rows[0],
-    recentActivities: recentActivitiesResult.rows
+    recentActivities: recentActivitiesResult.rows,
+    officer: officerDetailsResult.rows[0]
   };
 };
 

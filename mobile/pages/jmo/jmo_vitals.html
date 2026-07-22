@@ -42,7 +42,7 @@
       <div class="nav-section-label">Clinical Examination</div>
       <a class="nav-item" href="jmo_mlef.html" id="nav-pending-mlef">
         <span class="nav-icon">📄</span> Assigned MLEF Cases
-        <span class="nav-badge">6</span>
+        <span class="nav-badge" id="badge-pendingExams">6</span>
       </a>
       <a class="nav-item active" href="jmo_vitals.html" id="nav-vital-signs">
         <span class="nav-icon">❤️</span> Record Vital Signs
@@ -112,7 +112,7 @@
           <h5>❤️ Enter Clinical Vital Signs</h5>
         </div>
         <div class="card-body">
-          <form onsubmit="event.preventDefault(); alert('Vital signs saved successfully!'); window.location.href='jmo_injuries.html';">
+          <form onsubmit="saveVitals(event)">
             
             <div class="form-row">
               <div class="form-group">
@@ -165,6 +165,7 @@
   </div>
 </div>
 
+<script src="../../js/api.js"></script>
 <script>
   function tick() {
     const el = document.getElementById("dashClock");
@@ -173,13 +174,75 @@
   tick(); setInterval(tick, 1000);
   function logout() { sessionStorage.clear(); window.location.href = "../../index.html"; }
 
-  // Load context if available
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
     const patientName = sessionStorage.getItem('currentPatient');
     const caseType = sessionStorage.getItem('currentCaseType');
+    
     if(patientName) document.getElementById('ctx-patient-name').textContent = 'Patient: ' + patientName;
     if(caseType) document.getElementById('ctx-case-type').textContent = caseType;
+    
+    // Load default examination datetime
+    const examDateInput = document.querySelector('input[type="datetime-local"]');
+    if (examDateInput) {
+      const now = new Date();
+      const localStr = now.getFullYear() + '-' + 
+                       String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                       String(now.getDate()).padStart(2, '0') + 'T' + 
+                       String(now.getHours()).padStart(2, '0') + ':' + 
+                       String(now.getMinutes()).padStart(2, '0');
+      examDateInput.value = localStr;
+    }
+    
+    try {
+      const userProfile = await API.get('/auth/me');
+      if (userProfile && userProfile.profile) {
+        const nameEl = document.querySelector('.sidebar-user-card .name');
+        if (nameEl) nameEl.textContent = 'Dr. ' + (userProfile.profile.username || 'JMO');
+      }
+
+      const mlefs = await API.get('/jmo/mlef');
+      const sidebarBadge = document.getElementById('badge-pendingExams');
+      if (sidebarBadge) {
+        sidebarBadge.textContent = mlefs.filter(m => m.status === 'PENDING').length;
+      }
+    } catch (err) {
+      console.error(err);
+    }
   });
+
+  async function saveVitals(event) {
+    event.preventDefault();
+    try {
+      const examId = sessionStorage.getItem('currentExaminationId');
+      if (!examId) {
+        alert('No active Examination ID found. Please complete the MLEF examination page first.');
+        window.location.href = 'jmo_mlef_exam.html';
+        return;
+      }
+      
+      const bp = document.querySelector('input[placeholder="e.g. 120/80"]')?.value || '';
+      const pulseStr = document.querySelector('input[placeholder="e.g. 72"]')?.value || '';
+      const respStr = document.querySelector('input[placeholder="e.g. 16"]')?.value || '';
+      const tempStr = document.querySelector('input[placeholder="e.g. 37.0"]')?.value || '';
+      
+      const body = {
+        blood_pressure: bp,
+        pulse_rate: pulseStr ? parseInt(pulseStr, 10) : null,
+        respiratory_rate: respStr ? parseInt(respStr, 10) : null,
+        temperature: tempStr ? parseFloat(tempStr) : null
+      };
+      
+      console.log('Sending vitals:', body);
+      const res = await API.post(`/jmo/examinations/${examId}/vitals`, body);
+      console.log('Vitals saved:', res);
+      
+      alert('Vital signs saved successfully!');
+      window.location.href = 'jmo_injuries.html';
+    } catch (err) {
+      console.error(err);
+      alert('Failed to save vital signs: ' + err.message);
+    }
+  }
 </script>
 </body>
 </html>

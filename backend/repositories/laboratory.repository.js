@@ -74,10 +74,16 @@ const getDashboardStats = async (hospitalId) => {
 // --- MODULE 2: Laboratory Requests ---
 const getLabRequests = async (hospitalId, filters) => {
   let query = `
-    SELECT lr.*, l.laboratory_name, s.specimen_type
+    SELECT lr.*, l.laboratory_name, s.specimen_type,
+           pc.case_number, pp.first_name AS patient_first_name, pp.last_name AS patient_last_name
     FROM laboratory_request lr
     JOIN laboratory l ON lr.laboratory_id = l.laboratory_id
     JOIN specimen s ON lr.specimen_id = s.specimen_id
+    LEFT JOIN examination e ON s.examination_id = e.examination_id
+    LEFT JOIN mlef m ON e.mlef_id = m.mlef_id
+    LEFT JOIN police_case pc ON m.case_id = pc.case_id
+    LEFT JOIN patient pt ON m.patient_id = pt.patient_id
+    LEFT JOIN person pp ON pt.person_id = pp.person_id
     WHERE l.hospital_id = $1
   `;
   const values = [hospitalId];
@@ -175,10 +181,14 @@ const updateRequestStatus = async (requestId, status, technicianId, userId) => {
 // --- MODULE 4: Specimen Management ---
 const getSpecimens = async (hospitalId) => {
     const query = `
-        SELECT s.* 
+        SELECT s.*, pp.first_name AS patient_first_name, pp.last_name AS patient_last_name
         FROM specimen s
         JOIN laboratory_request lr ON s.specimen_id = lr.specimen_id
         JOIN laboratory l ON lr.laboratory_id = l.laboratory_id
+        LEFT JOIN examination e ON s.examination_id = e.examination_id
+        LEFT JOIN mlef m ON e.mlef_id = m.mlef_id
+        LEFT JOIN patient pt ON m.patient_id = pt.patient_id
+        LEFT JOIN person pp ON pt.person_id = pp.person_id
         WHERE l.hospital_id = $1
     `;
     const result = await pool.query(query, [hospitalId]);
@@ -200,10 +210,16 @@ const getSpecimenById = async (specimenId, hospitalId) => {
 // --- MODULE 5: Laboratory Tests ---
 const getTests = async (hospitalId) => {
     const query = `
-        SELECT lt.* 
+        SELECT lt.*, pc.case_number, pp.first_name AS patient_first_name, pp.last_name AS patient_last_name
         FROM laboratory_test lt
         JOIN laboratory_request lr ON lt.request_id = lr.request_id
         JOIN laboratory l ON lr.laboratory_id = l.laboratory_id
+        JOIN specimen s ON lr.specimen_id = s.specimen_id
+        LEFT JOIN examination e ON s.examination_id = e.examination_id
+        LEFT JOIN mlef m ON e.mlef_id = m.mlef_id
+        LEFT JOIN police_case pc ON m.case_id = pc.case_id
+        LEFT JOIN patient pt ON m.patient_id = pt.patient_id
+        LEFT JOIN person pp ON pt.person_id = pp.person_id
         WHERE l.hospital_id = $1
     `;
     const result = await pool.query(query, [hospitalId]);
@@ -263,11 +279,17 @@ const updateTest = async (testId, updateData, userId) => {
 // --- MODULE 6: Laboratory Results ---
 const getResults = async (hospitalId) => {
     const query = `
-        SELECT lres.*, lt.test_name 
+        SELECT lres.*, lt.test_name, pc.case_number, pp.first_name AS patient_first_name, pp.last_name AS patient_last_name
         FROM laboratory_result lres
         JOIN laboratory_test lt ON lres.test_id = lt.test_id
         JOIN laboratory_request lr ON lt.request_id = lr.request_id
         JOIN laboratory l ON lr.laboratory_id = l.laboratory_id
+        JOIN specimen s ON lr.specimen_id = s.specimen_id
+        LEFT JOIN examination e ON s.examination_id = e.examination_id
+        LEFT JOIN mlef m ON e.mlef_id = m.mlef_id
+        LEFT JOIN police_case pc ON m.case_id = pc.case_id
+        LEFT JOIN patient pt ON m.patient_id = pt.patient_id
+        LEFT JOIN person pp ON pt.person_id = pp.person_id
         WHERE l.hospital_id = $1
     `;
     const result = await pool.query(query, [hospitalId]);

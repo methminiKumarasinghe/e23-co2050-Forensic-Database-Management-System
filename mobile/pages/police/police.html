@@ -102,33 +102,33 @@
         <div class="stat-card">
           <div class="stat-icon blue">📂</div>
           <div class="stat-info">
-            <div class="value">4</div>
+            <div class="value" id="stat-activeCases">-</div>
             <div class="label">My Active Cases</div>
-            <div class="change up">↑ 1 updated</div>
+            <div class="change up">↑ Live count</div>
           </div>
         </div>
         <div class="stat-card">
           <div class="stat-icon amber">📄</div>
           <div class="stat-info">
-            <div class="value">2</div>
+            <div class="value" id="stat-mlefRequests">-</div>
             <div class="label">Requested MLEFs</div>
-            <div class="change down">↓ Waiting for JMO</div>
+            <div class="change down">↓ Live count</div>
           </div>
         </div>
         <div class="stat-card">
           <div class="stat-icon green">🧾</div>
           <div class="stat-info">
-            <div class="value">7</div>
+            <div class="value" id="stat-evidenceItems">-</div>
             <div class="label">Evidence Items</div>
-            <div class="change up">↑ Logged &amp; Secured</div>
+            <div class="change up">↑ Live count</div>
           </div>
         </div>
         <div class="stat-card">
           <div class="stat-icon purple">📁</div>
           <div class="stat-info">
-            <div class="value">3</div>
+            <div class="value" id="stat-reportsReady">-</div>
             <div class="label">Reports Ready</div>
-            <div class="change up">↑ Pending Court Sub.</div>
+            <div class="change up">↑ Live count</div>
           </div>
         </div>
       </div>
@@ -139,39 +139,16 @@
         <div class="card">
           <div class="card-header">
             <h5>📂 My Police Cases</h5>
-            <span class="badge badge-primary">4 Active</span>
+            <span class="badge badge-primary" id="badge-case-count">0 Active</span>
           </div>
           <div class="card-body" style="padding: 0;">
             <div class="table-wrap">
               <table class="dash-table">
                 <thead>
-                  <tr><th>Case No.</th><th>Type</th><th>Incident Date</th><th>Investigation Status</th></tr>
+                  <tr><th>Case No.</th><th>Type</th><th>Incident Date</th><th>Status</th></tr>
                 </thead>
-                <tbody>
-                  <tr>
-                    <td><strong>#C001</strong></td>
-                    <td>Suspicious Death</td>
-                    <td>Jul 18</td>
-                    <td><span class="badge badge-warning">MLEF Requested</span></td>
-                  </tr>
-                  <tr>
-                    <td><strong>#C002</strong></td>
-                    <td>Assault</td>
-                    <td>Jul 19</td>
-                    <td><span class="badge badge-primary">Under Investigation</span></td>
-                  </tr>
-                  <tr>
-                    <td><strong>#C003</strong></td>
-                    <td>MVA</td>
-                    <td>Jul 20</td>
-                    <td><span class="badge badge-success">Report Available</span></td>
-                  </tr>
-                  <tr>
-                    <td><strong>#C004</strong></td>
-                    <td>Burglary</td>
-                    <td>Jul 20</td>
-                    <td><span class="badge badge-danger">Evidence Pending</span></td>
-                  </tr>
+                <tbody id="cases-tbody">
+                  <tr><td colspan="4" style="text-align:center; padding:15px; color:#64748b;">Loading cases...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -182,39 +159,16 @@
         <div class="card">
           <div class="card-header">
             <h5>🧾 Evidence Chain of Custody</h5>
-            <span class="badge badge-secondary">7 Items</span>
+            <span class="badge badge-secondary" id="badge-evidence-count">Select Case</span>
           </div>
           <div class="card-body" style="padding: 0;">
             <div class="table-wrap">
               <table class="dash-table">
                 <thead>
-                  <tr><th>Ref ID</th><th>Case</th><th>Item</th><th>Custody Status</th></tr>
+                  <tr><th>Item Name</th><th>Type</th><th>Collected Date</th><th>Status</th></tr>
                 </thead>
-                <tbody>
-                  <tr>
-                    <td>#E-001</td>
-                    <td>#C001</td>
-                    <td>Blood Sample</td>
-                    <td><span class="badge badge-primary">Sent to Laboratory</span></td>
-                  </tr>
-                  <tr>
-                    <td>#E-002</td>
-                    <td>#C002</td>
-                    <td>Clothing</td>
-                    <td><span class="badge badge-success">Secured in Storage</span></td>
-                  </tr>
-                  <tr>
-                    <td>#E-003</td>
-                    <td>#C003</td>
-                    <td>Photographs</td>
-                    <td><span class="badge badge-secondary">With Officer A</span></td>
-                  </tr>
-                  <tr>
-                    <td>#E-004</td>
-                    <td>#C004</td>
-                    <td>Weapon</td>
-                    <td><span class="badge badge-warning">Transfer Pending</span></td>
-                  </tr>
+                <tbody id="evidence-tbody">
+                  <tr><td colspan="4" style="text-align:center; padding:15px; color:#64748b;">Click on a case to view its evidence log.</td></tr>
                 </tbody>
               </table>
             </div>
@@ -224,7 +178,7 @@
       </div>
 
       <div class="card">
-        <div class="card-header"><h5>🚧 Legal Investigation Access</h5><span class="badge badge-secondary">UI Phase</span></div>
+        <div class="card-header"><h5>🚧 Legal Investigation Access</h5><span class="badge badge-secondary">Active Security</span></div>
         <div class="card-body">
           <div class="under-dev">
             <div class="icon">⚖️</div>
@@ -243,19 +197,119 @@
   </div>
 </div>
 
+<script src="../../js/api.js"></script>
 <script>
   function tick() {
     const el = document.getElementById("dashClock");
     if (el) el.textContent = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   }
   tick(); setInterval(tick, 1000);
-  function logout() { sessionStorage.clear(); window.location.href = "../index.html"; }
+  
+  function logout() { sessionStorage.clear(); window.location.href = "../../index.html"; }
+  
   document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', function() {
       document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
       this.classList.add('active');
     });
   });
-</script>
+
+  async function loadDashboard() {
+    try {
+      // 1. Fetch Stats
+      const data = await API.get('/police/dashboard');
+      if (data && data.stats) {
+        document.getElementById('stat-activeCases').textContent = data.stats.total_assigned_cases || 0;
+        document.getElementById('stat-mlefRequests').textContent = data.stats.pending_mlef_requests || 0;
+        document.getElementById('stat-evidenceItems').textContent = data.stats.total_evidence_items || 0;
+        document.getElementById('stat-reportsReady').textContent = data.stats.completed_mlef_requests || 0;
+        document.getElementById('badge-case-count').textContent = (data.stats.total_assigned_cases || 0) + ' Assigned';
+      }
+
+      if (data && data.officer) {
+        sessionStorage.setItem('stationId', data.officer.station_id);
+        sessionStorage.setItem('stationName', data.officer.station_name);
+        
+        // Dynamic User Card in Sidebar
+        const nameEl = document.querySelector('.sidebar-user-card .name');
+        const roleEl = document.querySelector('.sidebar-user-card .role');
+        if (nameEl) nameEl.textContent = `${data.officer.rank || 'Officer'} ${data.officer.first_name} ${data.officer.last_name}`;
+        if (roleEl) roleEl.textContent = `${data.officer.station_name} (Badge: ${data.officer.badge_number})`;
+      }
+
+      // 2. Fetch Cases
+      const cases = await API.get('/police/cases');
+      const tbody = document.getElementById('cases-tbody');
+      if (tbody) {
+        tbody.innerHTML = '';
+        if (!cases || cases.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:15px; color:#64748b;">No active cases assigned.</td></tr>';
+        } else {
+          cases.forEach(c => {
+            const dateStr = new Date(c.date_reported).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            let badgeClass = 'badge-primary';
+            if (c.status_name === 'CLOSED') badgeClass = 'badge-success';
+            else if (c.status_name === 'UNDER_INVESTIGATION') badgeClass = 'badge-warning';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td><strong>#${c.case_number}</strong></td>
+              <td>${c.case_type || 'General'}</td>
+              <td>${dateStr}</td>
+              <td><span class="badge ${badgeClass}">${c.status_name}</span></td>
+            `;
+            tr.style.cursor = 'pointer';
+            tr.addEventListener('click', async () => {
+              // Highlight row
+              document.querySelectorAll('#cases-tbody tr').forEach(r => r.style.background = '');
+              tr.style.background = '#f1f5f9';
+
+              sessionStorage.setItem('currentCaseId', c.case_id);
+              sessionStorage.setItem('currentCaseNumber', c.case_number);
+              sessionStorage.setItem('currentCaseType', c.case_type);
+
+              // Load evidence for this case
+              await loadEvidenceForCase(c.case_id, c.case_number);
+            });
+            tbody.appendChild(tr);
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load dashboard stats:', err);
+    }
+  }
+
+  async function loadEvidenceForCase(caseId, caseNumber) {
+    const evTbody = document.getElementById('evidence-tbody');
+    const evBadge = document.getElementById('badge-evidence-count');
+    try {
+      evTbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:15px; color:#64748b;">Loading evidence...</td></tr>';
+      const evidence = await API.get(`/police/cases/${caseId}/evidence`);
+      evTbody.innerHTML = '';
+      if (!evidence || evidence.length === 0) {
+        evTbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:15px; color:#64748b;">No evidence registered for this case.</td></tr>';
+        evBadge.textContent = '0 Items';
+      } else {
+        evBadge.textContent = `${evidence.length} Items (#${caseNumber})`;
+        evidence.forEach(ev => {
+          const dateStr = new Date(ev.collected_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><strong>${ev.description || 'Unnamed Sample'}</strong></td>
+            <td>${ev.evidence_type}</td>
+            <td>${dateStr}</td>
+            <td><span class="badge badge-success">${ev.current_status || 'Secured'}</span></td>
+          `;
+          evTbody.appendChild(tr);
+        });
+      }
+    } catch (e) {
+      console.error('Error fetching evidence:', e);
+      evTbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:15px; color:#ef4444;">Error loading evidence.</td></tr>';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadDashboard);
 </body>
 </html>

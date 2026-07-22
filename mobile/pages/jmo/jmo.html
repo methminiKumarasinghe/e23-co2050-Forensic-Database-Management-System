@@ -42,7 +42,7 @@
       <div class="nav-section-label">Clinical Examination</div>
       <a class="nav-item" href="jmo_mlef.html" id="nav-pending-mlef">
         <span class="nav-icon">📄</span> Assigned MLEF Cases
-        <span class="nav-badge">6</span>
+        <span class="nav-badge" id="badge-pendingExams">6</span>
       </a>
       <a class="nav-item" href="jmo_vitals.html" id="nav-vital-signs">
         <span class="nav-icon">❤️</span> Record Vital Signs
@@ -112,7 +112,7 @@
         <div class="stat-card">
           <div class="stat-icon blue">👤</div>
           <div class="stat-info">
-            <div class="value">6</div>
+            <div class="value" id="stat-pendingExams">0</div>
             <div class="label">Pending Examinations</div>
             <div class="change down">↓ MLEF Assigned</div>
           </div>
@@ -120,7 +120,7 @@
         <div class="stat-card">
           <div class="stat-icon green">🩹</div>
           <div class="stat-info">
-            <div class="value">14</div>
+            <div class="value" id="stat-injuriesRecorded">0</div>
             <div class="label">Injuries Recorded</div>
             <div class="change up">↑ Today</div>
           </div>
@@ -128,15 +128,15 @@
         <div class="stat-card">
           <div class="stat-icon teal">🧪</div>
           <div class="stat-info">
-            <div class="value">5</div>
+            <div class="value" id="stat-labTests">0</div>
             <div class="label">Lab Tests Requested</div>
-            <div class="change up">↑ 2 completed</div>
+            <div class="change up">↑ Today</div>
           </div>
         </div>
         <div class="stat-card">
           <div class="stat-icon purple">📑</div>
           <div class="stat-info">
-            <div class="value">9</div>
+            <div class="value" id="stat-mlrIssued">0</div>
             <div class="label">MLR Issued</div>
             <div class="change up">↑ Digitally Signed</div>
           </div>
@@ -157,31 +157,8 @@
                 <thead>
                   <tr><th>Time</th><th>Requesting Station</th><th>Case Reason</th><th>Priority</th></tr>
                 </thead>
-                <tbody>
-                  <tr>
-                    <td>09:00 AM</td>
-                    <td>Kandy Police Station</td>
-                    <td>Assault Investigation</td>
-                    <td><span class="badge badge-danger">Urgent</span></td>
-                  </tr>
-                  <tr>
-                    <td>10:00 AM</td>
-                    <td>Peradeniya Police Station</td>
-                    <td>Suspicious Death (Autopsy)</td>
-                    <td><span class="badge badge-danger">Urgent</span></td>
-                  </tr>
-                  <tr>
-                    <td>01:00 PM</td>
-                    <td>Katugastota Police Station</td>
-                    <td>Sexual Assault</td>
-                    <td><span class="badge badge-warning">High</span></td>
-                  </tr>
-                  <tr>
-                    <td>03:00 PM</td>
-                    <td>Kandy Police Station</td>
-                    <td>MVA Injuries</td>
-                    <td><span class="badge badge-primary">Normal</span></td>
-                  </tr>
+                <tbody id="pending-mlef-tbody">
+                  <tr><td colspan="4" style="text-align:center; padding:15px; color:#64748b;">Loading pending cases...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -200,31 +177,8 @@
                 <thead>
                   <tr><th>Req. No.</th><th>Test Type</th><th>Sample</th><th>Status</th></tr>
                 </thead>
-                <tbody>
-                  <tr>
-                    <td>#LR-001</td>
-                    <td>Toxicology</td>
-                    <td>Blood</td>
-                    <td><span class="badge badge-success">Ready</span></td>
-                  </tr>
-                  <tr>
-                    <td>#LR-002</td>
-                    <td>DNA Analysis</td>
-                    <td>Buccal Swab</td>
-                    <td><span class="badge badge-warning">Pending</span></td>
-                  </tr>
-                  <tr>
-                    <td>#LR-003</td>
-                    <td>Blood Alcohol</td>
-                    <td>Blood</td>
-                    <td><span class="badge badge-success">Ready</span></td>
-                  </tr>
-                  <tr>
-                    <td>#LR-004</td>
-                    <td>Histopathology</td>
-                    <td>Tissue</td>
-                    <td><span class="badge badge-primary">In Progress</span></td>
-                  </tr>
+                <tbody id="lab-requests-tbody">
+                  <tr><td colspan="4" style="text-align:center; padding:15px; color:#64748b;">Loading lab requests...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -253,6 +207,7 @@
   </div>
 </div>
 
+<script src="../../js/api.js"></script>
 <script>
   function tick() {
     const el = document.getElementById("dashClock");
@@ -260,12 +215,84 @@
   }
   tick(); setInterval(tick, 1000);
   function logout() { sessionStorage.clear(); window.location.href = "../../index.html"; }
+  
   document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', function() {
       document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
       this.classList.add('active');
     });
   });
+
+  async function loadDashboard() {
+    try {
+      // 1. Fetch Stats
+      const data = await API.get('/jmo/dashboard');
+      if (data && data.stats) {
+        document.getElementById('stat-pendingExams').textContent = data.stats.assigned_mlef_requests || 0;
+        document.getElementById('stat-injuriesRecorded').textContent = data.stats.completed_examinations || 0;
+        document.getElementById('stat-labTests').textContent = data.stats.pending_laboratory_requests || 0;
+        document.getElementById('stat-mlrIssued').textContent = data.stats.signed_reports || 0;
+        const badge = document.getElementById('badge-pendingExams');
+        if (badge) badge.textContent = data.stats.assigned_mlef_requests || 0;
+      }
+      
+      const userProfile = await API.get('/auth/me');
+      if (userProfile && userProfile.profile) {
+        const nameEl = document.querySelector('.sidebar-user-card .name');
+        if (nameEl) nameEl.textContent = 'Dr. ' + (userProfile.profile.username || 'JMO');
+      }
+
+      // 2. Fetch pending MLEF requests
+      const mlefs = await API.get('/jmo/mlef?status=PENDING');
+      const tbody = document.getElementById('pending-mlef-tbody');
+      if (tbody) {
+        tbody.innerHTML = '';
+        if (!mlefs || mlefs.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:15px; color:#64748b;">No pending examinations.</td></tr>';
+        } else {
+          mlefs.slice(0, 5).forEach(m => {
+            const dateStr = new Date(m.request_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            const reason = m.reason || 'Not specified';
+            const station = 'Police Department';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${dateStr}</td>
+              <td>${station}</td>
+              <td>${reason}</td>
+              <td><span class="badge badge-primary">Normal</span></td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+      }
+
+      // 3. Fetch Lab requests
+      const labReqs = await API.get('/jmo/laboratory-requests');
+      const labTbody = document.getElementById('lab-requests-tbody');
+      if (labTbody) {
+        labTbody.innerHTML = '';
+        if (!labReqs || labReqs.length === 0) {
+          labTbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:15px; color:#64748b;">No lab requests found.</td></tr>';
+        } else {
+          labReqs.slice(0, 5).forEach(lr => {
+            const tr = document.createElement('tr');
+            const statusClass = lr.status === 'COMPLETED' || lr.status === 'READY' ? 'success' : (lr.status === 'PENDING' ? 'warning' : 'primary');
+            tr.innerHTML = `
+              <td>#${lr.request_id.substring(0, 8)}</td>
+              <td>Lab Request</td>
+              <td>Specimen ID: ${lr.specimen_id.substring(0, 8)}</td>
+              <td><span class="badge badge-${statusClass}">${lr.status || 'Pending'}</span></td>
+            `;
+            labTbody.appendChild(tr);
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load JMO dashboard:', err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadDashboard);
 </script>
 </body>
 </html>

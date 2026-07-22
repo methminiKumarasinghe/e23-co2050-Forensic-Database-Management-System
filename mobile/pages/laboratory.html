@@ -15,6 +15,7 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Include Chart.js for charts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="../js/api.js"></script>
   <style>
     /* Additional Styles for the enhanced Dashboard */
     .view-section { display: none; animation: fadeIn 0.3s ease; }
@@ -78,7 +79,7 @@
       </a>
       <a class="nav-item" href="#" onclick="switchView('pending', this)">
         <i data-lucide="clipboard-list" class="nav-icon"></i> Pending Requests
-        <span class="nav-badge">6</span>
+        <span class="nav-badge" id="badge-pendingRequests">6</span>
       </a>
       <a class="nav-item" href="#" onclick="switchView('active', this)">
         <i data-lucide="activity" class="nav-icon"></i> Active Tests
@@ -157,7 +158,7 @@
           <div class="stat-card">
             <div class="stat-icon amber"><i data-lucide="clipboard-list" style="color:var(--warning)"></i></div>
             <div class="stat-info">
-              <div class="value">6</div>
+              <div class="value" id="stat-pendingRequests">0</div>
               <div class="label">Pending Requests</div>
               <div class="change down">Action needed</div>
             </div>
@@ -165,33 +166,33 @@
           <div class="stat-card">
             <div class="stat-icon blue"><i data-lucide="activity" style="color:var(--primary)"></i></div>
             <div class="stat-info">
-              <div class="value">14</div>
+              <div class="value" id="stat-testsInProgress">0</div>
               <div class="label">Tests in Progress</div>
-              <div class="change up">5 completing today</div>
+              <div class="change up">Active</div>
             </div>
           </div>
           <div class="stat-card">
             <div class="stat-icon green"><i data-lucide="check-circle" style="color:var(--success)"></i></div>
             <div class="stat-info">
-              <div class="value">9</div>
-              <div class="label">Completed Today</div>
-              <div class="change up">Ready for dispatch</div>
+              <div class="value" id="stat-completedToday">0</div>
+              <div class="label">Completed Tests</div>
+              <div class="change up">Ready</div>
             </div>
           </div>
           <div class="stat-card">
             <div class="stat-icon red"><i data-lucide="alert-circle" style="color:var(--danger)"></i></div>
             <div class="stat-info">
-              <div class="value">3</div>
+              <div class="value" id="stat-highPriority">0</div>
               <div class="label">High Priority</div>
-              <div class="change down">Urgent requests</div>
+              <div class="change down">Urgent</div>
             </div>
           </div>
           <div class="stat-card">
             <div class="stat-icon purple"><i data-lucide="archive" style="color:#805ad5"></i></div>
             <div class="stat-info">
-              <div class="value">22</div>
+              <div class="value" id="stat-specimensReceived">0</div>
               <div class="label">Specimens Received</div>
-              <div class="change up">+4 vs yesterday</div>
+              <div class="change up">Stored</div>
             </div>
           </div>
         </div>
@@ -238,47 +239,8 @@
                     <th>Actions</th>
                   </tr>
                 </thead>
-                <tbody>
-                  <tr>
-                    <td><strong>LR-001</strong></td>
-                    <td>CAS-2026-001</td>
-                    <td>John Doe</td>
-                    <td>Blood</td>
-                    <td>Toxicology Screen</td>
-                    <td><span class="badge badge-danger">Urgent</span></td>
-                    <td>2026-07-20 08:00</td>
-                    <td><span class="badge badge-warning">Pending</span></td>
-                    <td>
-                      <button class="btn btn-outline" style="padding:4px 8px; font-size:11px" onclick="openModal('reqModal')">View</button>
-                      <button class="btn btn-primary" style="padding:4px 8px; font-size:11px">Accept</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td><strong>LR-002</strong></td>
-                    <td>CAS-2026-002</td>
-                    <td>Jane Smith</td>
-                    <td>Buccal Swab</td>
-                    <td>DNA Analysis</td>
-                    <td><span class="badge badge-warning">High</span></td>
-                    <td>2026-07-19 10:00</td>
-                    <td><span class="badge badge-primary">Processing</span></td>
-                    <td>
-                      <button class="btn btn-outline" style="padding:4px 8px; font-size:11px" onclick="openModal('reqModal')">View</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td><strong>LR-003</strong></td>
-                    <td>CAS-2026-003</td>
-                    <td>Kamal Perera</td>
-                    <td>Tissue</td>
-                    <td>Histopathology</td>
-                    <td><span class="badge badge-secondary">Normal</span></td>
-                    <td>2026-07-18 14:00</td>
-                    <td><span class="badge badge-success">Completed</span></td>
-                    <td>
-                      <button class="btn btn-outline" style="padding:4px 8px; font-size:11px" onclick="openModal('resultModal')">View Result</button>
-                    </td>
-                  </tr>
+                <tbody id="recent-requests-tbody">
+                  <tr><td colspan="9" style="text-align:center; padding:15px; color:#64748b;">Loading recent requests...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -293,119 +255,16 @@
           <span class="badge badge-warning" style="font-size:14px; padding:6px 12px">6 Pending</span>
         </div>
         
-        <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
-          <!-- Request Card -->
-          <div class="req-card">
-            <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
-              <div>
-                <h4 style="color:var(--primary); font-size:16px; font-weight:700">LR-001</h4>
-                <p style="font-size:12px; color:var(--text-muted)">CAS-2026-001</p>
-              </div>
-              <span class="badge badge-danger">Urgent</span>
-            </div>
-            <div style="font-size:13px; margin-bottom:20px; line-height: 1.8;">
-              <div style="display:flex; justify-content:space-between">
-                <span style="color:var(--text-muted)">Patient:</span> <span style="font-weight:600">John Doe</span>
-              </div>
-              <div style="display:flex; justify-content:space-between">
-                <span style="color:var(--text-muted)">Test:</span> <span style="font-weight:600">Toxicology Screen</span>
-              </div>
-              <div style="display:flex; justify-content:space-between">
-                <span style="color:var(--text-muted)">Specimen:</span> <span style="font-weight:600">Blood</span>
-              </div>
-              <div style="display:flex; justify-content:space-between">
-                <span style="color:var(--text-muted)">JMO:</span> <span style="font-weight:600">Dr. Wickrama</span>
-              </div>
-              <div style="display:flex; justify-content:space-between">
-                <span style="color:var(--text-muted)">Requested:</span> <span>2026-07-20 08:00</span>
-              </div>
-            </div>
-            <div style="display:flex; gap:10px; margin-top:auto">
-              <button class="btn btn-outline" style="flex:1; justify-content:center" onclick="openModal('reqModal')">View Details</button>
-              <button class="btn btn-danger" style="flex:1; justify-content:center">Reject</button>
-              <button class="btn btn-primary" style="flex:1; justify-content:center">Accept</button>
-            </div>
-          </div>
-          
-          <div class="req-card">
-            <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
-              <div>
-                <h4 style="color:var(--primary); font-size:16px; font-weight:700">LR-004</h4>
-                <p style="font-size:12px; color:var(--text-muted)">CAS-2026-004</p>
-              </div>
-              <span class="badge badge-secondary">Normal</span>
-            </div>
-            <div style="font-size:13px; margin-bottom:20px; line-height: 1.8;">
-              <div style="display:flex; justify-content:space-between">
-                <span style="color:var(--text-muted)">Patient:</span> <span style="font-weight:600">Saman Silva</span>
-              </div>
-              <div style="display:flex; justify-content:space-between">
-                <span style="color:var(--text-muted)">Test:</span> <span style="font-weight:600">Trace Evidence</span>
-              </div>
-              <div style="display:flex; justify-content:space-between">
-                <span style="color:var(--text-muted)">Specimen:</span> <span style="font-weight:600">Hair/Fibre</span>
-              </div>
-              <div style="display:flex; justify-content:space-between">
-                <span style="color:var(--text-muted)">JMO:</span> <span style="font-weight:600">Dr. Wickrama</span>
-              </div>
-              <div style="display:flex; justify-content:space-between">
-                <span style="color:var(--text-muted)">Requested:</span> <span>2026-07-20 09:00</span>
-              </div>
-            </div>
-            <div style="display:flex; gap:10px; margin-top:auto">
-              <button class="btn btn-outline" style="flex:1; justify-content:center" onclick="openModal('reqModal')">View Details</button>
-              <button class="btn btn-danger" style="flex:1; justify-content:center">Reject</button>
-              <button class="btn btn-primary" style="flex:1; justify-content:center">Accept</button>
-            </div>
-          </div>
+        <div id="pending-requests-container" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
+          <div style="text-align:center; padding:20px; color:#64748b; grid-column: 1/-1;">Loading pending requests...</div>
         </div>
       </div>
 
       <!-- ================= ACTIVE TESTS VIEW ================= -->
       <div id="active" class="view-section">
         <h2 style="font-size:20px; font-weight:700; margin-bottom: 24px;">Active Laboratory Tests</h2>
-        <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 20px;">
-          <!-- Active Test Card -->
-          <div class="req-card">
-            <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
-              <div>
-                <h4 style="color:var(--primary); font-size:16px; font-weight:700">TST-001</h4>
-                <p style="font-size:12px; color:var(--text-muted)">Req: LR-002 | CAS-2026-002</p>
-              </div>
-              <span class="badge badge-primary">Processing</span>
-            </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; font-size:13px; margin-bottom:20px;">
-              <div>
-                <div style="color:var(--text-muted); font-size:11px">Patient Name</div>
-                <div style="font-weight:600">Jane Smith</div>
-              </div>
-              <div>
-                <div style="color:var(--text-muted); font-size:11px">Test Type</div>
-                <div style="font-weight:600">DNA Analysis</div>
-              </div>
-              <div>
-                <div style="color:var(--text-muted); font-size:11px">Technician</div>
-                <div style="font-weight:600">Tech. Silva</div>
-              </div>
-              <div>
-                <div style="color:var(--text-muted); font-size:11px">Est. Completion</div>
-                <div style="font-weight:600">2026-07-21 10:00</div>
-              </div>
-            </div>
-            
-            <div style="margin-bottom: 20px;">
-              <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:600; margin-bottom:4px;">
-                <span>Progress</span> <span>45%</span>
-              </div>
-              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 45%;"></div></div>
-            </div>
-
-            <div style="display:flex; gap:10px; margin-top:auto">
-              <button class="btn btn-outline" style="flex:1; justify-content:center"><i data-lucide="refresh-cw" style="width:16px"></i> Update</button>
-              <button class="btn btn-primary" style="flex:1; justify-content:center"><i data-lucide="upload" style="width:16px"></i> Findings</button>
-              <button class="btn btn-success" style="flex:1; justify-content:center"><i data-lucide="check" style="width:16px"></i> Complete</button>
-            </div>
-          </div>
+        <div id="active-tests-container" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 20px;">
+          <div style="text-align:center; padding:20px; color:#64748b; grid-column: 1/-1;">Loading active tests...</div>
         </div>
       </div>
 
@@ -445,20 +304,8 @@
                     <th>Actions</th>
                   </tr>
                 </thead>
-                <tbody>
-                  <tr>
-                    <td><strong>RES-001</strong></td>
-                    <td>TST-003</td>
-                    <td>Kamal Perera</td>
-                    <td>Histopathology</td>
-                    <td>2026-07-18 16:00</td>
-                    <td>Dr. Senanayake</td>
-                    <td><span class="badge badge-success">Verified</span></td>
-                    <td>
-                      <button class="btn btn-outline" style="padding:4px 8px; font-size:11px" onclick="openModal('resultModal')">View</button>
-                      <button class="btn btn-outline" style="padding:4px 8px; font-size:11px"><i data-lucide="download" style="width:14px"></i></button>
-                    </td>
-                  </tr>
+                <tbody id="results-tbody">
+                  <tr><td colspan="8" style="text-align:center; padding:15px; color:#64748b;">Loading results...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -485,20 +332,8 @@
                     <th>Actions</th>
                   </tr>
                 </thead>
-                <tbody>
-                  <tr>
-                    <td><strong>SPC-001</strong></td>
-                    <td>123456789012</td>
-                    <td>Blood</td>
-                    <td>John Doe</td>
-                    <td>2026-07-20 07:30</td>
-                    <td>Cold Room A, Shelf 2</td>
-                    <td><span class="badge badge-primary">Stored</span></td>
-                    <td>
-                      <button class="btn btn-outline" style="padding:4px 8px; font-size:11px"><i data-lucide="printer" style="width:14px"></i> Print</button>
-                      <button class="btn btn-outline" style="padding:4px 8px; font-size:11px">Transfer</button>
-                    </td>
-                  </tr>
+                <tbody id="specimens-tbody">
+                  <tr><td colspan="8" style="text-align:center; padding:15px; color:#64748b;">Loading specimens...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -708,8 +543,317 @@
 
   function logout() { sessionStorage.clear(); window.location.href = "../index.html"; }
 
-  // Charts Initialization (Dummy Data)
+  // Initialize Lucide Icons
+  lucide.createIcons();
+
+  // Navigation Logic
+  function switchView(viewId, el) {
+    document.querySelectorAll('.view-section').forEach(section => {
+      section.classList.remove('active');
+    });
+    document.getElementById(viewId).classList.add('active');
+    
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.classList.remove('active');
+    });
+    if(el) el.classList.add('active');
+
+    const titleText = el ? el.innerText.trim() : 'Dashboard';
+    document.getElementById('pageTitle').innerText = titleText;
+    document.getElementById('breadcrumbTitle').innerText = titleText;
+  }
+
+  // Modal Logic
+  function openModal(id) {
+    document.getElementById(id).classList.add('active');
+  }
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+  }
+
+  function logout() { sessionStorage.clear(); window.location.href = "../index.html"; }
+
+  async function loadLabData() {
+    try {
+      // 1. Fetch Stats
+      const data = await API.get('/laboratory/dashboard');
+      if (data && data.stats) {
+        document.getElementById('stat-pendingRequests').textContent = data.stats.pending_requests || 0;
+        document.getElementById('stat-testsInProgress').textContent = data.stats.tests_in_progress || 0;
+        document.getElementById('stat-completedToday').textContent = data.stats.completed_tests || 0;
+        document.getElementById('stat-highPriority').textContent = data.stats.pending_requests || 0;
+        document.getElementById('stat-specimensReceived').textContent = data.stats.total_specimens_received || 0;
+        
+        document.getElementById('badge-pendingRequests').textContent = data.stats.pending_requests || 0;
+      }
+      
+      const userProfile = await API.get('/auth/me');
+      if (userProfile && userProfile.profile) {
+        const nameEl = document.querySelector('.sidebar-user-card .name');
+        if (nameEl) nameEl.textContent = userProfile.profile.username || 'Lab Technician';
+      }
+
+      // 2. Fetch requests
+      const requests = await API.get('/laboratory/requests');
+      
+      const recentTbody = document.getElementById('recent-requests-tbody');
+      if (recentTbody) {
+        recentTbody.innerHTML = '';
+        if (!requests || requests.length === 0) {
+          recentTbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:15px; color:#64748b;">No recent requests found.</td></tr>';
+        } else {
+          requests.slice(0, 5).forEach(r => {
+            const dateStr = new Date(r.request_date).toLocaleDateString('en-US');
+            const statusClass = r.status === 'ACCEPTED' ? 'primary' : (r.status === 'REJECTED' ? 'danger' : 'warning');
+            const priorityClass = r.priority === 'HIGH' || r.priority === 'URGENT' ? 'danger' : 'secondary';
+            const patientName = `${r.patient_first_name || ''} ${r.patient_last_name || ''}`.trim() || 'Unknown';
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td><strong>LR-${r.request_id.substring(0, 6).toUpperCase()}</strong></td>
+              <td>${r.case_number || 'N/A'}</td>
+              <td>${patientName}</td>
+              <td>${r.specimen_type || 'Blood'}</td>
+              <td>${r.laboratory_name || 'Lab Test'}</td>
+              <td><span class="badge badge-${priorityClass}">${r.priority || 'Normal'}</span></td>
+              <td>${dateStr}</td>
+              <td><span class="badge badge-${statusClass}">${r.status}</span></td>
+              <td>
+                <button class="btn btn-outline" style="padding:4px 8px; font-size:11px" onclick="viewRequestDetails('${r.request_id}')">View</button>
+                ${r.status === 'PENDING' ? `<button class="btn btn-primary" style="padding:4px 8px; font-size:11px" onclick="updateStatus('${r.request_id}', 'ACCEPTED')">Accept</button>` : ''}
+              </td>
+            `;
+            recentTbody.appendChild(tr);
+          });
+        }
+      }
+
+      const pendingContainer = document.getElementById('pending-requests-container');
+      if (pendingContainer) {
+        pendingContainer.innerHTML = '';
+        const pendingRequests = requests.filter(r => r.status === 'PENDING');
+        if (pendingRequests.length === 0) {
+          pendingContainer.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:20px; color:#64748b;">No pending requests.</div>';
+        } else {
+          pendingRequests.forEach(r => {
+            const div = document.createElement('div');
+            div.className = 'req-card';
+            const patientName = `${r.patient_first_name || ''} ${r.patient_last_name || ''}`.trim() || 'Unknown';
+            div.innerHTML = `
+              <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
+                <div>
+                  <h4 style="color:var(--primary); font-size:16px; font-weight:700">LR-${r.request_id.substring(0, 6).toUpperCase()}</h4>
+                  <p style="font-size:12px; color:var(--text-muted)">Request ID</p>
+                </div>
+                <span class="badge badge-${r.priority === 'HIGH' || r.priority === 'URGENT' ? 'danger' : 'secondary'}">${r.priority || 'Normal'}</span>
+              </div>
+              <div style="font-size:13px; margin-bottom:20px; line-height: 1.8;">
+                <div style="display:flex; justify-content:space-between">
+                  <span style="color:var(--text-muted)">Patient:</span> <span style="font-weight:600">${patientName}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between">
+                  <span style="color:var(--text-muted)">Test:</span> <span style="font-weight:600">${r.laboratory_name || 'Lab Test'}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between">
+                  <span style="color:var(--text-muted)">Specimen:</span> <span style="font-weight:600">${r.specimen_type || 'Blood'}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between">
+                  <span style="color:var(--text-muted)">Requested:</span> <span>${new Date(r.request_date).toLocaleDateString('en-US')}</span>
+                </div>
+              </div>
+              <div style="display:flex; gap:10px; margin-top:auto">
+                <button class="btn btn-outline" style="flex:1; justify-content:center" onclick="viewRequestDetails('${r.request_id}')">Details</button>
+                <button class="btn btn-danger" style="flex:1; justify-content:center" onclick="updateStatus('${r.request_id}', 'REJECTED')">Reject</button>
+                <button class="btn btn-primary" style="flex:1; justify-content:center" onclick="updateStatus('${r.request_id}', 'ACCEPTED')">Accept</button>
+              </div>
+            `;
+            pendingContainer.appendChild(div);
+          });
+        }
+      }
+
+      // 3. Fetch active tests
+      const tests = await API.get('/laboratory/tests');
+      const activeContainer = document.getElementById('active-tests-container');
+      if (activeContainer) {
+        activeContainer.innerHTML = '';
+        const activeTests = tests.filter(t => t.status === 'IN_PROGRESS');
+        if (activeTests.length === 0) {
+          activeContainer.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:20px; color:#64748b;">No active tests in progress.</div>';
+        } else {
+          activeTests.forEach(t => {
+            const div = document.createElement('div');
+            div.className = 'req-card';
+            const patientName = `${t.patient_first_name || ''} ${t.patient_last_name || ''}`.trim() || 'Unknown';
+            div.innerHTML = `
+              <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
+                <div>
+                  <h4 style="color:var(--primary); font-size:16px; font-weight:700">TST-${t.test_id.substring(0, 6).toUpperCase()}</h4>
+                  <p style="font-size:12px; color:var(--text-muted)">Req ID: ${t.request_id.substring(0, 6).toUpperCase()}</p>
+                </div>
+                <span class="badge badge-primary">${t.status}</span>
+              </div>
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; font-size:13px; margin-bottom:20px;">
+                <div>
+                  <div style="color:var(--text-muted); font-size:11px">Patient Name</div>
+                  <div style="font-weight:600">${patientName}</div>
+                </div>
+                <div>
+                  <div style="color:var(--text-muted); font-size:11px">Test Type</div>
+                  <div style="font-weight:600">${t.test_name || 'Lab Test'}</div>
+                </div>
+                <div>
+                  <div style="color:var(--text-muted); font-size:11px">Status</div>
+                  <div style="font-weight:600">${t.status}</div>
+                </div>
+              </div>
+              <div style="display:flex; gap:10px; margin-top:auto">
+                <button class="btn btn-success" style="flex:1; justify-content:center" onclick="completeLabTest('${t.test_id}')"><i data-lucide="check" style="width:16px"></i> Complete</button>
+              </div>
+            `;
+            activeContainer.appendChild(div);
+          });
+          lucide.createIcons();
+        }
+      }
+
+      // 4. Fetch specimens
+      const specimens = await API.get('/laboratory/specimens');
+      const specTbody = document.getElementById('specimens-tbody');
+      if (specTbody) {
+        specTbody.innerHTML = '';
+        if (!specimens || specimens.length === 0) {
+          specTbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:15px; color:#64748b;">No specimens found.</td></tr>';
+        } else {
+          specimens.forEach(s => {
+            const tr = document.createElement('tr');
+            const patientName = `${s.patient_first_name || ''} ${s.patient_last_name || ''}`.trim() || 'Unknown';
+            tr.innerHTML = `
+              <td><strong>SPC-${s.specimen_id.substring(0, 6).toUpperCase()}</strong></td>
+              <td>Barcode</td>
+              <td>${s.specimen_type || 'N/A'}</td>
+              <td>${patientName}</td>
+              <td>${new Date(s.collection_datetime).toLocaleDateString('en-US')}</td>
+              <td>${s.storage_condition || 'Cold storage'}</td>
+              <td><span class="badge badge-primary">${s.current_status || 'Stored'}</span></td>
+              <td>
+                <button class="btn btn-outline" style="padding:4px 8px; font-size:11px"><i data-lucide="printer" style="width:14px"></i> Print</button>
+              </td>
+            `;
+            specTbody.appendChild(tr);
+          });
+          lucide.createIcons();
+        }
+      }
+
+      // 5. Fetch results
+      const results = await API.get('/laboratory/results');
+      const resultsTbody = document.getElementById('results-tbody');
+      if (resultsTbody) {
+        resultsTbody.innerHTML = '';
+        if (!results || results.length === 0) {
+          resultsTbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:15px; color:#64748b;">No lab results found.</td></tr>';
+        } else {
+          results.forEach(res => {
+            const tr = document.createElement('tr');
+            const patientName = `${res.patient_first_name || ''} ${res.patient_last_name || ''}`.trim() || 'Unknown';
+            tr.innerHTML = `
+              <td><strong>RES-${res.result_id.substring(0, 6).toUpperCase()}</strong></td>
+              <td>TST-${res.test_id.substring(0, 6).toUpperCase()}</td>
+              <td>${patientName}</td>
+              <td>Result Report</td>
+              <td>${new Date(res.created_at || Date.now()).toLocaleDateString('en-US')}</td>
+              <td>Technician</td>
+              <td><span class="badge badge-success">Verified</span></td>
+              <td>
+                <button class="btn btn-outline" style="padding:4px 8px; font-size:11px" onclick="viewResultDetails('${res.result_id}')">View</button>
+              </td>
+            `;
+            resultsTbody.appendChild(tr);
+          });
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function updateStatus(requestId, status) {
+    try {
+      console.log(`Updating request ${requestId} to ${status}`);
+      await API.put(`/laboratory/requests/${requestId}/status`, { status });
+      alert(`Request status updated to ${status}!`);
+      loadLabData();
+    } catch (err) {
+      console.error(err);
+      alert('Failed to update status: ' + err.message);
+    }
+  }
+
+  async function completeLabTest(testId) {
+    try {
+      console.log(`Completing test ${testId}`);
+      await API.put(`/laboratory/tests/${testId}/complete`);
+      alert('Test completed successfully!');
+      loadLabData();
+    } catch (err) {
+      console.error(err);
+      alert('Failed to complete test: ' + err.message);
+    }
+  }
+
+  async function viewRequestDetails(requestId) {
+    try {
+      const r = await API.get(`/laboratory/requests/${requestId}`);
+      const modal = document.getElementById('reqModal');
+      if (modal) {
+        modal.querySelector('.modal-header h3').textContent = `Request Details: LR-${r.request_id.substring(0, 6).toUpperCase()}`;
+        
+        const patientName = `${r.patient_first_name || ''} ${r.patient_last_name || ''}`.trim() || 'John Doe';
+        const jmoName = `Dr. ${r.jmo_first_name || ''} ${r.jmo_last_name || ''}`.trim() || 'Dr. Wickrama';
+        
+        const detailsBody = modal.querySelector('.modal-body div');
+        if (detailsBody) {
+          detailsBody.innerHTML = `
+            <div><strong style="color:var(--text-muted); display:block; font-size:11px">Patient Information</strong> ${patientName}</div>
+            <div><strong style="color:var(--text-muted); display:block; font-size:11px">Case Information</strong> ${r.case_number || 'N/A'}</div>
+            <div><strong style="color:var(--text-muted); display:block; font-size:11px">Specimen Details</strong> ${r.specimen_type || 'Blood'} (${r.storage_condition || 'Cold Storage'})</div>
+            <div><strong style="color:var(--text-muted); display:block; font-size:11px">Requested Tests</strong> ${r.laboratory_name || 'Lab Test'}</div>
+            <div><strong style="color:var(--text-muted); display:block; font-size:11px">Priority</strong> ${r.priority || 'Normal'}</div>
+            <div><strong style="color:var(--text-muted); display:block; font-size:11px">JMO</strong> ${jmoName}</div>
+          `;
+        }
+        
+        const footer = modal.querySelector('.modal-footer');
+        if (footer) {
+          footer.innerHTML = `
+            <button class="btn btn-outline" onclick="closeModal('reqModal')">Close</button>
+            ${r.status === 'PENDING' ? `
+              <button class="btn btn-danger" onclick="updateStatus('${r.request_id}', 'REJECTED'); closeModal('reqModal');">Reject</button>
+              <button class="btn btn-primary" onclick="updateStatus('${r.request_id}', 'ACCEPTED'); closeModal('reqModal');">Accept</button>
+            ` : ''}
+          `;
+        }
+        
+        openModal('reqModal');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to load request details: ' + err.message);
+    }
+  }
+
+  async function viewResultDetails(resultId) {
+    try {
+      alert('Result Details: RES-' + resultId.substring(0, 6).toUpperCase());
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", function() {
+    loadLabData();
+
     const barCtx = document.getElementById('barChart').getContext('2d');
     new Chart(barCtx, {
       type: 'bar',
