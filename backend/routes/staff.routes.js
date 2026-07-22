@@ -13,12 +13,27 @@ router.use(checkStaffHospital);
 // --- MODULE 1: Dashboard Overview ---
 router.get('/dashboard', controller.getDashboardStats);
 
+// --- MODULE 1B: Registration ---
+router.post('/patients', validators.patientValidator, controller.createPatient);
+router.get('/patients', controller.getPatients);
+router.get('/patients/:id', controller.getPatientById);
+
+router.post('/deceased', validators.deceasedValidator, controller.createDeceased);
+router.get('/deceased', controller.getDeceased);
+router.get('/deceased/:id', controller.getDeceasedById);
+
+router.post('/mlef', validators.mlefValidator, controller.createMlef);
+
+router.get('/hospitals', controller.getHospitals);
+router.get('/available-jmo', controller.getAvailableJmo);
+
 // --- MODULE 2: Case Monitoring ---
 router.get('/cases', controller.getCases);
 router.get('/cases/:id', controller.getCaseById);
 
-// --- MODULE 3: Case Progress Tracking ---
+// --- MODULE 3: Case Progress Tracking & JMO Assignment ---
 router.get('/cases/:id/timeline', controller.getCaseTimeline);
+router.post('/cases/:caseId/assign-jmo', validators.assignJmoValidator, controller.assignJmoToCase);
 
 // --- MODULE 4: MLEF Monitoring ---
 router.get('/mlef', controller.getMlefRequests);

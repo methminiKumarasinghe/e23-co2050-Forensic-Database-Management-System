@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Case Monitoring — DFMIS</title>
+  <title>Register Deceased — DFMIS</title>
   <link rel="stylesheet" href="../css/style.css" />
   <script src="../js/api.js"></script>
   <style>
@@ -89,9 +89,9 @@
     <div class="topbar">
       <div class="topbar-left">
         <div>
-          <div class="topbar-title">Case Monitoring</div>
+          <div class="topbar-title">Register Deceased Person</div>
           <div class="breadcrumb">
-            <span>DFMIS</span><span class="breadcrumb-sep">›</span><span>Case Monitoring</span>
+            <span>DFMIS</span><span class="breadcrumb-sep">›</span><span>Registration</span><span class="breadcrumb-sep">›</span><span>Deceased Person</span>
           </div>
         </div>
       </div>
@@ -102,34 +102,83 @@
     </div>
 
     <div class="dash-body">
-      
       <div class="card">
         <div class="card-header">
-          <h5>📂 Case Monitoring</h5>
+          <h5>⚰️ Register Deceased Person</h5>
         </div>
         <div class="card-body">
-          <div class="table-wrap" id="dataContainer">
-            <table class="dash-table">
-              <thead><tr><th>Case Number</th><th>Type</th><th>Station</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
-              <tbody id="dataTableBody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+          <form id="deceasedForm" onsubmit="handleDeceasedRegistration(event)">
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <div>
+                    <label style="display: block; margin-bottom: 5px;">First Name (if known)</label>
+                    <input type="text" id="first_name" placeholder="Name or 'Unidentified'" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" />
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px;">Last Name (if known)</label>
+                    <input type="text" id="last_name" placeholder="Name or 'Person'" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" />
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <div>
+                    <label style="display: block; margin-bottom: 5px;">Gender *</label>
+                    <select id="gender" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="">Select...</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other / Unknown</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px;">Identification Status *</label>
+                    <select id="identification_status" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="true">Identified</option>
+                        <option value="false" selected>Unidentified</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px;">Estimated Age</label>
+                    <input type="text" id="estimated_age" placeholder="e.g., 30s, ~45" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" />
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <div>
+                    <label style="display: block; margin-bottom: 5px;">Date Found / Death *</label>
+                    <input type="datetime-local" id="date_found" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" />
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px;">Police Case (Optional)</label>
+                    <select id="case_id" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="">Loading cases...</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">Hospital *</label>
+                <select id="hospital_id" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <option value="">Loading hospitals...</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 5px;">Location Found *</label>
+                <textarea id="location_found" required rows="2" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 5px;">Additional Notes</label>
+                <textarea id="notes" rows="2" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+            </div>
 
-      <div id="timelineModal" class="modal">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h4>Case Timeline</h4>
-            <button class="modal-close" onclick="closeTimeline()">×</button>
-          </div>
-          <div id="timelineContent"></div>
+            <div style="display: flex; justify-content: flex-end;">
+                <button type="submit" class="btn btn-primary" style="padding: 10px 20px;">Register Deceased</button>
+            </div>
+          </form>
         </div>
-      </div>
-    
-    </div>
-
-    <footer class="dash-footer">
+      </div></div>\n    <footer class="dash-footer">
       <span>Department of Forensic Medicine &nbsp;|&nbsp; University of Peradeniya</span>
       <span>DFMIS v1.0 &nbsp;|&nbsp; &copy; 2026 Ministry of Health, Sri Lanka</span>
     </footer>

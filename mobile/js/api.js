@@ -132,8 +132,12 @@ async function fetchAPI(endpoint, options = {}) {
 }
 
 function setTableLoading(containerId, isLoading) {
-  const container = document.getElementById(containerId);
+  let container = document.getElementById(containerId);
   if (!container) return;
+  if (container.tagName !== 'TBODY') {
+    const tbody = container.querySelector('tbody');
+    if (tbody) container = tbody;
+  }
 
   const isTbody = container.tagName === 'TBODY';
 
@@ -149,8 +153,12 @@ function setTableLoading(containerId, isLoading) {
 }
 
 function setTableEmpty(containerId, message = 'No records found.') {
-  const container = document.getElementById(containerId);
+  let container = document.getElementById(containerId);
   if (!container) return;
+  if (container.tagName !== 'TBODY') {
+    const tbody = container.querySelector('tbody');
+    if (tbody) container = tbody;
+  }
 
   const isTbody = container.tagName === 'TBODY';
   const content = `
@@ -162,8 +170,12 @@ function setTableEmpty(containerId, message = 'No records found.') {
 }
 
 function setTableError(containerId, error) {
-  const container = document.getElementById(containerId);
+  let container = document.getElementById(containerId);
   if (!container) return;
+  if (container.tagName !== 'TBODY') {
+    const tbody = container.querySelector('tbody');
+    if (tbody) container = tbody;
+  }
 
   const isTbody = container.tagName === 'TBODY';
   const content = `

@@ -59,9 +59,42 @@ const getDashboardStats = async (hospitalId) => {
 // --- MODULE 2: Case Monitoring ---
 const getCases = async (filters) => {
     let query = `
-        SELECT pc.case_id, pc.case_number, pc.case_type, pc.title, cs.status_name as status, ps.station_name, pc.date_reported
+        SELECT 
+            pc.case_id, 
+            pc.case_number, 
+            ps.station_name, 
+            (
+                SELECT COALESCE(p.first_name || ' ' || p.last_name, 'Unknown')
+                FROM mlef m 
+                JOIN patient pat ON m.patient_id = pat.patient_id
+                JOIN person p ON pat.person_id = p.person_id
+                WHERE m.case_id = pc.case_id
+                LIMIT 1
+            ) as patient_name,
+            (
+                SELECT COALESCE(p.first_name || ' ' || p.last_name, 'Unassigned')
+                FROM examination e
+                JOIN forensic_staff fs ON e.jmo_id = fs.staff_id
+                JOIN person p ON fs.person_id = p.person_id
+                WHERE e.case_id = pc.case_id
+                LIMIT 1
+            ) as assigned_jmo,
+            (SELECT m.status FROM mlef m WHERE m.case_id = pc.case_id LIMIT 1) as mlef_status,
+            (
+                SELECT es.status_name 
+                FROM examination e
+                JOIN examination_status es ON e.status_id = es.status_id
+                WHERE e.case_id = pc.case_id
+                LIMIT 1
+            ) as examination_status,
+            (
+                SELECT lr.status 
+                FROM examination e
+                JOIN laboratory_request lr ON e.examination_id = lr.examination_id
+                WHERE e.case_id = pc.case_id
+                LIMIT 1
+            ) as laboratory_status
         FROM police_case pc
-        JOIN case_status cs ON pc.status_id = cs.status_id
         JOIN police_station ps ON pc.station_id = ps.station_id
         WHERE 1=1
     `;
@@ -381,7 +414,204 @@ const search = async (queryText) => {
     return result.rows;
 };
 
+
+// --- MODULE 1B: Registration ---
+
+const createPatient = async (data, userId) => {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        
+        const personRes = await client.query(`
+            INSERT INTO person (first_name, last_name, nic, gender, date_of_birth, telephone, address)
+            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING person_id
+        `, [data.first_name, data.last_name, data.nic, data.gender, data.date_of_birth, data.telephone, data.address]);
+        
+        const personId = personRes.rows[0].person_id;
+        
+        const patientRes = await client.query(`
+            INSERT INTO patient (person_id, medical_record_number, blood_group, emergency_contact, emergency_phone)
+            VALUES ($1, $2, $3, $4, $5) RETURNING patient_id
+        `, [personId, `MRN-${Date.now()}`, data.blood_group || null, data.emergency_contact || null, data.emergency_phone || null]);
+        
+        await logActivity(client, userId, 'Patient Registered', 'patient', patientRes.rows[0].patient_id, 'Staff registered a new patient.');
+        
+        await client.query('COMMIT');
+        return { patient_id: patientRes.rows[0].patient_id, person_id: personId };
+    } catch (e) {
+        await client.query('ROLLBACK');
+        throw e;
+    } finally {
+        client.release();
+    }
+};
+
+const getPatients = async () => {
+    const query = `
+        SELECT pt.patient_id, p.first_name, p.last_name, p.nic, pt.medical_record_number, p.gender, p.date_of_birth
+        FROM patient pt
+        JOIN person p ON pt.person_id = p.person_id
+        ORDER BY p.created_at DESC
+    `;
+    const res = await pool.query(query);
+    return res.rows;
+};
+
+const getPatientById = async (id) => {
+    const query = `
+        SELECT pt.*, p.first_name, p.last_name, p.nic, p.gender, p.date_of_birth, p.telephone, p.address
+        FROM patient pt
+        JOIN person p ON pt.person_id = p.person_id
+        WHERE pt.patient_id = $1
+    `;
+    const res = await pool.query(query, [id]);
+    return res.rows[0];
+};
+
+const createDeceased = async (data, userId) => {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        
+        const personRes = await client.query(`
+            INSERT INTO person (first_name, last_name, nic, gender)
+            VALUES ($1, $2, $3, $4) RETURNING person_id
+        `, [data.first_name, data.last_name, data.nic || null, data.gender]);
+        
+        const personId = personRes.rows[0].person_id;
+        
+        const decRes = await client.query(`
+            INSERT INTO deceased (person_id, date_of_death, place_of_death, identified, identification_notes)
+            VALUES ($1, $2, $3, $4, $5) RETURNING deceased_id
+        `, [personId, data.date_found, data.location_found, data.identification_status, `Estimated Age: ${data.estimated_age || 'Unknown'}`]);
+        
+        await logActivity(client, userId, 'Deceased Registered', 'deceased', decRes.rows[0].deceased_id, 'Staff registered a deceased person.');
+        
+        await client.query('COMMIT');
+        return { deceased_id: decRes.rows[0].deceased_id, person_id: personId };
+    } catch (e) {
+        await client.query('ROLLBACK');
+        throw e;
+    } finally {
+        client.release();
+    }
+};
+
+const getDeceased = async () => {
+    const query = `
+        SELECT d.deceased_id, p.first_name, p.last_name, p.nic, d.date_of_death, d.place_of_death, d.identified
+        FROM deceased d
+        JOIN person p ON d.person_id = p.person_id
+        ORDER BY d.date_of_death DESC NULLS LAST
+    `;
+    const res = await pool.query(query);
+    return res.rows;
+};
+
+const getDeceasedById = async (id) => {
+    const query = `
+        SELECT d.*, p.first_name, p.last_name, p.nic, p.gender
+        FROM deceased d
+        JOIN person p ON d.person_id = p.person_id
+        WHERE d.deceased_id = $1
+    `;
+    const res = await pool.query(query, [id]);
+    return res.rows[0];
+};
+
+const createMlef = async (data, userId, staffId) => {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        
+        // Find requesting officer from case assignment
+        const officerRes = await client.query(`SELECT officer_id FROM case_assignment WHERE case_id = $1 LIMIT 1`, [data.case_id]);
+        if (officerRes.rows.length === 0) {
+            throw new Error("No police officer assigned to this case to request MLEF.");
+        }
+        const officerId = officerRes.rows[0].officer_id;
+        
+        const mlefRes = await client.query(`
+            INSERT INTO mlef (case_id, patient_id, requesting_officer, hospital_id, reason, status)
+            VALUES ($1, $2, $3, $4, $5, 'PENDING') RETURNING mlef_id
+        `, [data.case_id, data.patient_id, officerId, data.hospital_id, data.reason]);
+        
+        await logActivity(client, userId, 'MLEF Created', 'mlef', mlefRes.rows[0].mlef_id, 'Staff created an MLEF request.');
+        
+        await client.query('COMMIT');
+        return { mlef_id: mlefRes.rows[0].mlef_id };
+    } catch (e) {
+        await client.query('ROLLBACK');
+        throw e;
+    } finally {
+        client.release();
+    }
+};
+
+const getHospitals = async () => {
+    const res = await pool.query('SELECT hospital_id, hospital_name, location FROM hospital ORDER BY hospital_name');
+    return res.rows;
+};
+
+const getAvailableJmo = async () => {
+    const res = await pool.query(`
+        SELECT j.jmo_id, p.first_name, p.last_name, h.hospital_name, j.specialization
+        FROM judicial_medical_officer j
+        JOIN person p ON j.person_id = p.person_id
+        JOIN hospital h ON j.hospital_id = h.hospital_id
+    `);
+    return res.rows;
+};
+
+const assignJmoToCase = async (caseId, data, userId) => {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        
+        // Assigning JMO to case via examination table since case_assignment is for police_officer
+        // Find MLEF for this case
+        const mlefRes = await client.query('SELECT mlef_id FROM mlef WHERE case_id = $1 LIMIT 1', [caseId]);
+        if (mlefRes.rows.length === 0) {
+             throw new Error("No MLEF found for this case. Cannot assign JMO.");
+        }
+        
+        const mlefId = mlefRes.rows[0].mlef_id;
+        
+        // Ensure no duplicate assignment for this MLEF
+        const checkRes = await client.query('SELECT examination_id FROM examination WHERE mlef_id = $1', [mlefId]);
+        if (checkRes.rows.length > 0) {
+            throw new Error("JMO is already assigned to this case/MLEF.");
+        }
+        
+        const examRes = await client.query(`
+            INSERT INTO examination (mlef_id, jmo_id, status_id, examination_date, examination_notes)
+            VALUES ($1, $2, (SELECT status_id FROM examination_status WHERE status_name = 'PENDING'), $3, $4)
+            RETURNING examination_id
+        `, [mlefId, data.jmo_id, data.assignment_date, data.remarks || 'Assigned by staff']);
+        
+        await logActivity(client, userId, 'JMO Assigned', 'examination', examRes.rows[0].examination_id, 'Staff assigned a JMO to the case.');
+        
+        await client.query('COMMIT');
+        return { examination_id: examRes.rows[0].examination_id };
+    } catch (e) {
+        await client.query('ROLLBACK');
+        throw e;
+    } finally {
+        client.release();
+    }
+};
+
 module.exports = {
+    assignJmoToCase,
+    getAvailableJmo,
+    getHospitals,
+    createMlef,
+    getDeceasedById,
+    getDeceased,
+    createDeceased,
+    getPatientById,
+    getPatients,
+    createPatient,
   getStaffDataByUserId,
   getDashboardStats,
   getCases, getCaseById, getCaseTimeline,

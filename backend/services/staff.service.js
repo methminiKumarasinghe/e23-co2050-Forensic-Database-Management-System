@@ -13,6 +13,48 @@ const getDashboardStats = async (userId) => {
     return await repo.getDashboardStats(staff ? staff.hospital_id : null);
 };
 
+const createPatient = async (userId, data) => {
+    return await repo.createPatient(data, userId);
+};
+
+const getPatients = async (userId) => {
+    return await repo.getPatients();
+};
+
+const getPatientById = async (userId, id) => {
+    return await repo.getPatientById(id);
+};
+
+const createDeceased = async (userId, data) => {
+    return await repo.createDeceased(data, userId);
+};
+
+const getDeceased = async (userId) => {
+    return await repo.getDeceased();
+};
+
+const getDeceasedById = async (userId, id) => {
+    return await repo.getDeceasedById(id);
+};
+
+const createMlef = async (userId, data) => {
+    const staff = await checkStaff(userId);
+    if (!staff) throw new Error("Staff profile not found");
+    return await repo.createMlef(data, userId, staff.staff_id);
+};
+
+const getHospitals = async () => {
+    return await repo.getHospitals();
+};
+
+const getAvailableJmo = async () => {
+    return await repo.getAvailableJmo();
+};
+
+const assignJmoToCase = async (userId, caseId, data) => {
+    return await repo.assignJmoToCase(caseId, data, userId);
+};
+
 const getCases = async (userId, filters) => {
     return await repo.getCases(filters);
 };
@@ -91,6 +133,10 @@ const search = async (userId, queryText) => {
 
 module.exports = {
   getDashboardStats,
+  createPatient, getPatients, getPatientById,
+  createDeceased, getDeceased, getDeceasedById,
+  createMlef, getHospitals,
+  getAvailableJmo, assignJmoToCase,
   getCases, getCaseById, getCaseTimeline,
   getMlefRequests, getMlefById,
   getExaminations, getExaminationById,
