@@ -135,13 +135,16 @@ function setTableLoading(containerId, isLoading) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
+  const isTbody = container.tagName === 'TBODY';
+
   if (isLoading) {
-    container.innerHTML = `
+    const content = `
             <div style="padding: 2rem; text-align: center; color: #666;">
                 <div class="spinner" style="font-size: 2rem; margin-bottom: 1rem;">⏳</div>
                 <p>Loading data...</p>
             </div>
         `;
+    container.innerHTML = isTbody ? `<tr><td colspan="100">${content}</td></tr>` : content;
   }
 }
 
@@ -149,23 +152,27 @@ function setTableEmpty(containerId, message = 'No records found.') {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  container.innerHTML = `
+  const isTbody = container.tagName === 'TBODY';
+  const content = `
         <div style="padding: 2rem; text-align: center; color: #666;">
             <p>${message}</p>
         </div>
     `;
+  container.innerHTML = isTbody ? `<tr><td colspan="100">${content}</td></tr>` : content;
 }
 
 function setTableError(containerId, error) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  container.innerHTML = `
+  const isTbody = container.tagName === 'TBODY';
+  const content = `
         <div style="padding: 2rem; text-align: center; color: #e74c3c;">
             <p>⚠ Failed to load data</p>
             <p style="font-size: 0.9em;">${error}</p>
         </div>
     `;
+  container.innerHTML = isTbody ? `<tr><td colspan="100">${content}</td></tr>` : content;
 }
 
 window.fetchAPI = fetchAPI;

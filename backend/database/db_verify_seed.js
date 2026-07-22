@@ -33,6 +33,57 @@ async function verifyAndSeed() {
     console.log(` Active User:    ${dbUser}`);
     console.log('============================================================');
 
+    // Create access_logs table if not exists
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS access_logs (
+        access_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID REFERENCES users(user_id) ON DELETE SET NULL,
+        username VARCHAR(50) NOT NULL,
+        action VARCHAR(50) NOT NULL,
+        ip_address VARCHAR(50),
+        details TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Create system_settings table if not exists
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS system_settings (
+        setting_id SERIAL PRIMARY KEY,
+        setting_key VARCHAR(100) UNIQUE NOT NULL,
+        setting_value TEXT NOT NULL,
+        description TEXT
+      );
+    `);
+
+    // Create uploaded_files table if not exists
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS uploaded_files (
+        file_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        document_id UUID REFERENCES document(document_id) ON DELETE CASCADE,
+        file_name VARCHAR(255) NOT NULL,
+        file_path TEXT NOT NULL,
+        file_size INT,
+        mime_type VARCHAR(100),
+        uploaded_by UUID REFERENCES users(user_id) ON DELETE SET NULL,
+        uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Seed default settings
+    await client.query(`
+      INSERT INTO system_settings (setting_key, setting_value, description)
+      VALUES 
+        ('password_min_length', '8', 'Minimum password length requirement'),
+        ('session_timeout', '30', 'Session timeout in minutes'),
+        ('backup_schedule', 'DAILY_MIDNIGHT', 'Database backup schedule'),
+        ('email_notifications', 'true', 'Enable or disable email alerts'),
+        ('mfa_enabled', 'false', 'Multi-factor authentication flag')
+      ON CONFLICT (setting_key) DO NOTHING;
+    `);
+
+    console.log(' [SCHEMA] Verified access_logs and system_settings tables.');
+
     // 2. Check if permissions table has content
     const permCheck = await client.query('SELECT COUNT(*) FROM permissions');
     const permCount = parseInt(permCheck.rows[0].count, 10);
