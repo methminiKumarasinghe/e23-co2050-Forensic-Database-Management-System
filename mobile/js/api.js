@@ -132,43 +132,83 @@ async function fetchAPI(endpoint, options = {}) {
 }
 
 function setTableLoading(containerId, isLoading) {
-  const container = document.getElementById(containerId);
+  let container = document.getElementById(containerId);
   if (!container) return;
+  if (container.tagName !== 'TBODY') {
+    const tbody = container.querySelector('tbody');
+    if (tbody) container = tbody;
+  }
 
   if (isLoading) {
-    container.innerHTML = `
-            <div style="padding: 2rem; text-align: center; color: #666;">
-                <div class="spinner" style="font-size: 2rem; margin-bottom: 1rem;">⏳</div>
-                <p>Loading data...</p>
-            </div>
-        `;
+    if (container.tagName === 'TBODY') {
+      container.innerHTML = `<tr><td colspan="100" style="text-align: center; padding: 2rem; color: #666;"><div class="spinner" style="font-size: 2rem; margin-bottom: 1rem;">⏳</div><p>Loading data...</p></td></tr>`;
+    } else {
+      container.innerHTML = `
+        <div style="padding: 2rem; text-align: center; color: #666;">
+            <div class="spinner" style="font-size: 2rem; margin-bottom: 1rem;">⏳</div>
+            <p>Loading data...</p>
+        </div>
+      `;
+    }
   }
 }
 
 function setTableEmpty(containerId, message = 'No records found.') {
-  const container = document.getElementById(containerId);
+  let container = document.getElementById(containerId);
   if (!container) return;
+  if (container.tagName !== 'TBODY') {
+    const tbody = container.querySelector('tbody');
+    if (tbody) container = tbody;
+  }
 
-  container.innerHTML = `
+  if (container.tagName === 'TBODY') {
+    container.innerHTML = `<tr><td colspan="100" style="text-align: center; padding: 2rem; color: #666;">${message}</td></tr>`;
+  } else {
+    container.innerHTML = `
         <div style="padding: 2rem; text-align: center; color: #666;">
             <p>${message}</p>
         </div>
     `;
+  }
 }
 
 function setTableError(containerId, error) {
-  const container = document.getElementById(containerId);
+  let container = document.getElementById(containerId);
   if (!container) return;
+  if (container.tagName !== 'TBODY') {
+    const tbody = container.querySelector('tbody');
+    if (tbody) container = tbody;
+  }
 
-  container.innerHTML = `
+  if (container.tagName === 'TBODY') {
+    container.innerHTML = `<tr><td colspan="100" style="text-align: center; padding: 2rem; color: #e74c3c;"><p>⚠ Failed to load data</p><p style="font-size: 0.9em;">${error}</p></td></tr>`;
+  } else {
+    container.innerHTML = `
         <div style="padding: 2rem; text-align: center; color: #e74c3c;">
             <p>⚠ Failed to load data</p>
             <p style="font-size: 0.9em;">${error}</p>
         </div>
     `;
+  }
 }
 
 window.fetchAPI = fetchAPI;
 window.setTableLoading = setTableLoading;
 window.setTableEmpty = setTableEmpty;
 window.setTableError = setTableError;
+
+document.addEventListener("DOMContentLoaded", () => {
+  const un = sessionStorage.getItem("username");
+  const ro = sessionStorage.getItem("role");
+  
+  if (un) {
+      document.querySelectorAll('.user-info .name').forEach(el => el.textContent = un);
+      const welcomeText = document.querySelector('.welcome-text h2');
+      if (welcomeText && welcomeText.innerHTML.includes('Welcome,')) {
+          welcomeText.innerHTML = `Welcome, ${un} 👋`;
+      }
+  }
+  if (ro) {
+      document.querySelectorAll('.user-info .role').forEach(el => el.textContent = ro);
+  }
+});

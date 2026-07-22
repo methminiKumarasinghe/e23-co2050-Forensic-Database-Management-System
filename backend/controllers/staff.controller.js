@@ -10,6 +10,106 @@ const getDashboardStats = async (req, res, next) => {
     }
 };
 
+const createPatient = async (req, res, next) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+        const patient = await service.createPatient(req.user.user_id, req.body);
+        res.status(201).json(patient);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const getPatients = async (req, res, next) => {
+    try {
+        const patients = await service.getPatients(req.user.user_id);
+        res.status(200).json(patients);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const getPatientById = async (req, res, next) => {
+    try {
+        const patient = await service.getPatientById(req.user.user_id, req.params.id);
+        if (!patient) return res.status(404).json({ error: 'Patient not found' });
+        res.status(200).json(patient);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const createDeceased = async (req, res, next) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+        const deceased = await service.createDeceased(req.user.user_id, req.body);
+        res.status(201).json(deceased);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const getDeceased = async (req, res, next) => {
+    try {
+        const deceased = await service.getDeceased(req.user.user_id);
+        res.status(200).json(deceased);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const getDeceasedById = async (req, res, next) => {
+    try {
+        const deceased = await service.getDeceasedById(req.user.user_id, req.params.id);
+        if (!deceased) return res.status(404).json({ error: 'Deceased person not found' });
+        res.status(200).json(deceased);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const createMlef = async (req, res, next) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+        const mlef = await service.createMlef(req.user.user_id, req.body);
+        res.status(201).json(mlef);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const getHospitals = async (req, res, next) => {
+    try {
+        const hospitals = await service.getHospitals();
+        res.status(200).json(hospitals);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const getAvailableJmo = async (req, res, next) => {
+    try {
+        const jmos = await service.getAvailableJmo();
+        res.status(200).json(jmos);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const assignJmoToCase = async (req, res, next) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+        const result = await service.assignJmoToCase(req.user.user_id, req.params.caseId, req.body);
+        res.status(200).json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
 const getCases = async (req, res, next) => {
     try {
         const { case_number, date_range, status, station } = req.query;
@@ -178,6 +278,10 @@ const search = async (req, res, next) => {
 
 module.exports = {
   getDashboardStats,
+  createPatient, getPatients, getPatientById,
+  createDeceased, getDeceased, getDeceasedById,
+  createMlef, getHospitals,
+  getAvailableJmo, assignJmoToCase,
   getCases, getCaseById, getCaseTimeline,
   getMlefRequests, getMlefById,
   getExaminations, getExaminationById,

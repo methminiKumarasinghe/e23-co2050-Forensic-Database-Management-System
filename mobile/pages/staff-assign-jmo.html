@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Examination Monitoring — DFMIS</title>
+  <title>Assign JMO — DFMIS</title>
   <link rel="stylesheet" href="../css/style.css" />
   <script src="../js/api.js"></script>
   <style>
@@ -89,9 +89,9 @@
     <div class="topbar">
       <div class="topbar-left">
         <div>
-          <div class="topbar-title">Examination Monitoring</div>
+          <div class="topbar-title">Assign JMO to Case</div>
           <div class="breadcrumb">
-            <span>DFMIS</span><span class="breadcrumb-sep">›</span><span>Examination Monitoring</span>
+            <span>DFMIS</span><span class="breadcrumb-sep">›</span><span>Case Management</span><span class="breadcrumb-sep">›</span><span>Assign JMO</span>
           </div>
         </div>
       </div>
@@ -102,24 +102,64 @@
     </div>
 
     <div class="dash-body">
-      
       <div class="card">
         <div class="card-header">
-          <h5>🩺 Examination Monitoring</h5>
+          <h5>🤝 Assign JMO to Case</h5>
         </div>
         <div class="card-body">
-          <div class="table-wrap" id="dataContainer">
-            <table class="dash-table">
-              <thead><tr><th>Exam ID</th><th>Date</th><th>JMO Reg.</th><th>MLEF ID</th><th>Status</th></tr></thead>
-              <tbody id="dataTableBody"></tbody>
-            </table>
-          </div>
+          <form id="assignJmoForm" onsubmit="handleJmoAssignment(event)">
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">Police Case (with active MLEF) *</label>
+                <select id="case_id" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <option value="">Loading cases...</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">Hospital *</label>
+                <select id="hospital_id" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <option value="">Loading hospitals...</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">Available JMO *</label>
+                <select id="jmo_id" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <option value="">Loading JMOs...</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">Assignment Date *</label>
+                <input type="datetime-local" id="assignment_date" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" />
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 5px;">Remarks</label>
+                <textarea id="remarks" rows="2" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end;">
+                <button type="submit" class="btn btn-primary" style="padding: 10px 20px;">Assign JMO</button>
+            </div>
+          </form>
         </div>
       </div>
-    
-    </div>
-
-    <footer class="dash-footer">
+      
+      <div class="card" style="margin-top: 20px;">
+        <div class="card-header">
+          <h5>👥 Current JMO Workload</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-wrap">
+                <table class="dash-table">
+                  <thead><tr><th>JMO Name</th><th>Hospital</th><th>Specialization</th></tr></thead>
+                  <tbody id="workloadTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+      </div></div>\n    <footer class="dash-footer">
       <span>Department of Forensic Medicine &nbsp;|&nbsp; University of Peradeniya</span>
       <span>DFMIS v1.0 &nbsp;|&nbsp; &copy; 2026 Ministry of Health, Sri Lanka</span>
     </footer>
@@ -139,16 +179,17 @@
   document.addEventListener("DOMContentLoaded", async () => {
     setTableLoading('dataContainer', true);
     try {
-      const data = await fetchAPI('/staff/examinations');
+      const data = await fetchAPI('/staff/cases');
       const tbody = document.getElementById('dataTableBody');
       if (data && data.length > 0) {
         tbody.innerHTML = data.map(d => `
           <tr>
-            <td><strong>${d.examination_id}</strong></td>
-            <td>${new Date(d.examination_date).toLocaleDateString()}</td>
-            <td>${d.jmo_reg}</td>
-            <td>${d.mlef_id}</td>
+            <td><strong>${d.case_number}</strong></td>
+            <td>${d.case_type}</td>
+            <td>${d.station_name}</td>
             <td><span class="badge badge-primary">${d.status}</span></td>
+            <td>${new Date(d.date_reported).toLocaleDateString()}</td>
+            <td><button class="btn btn-sm" onclick="viewTimeline('${d.case_id}')">Timeline</button></td>
           </tr>
         `).join('');
       } else {
@@ -160,6 +201,32 @@
       setTableLoading('dataContainer', false);
     }
   });
+
+  async function viewTimeline(caseId) {
+    document.getElementById('timelineModal').classList.add('show');
+    const content = document.getElementById('timelineContent');
+    content.innerHTML = '<p>Loading timeline...</p>';
+    try {
+      const data = await fetchAPI(`/staff/cases/${caseId}/timeline`);
+      if (data && data.length > 0) {
+        content.innerHTML = '<ul style="list-style:none; padding:0;">' + data.map(t => `
+          <li style="margin-bottom: 15px; border-left: 2px solid #0F4C81; padding-left: 15px;">
+            <div style="font-weight:bold;">${t.stage}</div>
+            <div style="font-size:0.9em; color:#666;">${new Date(t.date).toLocaleString()}</div>
+            <div style="margin-top:5px;">${t.details}</div>
+          </li>
+        `).join('') + '</ul>';
+      } else {
+        content.innerHTML = '<p>No timeline events found.</p>';
+      }
+    } catch (err) {
+      content.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+    }
+  }
+
+  function closeTimeline() {
+    document.getElementById('timelineModal').classList.remove('show');
+  }
 </script>
     
 </body>
