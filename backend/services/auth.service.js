@@ -12,6 +12,10 @@ class AuthService {
     );
 
     if (userResult.rows.length === 0) {
+      await db.query(
+        `INSERT INTO access_logs (user_id, username, action, details) VALUES ($1, $2, $3, $4)`,
+        [null, username, 'LOGIN_FAILED', 'User does not exist']
+      );
       throw new Error('Invalid username or password');
     }
 
@@ -19,6 +23,10 @@ class AuthService {
 
     // 2. Check if user is active
     if (user.status !== 'ACTIVE') {
+      await db.query(
+        `INSERT INTO access_logs (user_id, username, action, details) VALUES ($1, $2, $3, $4)`,
+        [user.user_id, username, 'LOGIN_FAILED', `User account is ${user.status}`]
+      );
       throw new Error(`User account is ${user.status.toLowerCase()}`);
     }
 
@@ -26,6 +34,10 @@ class AuthService {
     // Using bcrypt to compare provided password with password_hash
     const validPassword = await bcrypt.compare(password, user.password_hash);
     if (!validPassword) {
+      await db.query(
+        `INSERT INTO access_logs (user_id, username, action, details) VALUES ($1, $2, $3, $4)`,
+        [user.user_id, username, 'LOGIN_FAILED', 'Incorrect password']
+      );
       throw new Error('Invalid username or password');
     }
 
@@ -41,6 +53,12 @@ class AuthService {
 
     // 5. Update last_login
     await db.query(`UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE user_id = $1`, [user.user_id]);
+
+    // Log success
+    await db.query(
+      `INSERT INTO access_logs (user_id, username, action, details) VALUES ($1, $2, $3, $4)`,
+      [user.user_id, username, 'LOGIN_SUCCESS', 'User logged in successfully']
+    );
 
     // 6. Generate JWT
     const payload = {

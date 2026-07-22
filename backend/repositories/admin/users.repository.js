@@ -8,7 +8,6 @@ class UsersRepository {
       FROM users u
       LEFT JOIN user_roles ur ON u.user_id = ur.user_id
       LEFT JOIN roles r ON ur.role_id = r.role_id
-      WHERE u.status != 'INACTIVE'
       GROUP BY u.user_id
       ORDER BY u.created_at DESC
     `;
