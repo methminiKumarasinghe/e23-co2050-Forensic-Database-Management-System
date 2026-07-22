@@ -63,65 +63,8 @@
     .contact-card h4 { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
     .contact-card p { font-size: 12px; color: var(--text-muted); }
 
-    .forms-section { padding: 0 32px 60px; max-width: 1100px; margin: 0 auto; }
-    .form-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 20px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      margin-bottom: 10px;
-      transition: box-shadow .2s;
-    }
-    .form-item:hover { box-shadow: var(--shadow-sm); }
-    .form-item-left { display: flex; align-items: center; gap: 14px; }
-    .form-item-left .ficon { font-size: 24px; }
-    .form-item-left .fname { font-size: 13px; font-weight: 600; color: var(--text-primary); }
-    .form-item-left .fdesc { font-size: 11px; color: var(--text-muted); }
-    .btn-download {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 16px;
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: 'Inter', sans-serif;
-      transition: background .2s;
-    }
-    .btn-download:hover { background: var(--primary-dark); }
 
-    .verify-section {
-      padding: 60px 32px;
-      background: linear-gradient(135deg, #f0f4f8 0%, #e8f0fe 100%);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-    }
-    .verify-inner { max-width: 500px; margin: 0 auto; text-align: center; }
-    .verify-inner h2 { font-size: 22px; font-weight: 800; color: var(--primary-dark); margin-bottom: 8px; }
-    .verify-inner p { color: var(--text-muted); font-size: 13px; margin-bottom: 24px; }
-    .verify-input-row { display: flex; gap: 10px; }
-    .verify-input-row .form-control { flex: 1; }
-    .btn-verify {
-      padding: 11px 20px;
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: 'Inter', sans-serif;
-      transition: all .2s;
-      white-space: nowrap;
-    }
-    .btn-verify:hover { background: var(--primary-dark); }
+
 
     @media (max-width: 768px) {
       .about-inner { grid-template-columns: 1fr; }
@@ -143,8 +86,6 @@
       <a href="#home" class="active" id="pub-nav-home">Home</a>
       <a href="#about" id="pub-nav-about">About</a>
       <a href="#services" id="pub-nav-services">Services</a>
-      <a href="#forms" id="pub-nav-forms">Download Forms</a>
-      <a href="#verify" id="pub-nav-verify">Verify Report</a>
       <a href="#contact" id="pub-nav-contact">Contact Us</a>
       <a href="../index.html" class="btn-login-link" id="pub-nav-login">🔒 Login</a>
     </div>
@@ -168,7 +109,7 @@
       <div class="about-image-block">🏛️</div>
       <div class="about-text">
         <h2>About the Department</h2>
-        <p>The Department of Forensic Medicine at the Faculty of Medicine, University of Peradeniya serves as a leading centre for medico-legal services in the Central Province of Sri Lanka.</p>
+        <p>The Department of Forensic Medicine serves as a leading centre for medico-legal services in Sri Lanka.</p>
         <p>We provide expert forensic examination services to police, courts, and the public, including clinical examinations, post-mortem examinations, and laboratory analyses. Our work upholds justice and supports the legal system of Sri Lanka.</p>
         <div class="about-stat-row">
           <div class="about-stat">
@@ -229,78 +170,6 @@
     </div>
   </section>
 
-  <!-- ═══ Download Forms ════════════════════════════════════════════════ -->
-  <section class="forms-section" id="forms">
-    <div class="section-title" style="text-align: left; margin-bottom: 24px;">
-      <h2>Download Forms</h2>
-      <p>Official forms for police, courts, and general public</p>
-      <div class="section-divider" style="margin: 10px 0 0;"></div>
-    </div>
-    <div class="form-item">
-      <div class="form-item-left">
-        <span class="ficon">📋</span>
-        <div>
-          <div class="fname">Medico-Legal Examination Form (MLEF)</div>
-          <div class="fdesc">For Police Officers — required for all referrals</div>
-        </div>
-      </div>
-      <button class="btn-download" onclick="alert('Download functionality will be available after backend integration.')" id="dl-mlef">
-        ⬇ Download PDF
-      </button>
-    </div>
-    <div class="form-item">
-      <div class="form-item-left">
-        <span class="ficon">📄</span>
-        <div>
-          <div class="fname">Post-Mortem Request Form</div>
-          <div class="fdesc">For Police Officers — request autopsy examination</div>
-        </div>
-      </div>
-      <button class="btn-download" onclick="alert('Download functionality will be available after backend integration.')" id="dl-pm">
-        ⬇ Download PDF
-      </button>
-    </div>
-    <div class="form-item">
-      <div class="form-item-left">
-        <span class="ficon">🧪</span>
-        <div>
-          <div class="fname">Laboratory Test Request Form</div>
-          <div class="fdesc">For JMOs and Police Officers</div>
-        </div>
-      </div>
-      <button class="btn-download" onclick="alert('Download functionality will be available after backend integration.')" id="dl-lab">
-        ⬇ Download PDF
-      </button>
-    </div>
-    <div class="form-item">
-      <div class="form-item-left">
-        <span class="ficon">📑</span>
-        <div>
-          <div class="fname">Report Request Form (Public)</div>
-          <div class="fdesc">For general public — request copies of medico-legal reports</div>
-        </div>
-      </div>
-      <button class="btn-download" onclick="alert('Download functionality will be available after backend integration.')" id="dl-public">
-        ⬇ Download PDF
-      </button>
-    </div>
-  </section>
-
-  <!-- ═══ Verify Report ════════════════════════════════════════════════ -->
-  <section class="verify-section" id="verify">
-    <div class="verify-inner">
-      <div style="font-size: 48px; margin-bottom: 16px;">🔐</div>
-      <h2>Verify a Report</h2>
-      <p>Enter a report reference number to verify the authenticity of a medico-legal document issued by our department.</p>
-      <div class="verify-input-row">
-        <input type="text" class="form-control" id="verify-input" placeholder="e.g. MLR-2026-00142" />
-        <button class="btn-verify" onclick="verifyReport()" id="verify-btn">Verify</button>
-      </div>
-      <p style="margin-top: 12px; font-size: 11px; color: var(--text-muted);">
-        Verification service will be available after system launch. &nbsp;For urgent verification, contact the department directly.
-      </p>
-    </div>
-  </section>
 
   <!-- ═══ Contact Section ══════════════════════════════════════════════ -->
   <section class="contact-section" id="contact">
@@ -313,7 +182,7 @@
       <div class="contact-card" id="contact-address">
         <span class="icon">📍</span>
         <h4>Address</h4>
-        <p>Department of Forensic Medicine<br>Faculty of Medicine<br>University of Peradeniya<br>Peradeniya, Sri Lanka</p>
+        <p>Department of Forensic Medicine<br>Ministry of Health<br>Colombo, Sri Lanka</p>
       </div>
       <div class="contact-card" id="contact-phone">
         <span class="icon">📞</span>
@@ -325,11 +194,6 @@
         <h4>Email</h4>
         <p>forensicmed@pdn.ac.lk<br><small style="color: var(--text-muted);">Responses within 2 business days</small></p>
       </div>
-      <div class="contact-card" id="contact-emergency">
-        <span class="icon">🚨</span>
-        <h4>24-Hour JMO Duty</h4>
-        <p>+94 81 239 6200<br><small style="color: var(--text-muted);">For police-referred emergencies<br>Available round the clock</small></p>
-      </div>
     </div>
   </section>
 
@@ -337,7 +201,7 @@
   <footer class="public-footer" role="contentinfo">
     <p>
       <strong>Digital Forensic Medical Information System</strong><br>
-      Department of Forensic Medicine &nbsp;|&nbsp; University of Peradeniya &nbsp;|&nbsp; Version 1.0<br>
+      Department of Forensic Medicine  &nbsp;|&nbsp; Version 1.0<br>
       &copy; 2026 Ministry of Health, Democratic Socialist Republic of Sri Lanka. All rights reserved.
     </p>
     <p style="margin-top: 10px;">
@@ -346,11 +210,6 @@
   </footer>
 
   <script>
-    function verifyReport() {
-      const val = document.getElementById("verify-input").value.trim();
-      if (!val) { alert("Please enter a report reference number."); return; }
-      alert("Verification service is not yet available.\nReference: " + val + "\n\nPlease contact the department directly for verification.");
-    }
 
     // Smooth scrolling nav active state
     const sections = document.querySelectorAll('section[id]');
