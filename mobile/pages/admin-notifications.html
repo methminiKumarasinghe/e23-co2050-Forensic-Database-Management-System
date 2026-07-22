@@ -242,12 +242,12 @@
           </tr>
         `).join('');
       } else {
-        setTableEmpty('historyContainer');
+        setTableEmpty('historyTableBody');
       }
     } catch (err) {
-      setTableError('historyContainer', err.message);
+      setTableError('historyTableBody', err.message);
     } finally {
-      setTableLoading('historyContainer', false);
+      setTableLoading('historyTableBody', false);
     }
   }
 

@@ -288,12 +288,12 @@
           </tr>
         `).join('');
       } else {
-        setTableEmpty('casesContainer');
+        setTableEmpty('casesTableBody');
       }
     } catch (err) {
-      setTableError('casesContainer', err.message);
+      setTableError('casesTableBody', err.message);
     } finally {
-      setTableLoading('casesContainer', false);
+      setTableLoading('casesTableBody', false);
     }
   }
 

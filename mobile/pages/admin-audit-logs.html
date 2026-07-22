@@ -189,12 +189,12 @@
           </tr>
         `).join('');
       } else {
-        setTableEmpty('auditContainer');
+        setTableEmpty('auditTableBody');
       }
     } catch (err) {
-      setTableError('auditContainer', err.message);
+      setTableError('auditTableBody', err.message);
     } finally {
-      setTableLoading('auditContainer', false);
+      setTableLoading('auditTableBody', false);
     }
   }
 

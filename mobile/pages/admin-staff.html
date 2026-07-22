@@ -421,9 +421,9 @@
       allStaff = await fetchAPI('/admin/staff');
       renderStaffTable(allStaff);
     } catch (err) {
-      setTableError('staffContainer', err.message);
+      setTableError('staffTableBody', err.message);
     } finally {
-      setTableLoading('staffContainer', false);
+      setTableLoading('staffTableBody', false);
     }
   }
 
@@ -471,7 +471,7 @@
         `;
       }).join('');
     } else {
-      setTableEmpty('staffContainer');
+      setTableEmpty('staffTableBody');
     }
   }
 

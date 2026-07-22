@@ -179,3 +179,46 @@ window.fetchAPI = fetchAPI;
 window.setTableLoading = setTableLoading;
 window.setTableEmpty = setTableEmpty;
 window.setTableError = setTableError;
+
+// Auto-wire notifications badge logic globally
+document.addEventListener("DOMContentLoaded", async () => {
+  const badge = document.querySelector('.topbar-badge[title="Notifications"]');
+  if (!badge) return;
+
+  badge.style.cursor = 'pointer';
+  
+  // Bind click navigation based on user's current directory path
+  badge.addEventListener('click', (e) => {
+    e.preventDefault();
+    const path = window.location.pathname;
+    if (path.includes('/jmo/') || path.includes('_jmo')) {
+      window.location.href = 'jmo_notifications.html';
+    } else if (path.includes('/police/') || path.includes('_police')) {
+      window.location.href = 'police_notifications.html';
+    } else if (path.includes('staff')) {
+      window.location.href = 'staff-notifications.html';
+    } else if (path.includes('admin') || path.includes('/admin.html')) {
+      window.location.href = 'admin-notifications.html';
+    } else if (path.includes('laboratory.html')) {
+      // In single page app, switch view inline
+      if (typeof switchView === 'function') {
+        const navItem = document.querySelector('.nav-item[onclick*="notifications"]');
+        switchView('notifications', navItem);
+      }
+    }
+  });
+
+  // Dynamically update the red badge dot if there are unread notifications
+  try {
+    const notifications = await window.API.get('/notifications');
+    if (notifications && Array.isArray(notifications)) {
+      const hasUnread = notifications.some(n => !n.is_read);
+      const dot = badge.querySelector('.badge-dot');
+      if (dot) {
+        dot.style.display = hasUnread ? 'block' : 'none';
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to auto-load notifications status:', e);
+  }
+});
