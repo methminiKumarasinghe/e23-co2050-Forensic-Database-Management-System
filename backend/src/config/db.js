@@ -8,7 +8,7 @@ const pool = new Pool({
   },
   max: 20,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 30000, // 30 seconds to allow Neon compute endpoint to wake up
+  connectionTimeoutMillis: 10000,
 });
 
 pool.on('connect', () => {
@@ -20,24 +20,15 @@ pool.on('error', (err) => {
 });
 
 /**
- * Test DB connectivity with retries — called at server startup
+ * Test DB connectivity — called once at server startup
  */
-const testConnection = async (retries = 3, delay = 2000) => {
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      const client = await pool.connect();
-      try {
-        const result = await client.query('SELECT NOW() AS server_time');
-        console.log(`✅ Database connected — server time: ${result.rows[0].server_time}`);
-        return;
-      } finally {
-        client.release();
-      }
-    } catch (err) {
-      console.warn(`⚠️  Database connection attempt ${attempt}/${retries} failed: ${err.message}`);
-      if (attempt === retries) throw err;
-      await new Promise((resolve) => setTimeout(resolve, delay));
-    }
+const testConnection = async () => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query('SELECT NOW() AS server_time');
+    console.log(`✅ Database connected — server time: ${result.rows[0].server_time}`);
+  } finally {
+    client.release();
   }
 };
 
