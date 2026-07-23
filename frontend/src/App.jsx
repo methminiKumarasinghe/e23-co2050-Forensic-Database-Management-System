@@ -17,25 +17,13 @@ import MedicalOfficerDashboard  from './pages/dashboards/MedicalOfficerDashboard
 import LabTechnicianDashboard   from './pages/dashboards/LabTechnicianDashboard';
 import GovernmentAnalystDashboard from './pages/dashboards/GovernmentAnalystDashboard';
 
-// Lab Pages
-import LabRequestsList          from './pages/lab/LabRequestsList';
-import LabRequestDetails        from './pages/lab/LabRequestDetails';
-import PerformTest              from './pages/lab/PerformTest';
-import LabResultDetails         from './pages/lab/LabResultDetails';
-
-// JMO Lab Pages
-import CreateLabRequest         from './pages/jmo/CreateLabRequest';
-import JMOLabRequestsList       from './pages/jmo/JMOLabRequestsList';
-import JMOLabResultsList        from './pages/jmo/JMOLabResultsList';
-import JMOLabResultDetails      from './pages/jmo/JMOLabResultDetails';
-
 const ROLE_DASHBOARDS = {
   ADMIN:             '/admin',
   POLICE:            '/dashboard/police',
   JMO:               '/dashboard/jmo',
   MEDICAL_OFFICER:   '/dashboard/medical-officer',
   LAB_TECHNICIAN:    '/dashboard/lab-technician',
-  GOVERNMENT_ANALYST:'/dashboard/hospital-staff',
+  GOVERNMENT_ANALYST:'/dashboard/forensic-staff',
 };
 
 /**
@@ -87,34 +75,6 @@ const App = () => (
         </RoleRoute>
       </PrivateRoute>
     } />
-    <Route path="/dashboard/jmo/create-lab-request" element={
-      <PrivateRoute>
-        <RoleRoute roles={['JMO']}>
-          <CreateLabRequest />
-        </RoleRoute>
-      </PrivateRoute>
-    } />
-    <Route path="/dashboard/jmo/lab-requests" element={
-      <PrivateRoute>
-        <RoleRoute roles={['JMO']}>
-          <JMOLabRequestsList />
-        </RoleRoute>
-      </PrivateRoute>
-    } />
-    <Route path="/dashboard/jmo/lab-results" element={
-      <PrivateRoute>
-        <RoleRoute roles={['JMO']}>
-          <JMOLabResultsList />
-        </RoleRoute>
-      </PrivateRoute>
-    } />
-    <Route path="/dashboard/jmo/lab-result/:id" element={
-      <PrivateRoute>
-        <RoleRoute roles={['JMO']}>
-          <JMOLabResultDetails />
-        </RoleRoute>
-      </PrivateRoute>
-    } />
 
     {/* Medical Officer */}
     <Route path="/dashboard/medical-officer" element={
@@ -133,37 +93,9 @@ const App = () => (
         </RoleRoute>
       </PrivateRoute>
     } />
-    <Route path="/dashboard/lab-technician/requests" element={
-      <PrivateRoute>
-        <RoleRoute roles={['LAB_TECHNICIAN']}>
-          <LabRequestsList />
-        </RoleRoute>
-      </PrivateRoute>
-    } />
-    <Route path="/dashboard/lab-technician/request/:id" element={
-      <PrivateRoute>
-        <RoleRoute roles={['LAB_TECHNICIAN']}>
-          <LabRequestDetails />
-        </RoleRoute>
-      </PrivateRoute>
-    } />
-    <Route path="/dashboard/lab-technician/request/:id/test" element={
-      <PrivateRoute>
-        <RoleRoute roles={['LAB_TECHNICIAN']}>
-          <PerformTest />
-        </RoleRoute>
-      </PrivateRoute>
-    } />
-    <Route path="/dashboard/lab-technician/result/:id" element={
-      <PrivateRoute>
-        <RoleRoute roles={['LAB_TECHNICIAN']}>
-          <LabResultDetails />
-        </RoleRoute>
-      </PrivateRoute>
-    } />
 
-    {/* Hospital Staff */}
-    <Route path="/dashboard/hospital-staff" element={
+    {/* Forensic Staff */}
+    <Route path="/dashboard/forensic-staff" element={
       <PrivateRoute>
         <RoleRoute roles={['GOVERNMENT_ANALYST']}>
           <GovernmentAnalystDashboard />

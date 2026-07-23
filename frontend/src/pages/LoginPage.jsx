@@ -4,12 +4,12 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 
 const ROLE_DASHBOARDS = {
-  ADMIN:             '/admin',
-  POLICE:            '/dashboard/police',
-  JMO:               '/dashboard/jmo',
-  MEDICAL_OFFICER:   '/dashboard/medical-officer',
-  LAB_TECHNICIAN:    '/dashboard/lab-technician',
-  GOVERNMENT_ANALYST:'/dashboard/hospital-staff',
+  ADMIN: '/admin',
+  POLICE: '/dashboard/police',
+  JMO: '/dashboard/jmo',
+  MEDICAL_OFFICER: '/dashboard/medical-officer',
+  LAB_TECHNICIAN: '/dashboard/lab-technician',
+  GOVERNMENT_ANALYST: '/dashboard/forensic-staff',
 };
 
 const EyeIcon = ({ open }) => (
@@ -36,13 +36,13 @@ const ShieldIcon = () => (
 
 const LoginPage = () => {
   const { login } = useAuth();
-  const navigate  = useNavigate();
-  const location  = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const [form, setForm]           = useState({ username: '', password: '' });
-  const [showPass, setShowPass]   = useState(false);
-  const [loading, setLoading]     = useState(false);
-  const [error, setError]         = useState('');
+  const [form, setForm] = useState({ username: '', password: '' });
+  const [showPass, setShowPass] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [isPending, setIsPending] = useState(false);
 
   const handleChange = (e) => {
