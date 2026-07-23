@@ -161,49 +161,49 @@ const App = () => (
     {/* Medical Officer / Staff */}
     <Route path="/dashboard/medical-officer" element={
       <PrivateRoute>
-        <RoleRoute roles={['MEDICAL_OFFICER']}>
+        <RoleRoute roles={['MEDICAL_OFFICER', 'GOVERNMENT_ANALYST']}>
           <MedicalOfficerDashboard />
         </RoleRoute>
       </PrivateRoute>
     } />
     <Route path="/dashboard/medical-officer/patients" element={
       <PrivateRoute>
-        <RoleRoute roles={['MEDICAL_OFFICER']}>
+        <RoleRoute roles={['MEDICAL_OFFICER', 'GOVERNMENT_ANALYST']}>
           <StaffPatientRecords />
         </RoleRoute>
       </PrivateRoute>
     } />
     <Route path="/dashboard/medical-officer/reports" element={
       <PrivateRoute>
-        <RoleRoute roles={['MEDICAL_OFFICER']}>
+        <RoleRoute roles={['MEDICAL_OFFICER', 'GOVERNMENT_ANALYST']}>
           <StaffMedicalReports />
         </RoleRoute>
       </PrivateRoute>
     } />
     <Route path="/dashboard/medical-officer/cases" element={
       <PrivateRoute>
-        <RoleRoute roles={['MEDICAL_OFFICER']}>
+        <RoleRoute roles={['MEDICAL_OFFICER', 'GOVERNMENT_ANALYST']}>
           <StaffCaseConsultations />
         </RoleRoute>
       </PrivateRoute>
     } />
     <Route path="/dashboard/medical-officer/notes" element={
       <PrivateRoute>
-        <RoleRoute roles={['MEDICAL_OFFICER']}>
+        <RoleRoute roles={['MEDICAL_OFFICER', 'GOVERNMENT_ANALYST']}>
           <StaffTreatmentNotes />
         </RoleRoute>
       </PrivateRoute>
     } />
     <Route path="/dashboard/medical-officer/documents" element={
       <PrivateRoute>
-        <RoleRoute roles={['MEDICAL_OFFICER']}>
+        <RoleRoute roles={['MEDICAL_OFFICER', 'GOVERNMENT_ANALYST']}>
           <StaffDocumentArchive />
         </RoleRoute>
       </PrivateRoute>
     } />
     <Route path="/dashboard/medical-officer/notifications" element={
       <PrivateRoute>
-        <RoleRoute roles={['MEDICAL_OFFICER']}>
+        <RoleRoute roles={['MEDICAL_OFFICER', 'GOVERNMENT_ANALYST']}>
           <StaffNotifications />
         </RoleRoute>
       </PrivateRoute>

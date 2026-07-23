@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { Link } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import { MlefFlashCard, MlefDetailsModal } from '../../components/staff/ForensicStaffMlefSection';
 import { getHospitalMlefs } from '../../api/medicalApi';
 
-const InfoCard = ({ icon, title, subtitle, color }) => (
-  <div className={`glass rounded-xl p-5 border-l-4 ${color} hover:scale-[1.01] transition-transform`}>
+const InfoCard = ({ icon, title, subtitle, color, link }) => (
+  <Link to={link || '#'} className={`glass rounded-xl p-5 border-l-4 ${color} hover:scale-[1.01] transition-transform block`}>
     <div className="text-2xl mb-2">{icon}</div>
     <div className="font-semibold text-white text-sm">{title}</div>
     <div className="text-xs text-gray-400 mt-0.5">{subtitle}</div>
-  </div>
+  </Link>
 );
 
 const GovernmentAnalystDashboard = () => {
@@ -62,41 +63,47 @@ const GovernmentAnalystDashboard = () => {
             onClick={() => setIsModalOpen(true)}
           />
 
-          {/* Previous Dashboard Cards */}
+          {/* Connected Dashboard Cards */}
           <InfoCard
             icon="📄"
             title="Document Management"
             subtitle="Manage official hospital and legal documents"
+            link="/dashboard/medical-officer/documents"
             color="border-rose-500"
           />
           <InfoCard
             icon="🏛️"
             title="Court Documents"
             subtitle="Track documents submitted to court"
+            link="/dashboard/medical-officer/reports"
             color="border-purple-500"
           />
           <InfoCard
             icon="📬"
             title="Document Recipients"
-            subtitle="Manage document delivery and acknowledgements"
+            subtitle="Manage document delivery and examinee records"
+            link="/dashboard/medical-officer/patients"
             color="border-blue-500"
           />
           <InfoCard
             icon="📁"
             title="File Archive"
             subtitle="Access uploaded files and attachments"
+            link="/dashboard/medical-officer/documents"
             color="border-amber-500"
           />
           <InfoCard
             icon="🔍"
             title="Case References"
             subtitle="View cases linked to hospital documents"
+            link="/dashboard/medical-officer/cases"
             color="border-emerald-500"
           />
           <InfoCard
             icon="🔔"
             title="Notifications"
             subtitle="System alerts and document requests"
+            link="/dashboard/medical-officer/notifications"
             color="border-cyan-500"
           />
         </div>
