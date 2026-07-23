@@ -18,8 +18,11 @@ const {
   getLabRequestsList,
   getHospitalsList,
   getStationsList,
+  createHospital,
+  createPoliceStation,
+  createUserByAdmin,
 } = require('../services/admin.service');
-const { sendSuccess, sendBadRequest } = require('../utils/response');
+const { sendSuccess, sendCreated, sendBadRequest } = require('../utils/response');
 
 /**
  * GET /api/admin/stats
@@ -292,6 +295,50 @@ const getStations = async (req, res, next) => {
   }
 };
 
+/**
+ * POST /api/admin/hospitals
+ */
+const addHospital = async (req, res, next) => {
+  try {
+    const { hospital_name } = req.body;
+    if (!hospital_name || !hospital_name.trim()) {
+      return sendBadRequest(res, 'Hospital name is required');
+    }
+    const hospital = await createHospital(req.body, req.user.user_id);
+    return sendCreated(res, { message: 'Hospital created successfully', data: hospital });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * POST /api/admin/stations
+ */
+const addStation = async (req, res, next) => {
+  try {
+    const { station_name } = req.body;
+    if (!station_name || !station_name.trim()) {
+      return sendBadRequest(res, 'Police station name is required');
+    }
+    const station = await createPoliceStation(req.body, req.user.user_id);
+    return sendCreated(res, { message: 'Police station created successfully', data: station });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * POST /api/admin/users
+ */
+const addUser = async (req, res, next) => {
+  try {
+    const user = await createUserByAdmin(req.body, req.user.user_id);
+    return sendCreated(res, { message: 'Active user created successfully', data: user });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   getStats,
   listPendingUsers,
@@ -309,4 +356,7 @@ module.exports = {
   getLabRequests,
   getHospitals,
   getStations,
+  addHospital,
+  addStation,
+  addUser,
 };

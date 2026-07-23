@@ -23,6 +23,9 @@ const ROLE_LABELS = {
   GOVERNMENT_ANALYST:'Forensic Staff',
 };
 
+const HOSPITAL_ROLES = ['JMO', 'MEDICAL_OFFICER', 'LAB_TECHNICIAN', 'GOVERNMENT_ANALYST'];
+const STATION_ROLES  = ['POLICE'];
+
 const StatusBadge = ({ status }) => {
   const cls = {
     ACTIVE:    'badge-active',
@@ -116,6 +119,21 @@ const AdminDashboard = () => {
   const [actionId, setActionId] = useState(null);
   const [resetPassForm, setResetPassForm] = useState({ password: '', confirmPassword: '', error: '', success: false });
 
+  // Creation Modals
+  const [isAddHospitalModalOpen, setIsAddHospitalModalOpen] = useState(false);
+  const [hospitalForm, setHospitalForm] = useState({ hospital_name: '', hospital_type: 'Teaching Hospital', district: '', telephone: '', email: '', address: '', error: '', loading: false });
+
+  const [isAddStationModalOpen, setIsAddStationModalOpen] = useState(false);
+  const [stationForm, setStationForm] = useState({ station_name: '', district: '', telephone: '', email: '', address: '', error: '', loading: false });
+
+  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+  const [userForm, setUserForm] = useState({
+    username: '', password: '', email: '', phone: '', role: 'POLICE',
+    first_name: '', last_name: '', nic: '', gender: 'Male', date_of_birth: '', telephone: '', address: '',
+    hospital_id: '', station_id: '', badge_number: '', rank: '', registration_number: '', specialization: '', employee_number: '', qualification: '', organization_name: '', designation: '',
+    error: '', loading: false
+  });
+
   const showToast = (msg, type = 'success') => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 3500);
@@ -134,7 +152,7 @@ const AdminDashboard = () => {
     }
   }, []);
 
-  // ── FETCH LISTS ────────────────────────────────────────────────────────────
+  // ── LAZY FETCH LISTS (ON DEMAND FOR SPEED) ─────────────────────────────────
   const fetchUsers = useCallback(async () => {
     setUsersLoading(true);
     try {
@@ -243,7 +261,7 @@ const AdminDashboard = () => {
     }
   }, [notificationsPage]);
 
-  // Load appropriate data when switching tabs
+  // Load only active tab data to ensure fast, seamless navigation
   useEffect(() => {
     fetchStats();
     if (activeTab === 'users') fetchUsers();
@@ -266,6 +284,77 @@ const AdminDashboard = () => {
     fetchAuditLogs,
     fetchNotifications,
   ]);
+
+  // Load dropdown lists when opening Add User modal
+  useEffect(() => {
+    if (isAddUserModalOpen) {
+      fetchHospitals();
+      fetchStations();
+    }
+  }, [isAddUserModalOpen, fetchHospitals, fetchStations]);
+
+  // ── CREATION HANDLERS (UPDATES POSTGRES DIRECTLY) ─────────────────────────
+  const handleAddHospital = async (e) => {
+    e.preventDefault();
+    if (!hospitalForm.hospital_name.trim()) {
+      setHospitalForm(f => ({ ...f, error: 'Hospital name is required' }));
+      return;
+    }
+    setHospitalForm(f => ({ ...f, loading: true, error: '' }));
+    try {
+      await api.post('/admin/hospitals', hospitalForm);
+      showToast('Hospital created successfully in database');
+      setIsAddHospitalModalOpen(false);
+      setHospitalForm({ hospital_name: '', hospital_type: 'Teaching Hospital', district: '', telephone: '', email: '', address: '', error: '', loading: false });
+      fetchHospitals();
+      fetchStats();
+    } catch (err) {
+      setHospitalForm(f => ({ ...f, error: err.response?.data?.message || 'Failed to create hospital', loading: false }));
+    }
+  };
+
+  const handleAddStation = async (e) => {
+    e.preventDefault();
+    if (!stationForm.station_name.trim()) {
+      setStationForm(f => ({ ...f, error: 'Station name is required' }));
+      return;
+    }
+    setStationForm(f => ({ ...f, loading: true, error: '' }));
+    try {
+      await api.post('/admin/stations', stationForm);
+      showToast('Police Station created successfully in database');
+      setIsAddStationModalOpen(false);
+      setStationForm({ station_name: '', district: '', telephone: '', email: '', address: '', error: '', loading: false });
+      fetchStations();
+      fetchStats();
+    } catch (err) {
+      setStationForm(f => ({ ...f, error: err.response?.data?.message || 'Failed to create station', loading: false }));
+    }
+  };
+
+  const handleAddUser = async (e) => {
+    e.preventDefault();
+    if (!userForm.username || !userForm.password || !userForm.first_name || !userForm.last_name) {
+      setUserForm(f => ({ ...f, error: 'Username, password, first & last name are required' }));
+      return;
+    }
+    setUserForm(f => ({ ...f, loading: true, error: '' }));
+    try {
+      await api.post('/admin/users', userForm);
+      showToast('Active User account created successfully in database');
+      setIsAddUserModalOpen(false);
+      setUserForm({
+        username: '', password: '', email: '', phone: '', role: 'POLICE',
+        first_name: '', last_name: '', nic: '', gender: 'Male', date_of_birth: '', telephone: '', address: '',
+        hospital_id: '', station_id: '', badge_number: '', rank: '', registration_number: '', specialization: '', employee_number: '', qualification: '', organization_name: '', designation: '',
+        error: '', loading: false
+      });
+      fetchUsers();
+      fetchStats();
+    } catch (err) {
+      setUserForm(f => ({ ...f, error: err.response?.data?.message || 'Failed to create user', loading: false }));
+    }
+  };
 
   // ── USER MANAGE ACTIONS ────────────────────────────────────────────────────
   const handleUserAction = async (userId, action) => {
@@ -334,11 +423,22 @@ const AdminDashboard = () => {
     }
   };
 
+  const openConfirm = (userId, action, title, message) => {
+    setConfirmConfig({ userId, action, title, message });
+    setIsConfirmModalOpen(true);
+  };
+
+  const filteredUsers = users.filter(u => {
+    const term = userFilters.search.toLowerCase();
+    const fullName = `${u.first_name || ''} ${u.last_name || ''}`.toLowerCase();
+    return fullName.includes(term) || (u.username || '').toLowerCase().includes(term) || (u.email || '').toLowerCase().includes(term);
+  });
+
   return (
     <div className="min-h-screen bg-forensic-dark flex flex-col">
       <Navbar />
 
-      {/* Main Container with Sidebar Navigator */}
+      {/* Main Layout Container with Fast Sub-page Navigator */}
       <div className="flex flex-1 pt-16">
         
         {/* Left Sidebar Navigator */}
@@ -359,17 +459,13 @@ const AdminDashboard = () => {
           ))}
         </aside>
 
-        {/* Dynamic Content Panel */}
+        {/* Dynamic Sub-page Panel */}
         <main className="flex-1 p-6 md:p-8 overflow-y-auto max-w-screen-2xl mx-auto w-full">
           
           {/* Mobile Tab Navigator Dropdown */}
           <div className="md:hidden mb-6">
             <label className="text-xs text-gray-400 block mb-1">Select View</label>
-            <select 
-              value={activeTab} 
-              onChange={e => setActiveTab(e.target.value)}
-              className="select-field"
-            >
+            <select value={activeTab} onChange={e => setActiveTab(e.target.value)} className="select-field">
               {NAV_ITEMS.map(i => <option key={i.id} value={i.id}>{i.icon} {i.label}</option>)}
             </select>
           </div>
@@ -382,8 +478,7 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          {/* ────────────────────────────────────────────────────────────────────── */}
-          {/* ── VIEW: OVERVIEW (HOME) ───────────────────────────────────────────── */}
+          {/* ── SUB-PAGE: OVERVIEW (HOME) ────────────────────────────────────────── */}
           {activeTab === 'overview' && (
             <div className="space-y-8 page-enter">
               <div>
@@ -391,7 +486,7 @@ const AdminDashboard = () => {
                 <p className="text-gray-400 text-sm mt-1">Direct system snapshot of case registers, accounts, and organizations</p>
               </div>
 
-              {/* Action Stats Cards (Click to navigate to details tab) */}
+              {/* Stat Cards (Click to switch sub-page) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
                 <StatCard value={statsLoading ? null : stats?.pendingUsers} label="Pending Users" icon="⏳" color="border-amber-500" onClick={() => setActiveTab('users')} />
                 <StatCard value={statsLoading ? null : stats?.activeUsers} label="Active Users" icon="👥" color="border-primary-500" onClick={() => setActiveTab('users')} />
@@ -402,7 +497,7 @@ const AdminDashboard = () => {
                 <StatCard value={statsLoading ? null : stats?.pendingLabRequests} label="Lab Requests" icon="🧪" color="border-yellow-500" onClick={() => setActiveTab('lab_requests')} />
               </div>
 
-              {/* Visual SVG Progress Distribution */}
+              {/* Progress Summary Charts */}
               {stats?.charts && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div className="glass rounded-2xl p-6">
@@ -453,13 +548,17 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          {/* ────────────────────────────────────────────────────────────────────── */}
-          {/* ── VIEW: USER DIRECTORY ────────────────────────────────────────────── */}
+          {/* ── SUB-PAGE: USER DIRECTORY ───────────────────────────────────────── */}
           {activeTab === 'users' && (
             <div className="space-y-4 page-enter">
-              <div>
-                <h1 className="text-2xl font-bold text-white">User Directory</h1>
-                <p className="text-gray-400 text-sm mt-0.5">Manage pending approval registrations, activate/deactivate accounts</p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl font-bold text-white">User Directory</h1>
+                  <p className="text-gray-400 text-sm mt-0.5">Manage accounts, active permissions, and pending registrations</p>
+                </div>
+                <button onClick={() => setIsAddUserModalOpen(true)} className="btn-primary w-fit px-5 py-2">
+                  + Add User Account
+                </button>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 bg-gray-900/30 p-4 rounded-xl border border-gray-800/50">
@@ -546,13 +645,17 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          {/* ────────────────────────────────────────────────────────────────────── */}
-          {/* ── VIEW: HOSPITALS ─────────────────────────────────────────────────── */}
+          {/* ── SUB-PAGE: HOSPITALS ────────────────────────────────────────────── */}
           {activeTab === 'hospitals' && (
             <div className="space-y-4 page-enter">
-              <div>
-                <h1 className="text-2xl font-bold text-white">Registered Hospitals</h1>
-                <p className="text-gray-400 text-sm mt-0.5">Directory list of partner medical institutions and hospital points</p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl font-bold text-white">Registered Hospitals</h1>
+                  <p className="text-gray-400 text-sm mt-0.5">Directory list of partner medical institutions and hospital points</p>
+                </div>
+                <button onClick={() => setIsAddHospitalModalOpen(true)} className="btn-primary w-fit px-5 py-2">
+                  + Add Hospital
+                </button>
               </div>
 
               <div className="bg-gray-900/30 p-4 rounded-xl border border-gray-800/50 flex gap-4">
@@ -598,13 +701,17 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          {/* ────────────────────────────────────────────────────────────────────── */}
-          {/* ── VIEW: POLICE STATIONS ───────────────────────────────────────────── */}
+          {/* ── SUB-PAGE: POLICE STATIONS ──────────────────────────────────────── */}
           {activeTab === 'stations' && (
             <div className="space-y-4 page-enter">
-              <div>
-                <h1 className="text-2xl font-bold text-white">Police Stations</h1>
-                <p className="text-gray-400 text-sm mt-0.5">Directory list of connected police stations and districts</p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl font-bold text-white">Police Stations</h1>
+                  <p className="text-gray-400 text-sm mt-0.5">Directory list of connected police stations and districts</p>
+                </div>
+                <button onClick={() => setIsAddStationModalOpen(true)} className="btn-primary w-fit px-5 py-2">
+                  + Add Police Station
+                </button>
               </div>
 
               <div className="bg-gray-900/30 p-4 rounded-xl border border-gray-800/50 flex gap-4">
@@ -648,8 +755,7 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          {/* ────────────────────────────────────────────────────────────────────── */}
-          {/* ── VIEW: OPEN CASES ────────────────────────────────────────────────── */}
+          {/* ── SUB-PAGE: OPEN CASES ───────────────────────────────────────────── */}
           {activeTab === 'cases' && (
             <div className="space-y-4 page-enter">
               <div>
@@ -691,11 +797,7 @@ const AdminDashboard = () => {
                           <td className="text-xs">{c.case_type || '—'}</td>
                           <td className="text-sm text-white font-medium">{c.title || '—'}</td>
                           <td>{c.station_name}</td>
-                          <td>
-                            <span className="px-2 py-0.5 rounded text-xs bg-emerald-950/60 text-emerald-300 border border-emerald-800/40">
-                              {c.status}
-                            </span>
-                          </td>
+                          <td><span className="px-2 py-0.5 rounded text-xs bg-emerald-950/60 text-emerald-300 border border-emerald-800/40">{c.status}</span></td>
                           <td className="text-xs text-gray-500">{new Date(c.date_reported).toLocaleDateString('en-GB')}</td>
                         </tr>
                       ))}
@@ -706,8 +808,7 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          {/* ────────────────────────────────────────────────────────────────────── */}
-          {/* ── VIEW: REPORTS LEDGER ────────────────────────────────────────────── */}
+          {/* ── SUB-PAGE: REPORTS LEDGER ───────────────────────────────────────── */}
           {activeTab === 'reports' && (
             <div className="space-y-4 page-enter">
               <div>
@@ -746,8 +847,7 @@ const AdminDashboard = () => {
                         <tr key={r.report_id || idx}>
                           <td className="font-mono text-xs font-bold text-white">{r.report_number || 'PENDING'}</td>
                           <td>
-                            <span className={`px-2 py-0.5 text-xs rounded border
-                              ${r.report_type === 'AUTOPSY' ? 'bg-purple-950/60 text-purple-300 border-purple-800/40' : 'bg-cyan-950/60 text-cyan-300 border-cyan-800/40'}`}>
+                            <span className={`px-2 py-0.5 text-xs rounded border ${r.report_type === 'AUTOPSY' ? 'bg-purple-950/60 text-purple-300 border-purple-800/40' : 'bg-cyan-950/60 text-cyan-300 border-cyan-800/40'}`}>
                               {r.report_type === 'AUTOPSY' ? 'Autopsy Report' : 'Medico-Legal Report'}
                             </span>
                           </td>
@@ -763,8 +863,7 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          {/* ────────────────────────────────────────────────────────────────────── */}
-          {/* ── VIEW: LAB REQUESTS ──────────────────────────────────────────────── */}
+          {/* ── SUB-PAGE: LAB REQUESTS ─────────────────────────────────────────── */}
           {activeTab === 'lab_requests' && (
             <div className="space-y-4 page-enter">
               <div>
@@ -803,11 +902,7 @@ const AdminDashboard = () => {
                         <tr key={l.request_id}>
                           <td className="font-semibold text-white">{l.laboratory_name}</td>
                           <td><span className="px-2 py-0.5 text-xs rounded bg-blue-950/60 text-blue-300 border border-blue-800/40">{l.specimen_type}</span></td>
-                          <td>
-                            <span className={`badge ${l.priority === 'HIGH' ? 'badge-suspended' : 'badge-pending'}`}>
-                              {l.priority || 'NORMAL'}
-                            </span>
-                          </td>
+                          <td><span className={`badge ${l.priority === 'HIGH' ? 'badge-suspended' : 'badge-pending'}`}>{l.priority || 'NORMAL'}</span></td>
                           <td><span className="badge badge-active">{l.status}</span></td>
                           <td className="text-xs text-gray-500">{new Date(l.request_date).toLocaleString('en-GB')}</td>
                         </tr>
@@ -819,8 +914,7 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          {/* ────────────────────────────────────────────────────────────────────── */}
-          {/* ── VIEW: SYSTEM AUDIT LOGS ────────────────────────────────────────── */}
+          {/* ── SUB-PAGE: SYSTEM AUDIT LOGS ───────────────────────────────────── */}
           {activeTab === 'audit_logs' && (
             <div className="space-y-4 page-enter">
               <div>
@@ -860,11 +954,7 @@ const AdminDashboard = () => {
                         {auditLogs.map(log => (
                           <tr key={log.audit_id}>
                             <td className="font-semibold text-white">{log.performer_username || 'SYSTEM'}</td>
-                            <td>
-                              <span className="px-2.5 py-1 text-xs font-mono rounded-lg bg-gray-800 text-gray-300 border border-gray-700/60">
-                                {log.action}
-                              </span>
-                            </td>
+                            <td><span className="px-2.5 py-1 text-xs font-mono rounded-lg bg-gray-800 text-gray-300 border border-gray-700/60">{log.action}</span></td>
                             <td className="font-mono text-xs text-gray-400">{log.entity_name || '—'}</td>
                             <td className="text-xs text-gray-300 max-w-md truncate" title={log.description}>{log.description}</td>
                             <td className="text-xs text-gray-500">{new Date(log.created_at).toLocaleString('en-GB')}</td>
@@ -885,8 +975,7 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          {/* ────────────────────────────────────────────────────────────────────── */}
-          {/* ── VIEW: SYSTEM NOTIFICATIONS ──────────────────────────────────────── */}
+          {/* ── SUB-PAGE: NOTIFICATIONS ───────────────────────────────────────── */}
           {activeTab === 'notifications' && (
             <div className="space-y-4 page-enter">
               <div>
@@ -939,7 +1028,191 @@ const AdminDashboard = () => {
         </main>
       </div>
 
-      {/* ── MODALS (UserProfileModal, ResetPasswordModal, ConfirmActionModal) ── */}
+      {/* ── MODAL: ADD HOSPITAL ─────────────────────────────────────────────── */}
+      {isAddHospitalModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="glass max-w-lg w-full rounded-2xl p-6 glow-blue page-enter">
+            <h3 className="text-lg font-bold text-white mb-1">Add New Hospital</h3>
+            <p className="text-xs text-gray-400 mb-5">Register a new hospital institution into PostgreSQL</p>
+            {hospitalForm.error && <div className="mb-4 p-2.5 rounded bg-red-950/40 border border-red-800/50 text-red-300 text-xs">{hospitalForm.error}</div>}
+            <form onSubmit={handleAddHospital} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-400 mb-1">Hospital Name *</label>
+                <input type="text" value={hospitalForm.hospital_name} onChange={e => setHospitalForm(f => ({ ...f, hospital_name: e.target.value }))} className="input-field" placeholder="e.g. National Hospital of Sri Lanka" required />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1">Classification Type</label>
+                  <select value={hospitalForm.hospital_type} onChange={e => setHospitalForm(f => ({ ...f, hospital_type: e.target.value }))} className="select-field">
+                    <option value="Teaching Hospital">Teaching Hospital</option>
+                    <option value="District General Hospital">District General</option>
+                    <option value="Base Hospital">Base Hospital</option>
+                    <option value="Provincial General Hospital">Provincial General</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1">District</label>
+                  <input type="text" value={hospitalForm.district} onChange={e => setHospitalForm(f => ({ ...f, district: e.target.value }))} className="input-field" placeholder="e.g. Colombo" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1">Telephone</label>
+                  <input type="tel" value={hospitalForm.telephone} onChange={e => setHospitalForm(f => ({ ...f, telephone: e.target.value }))} className="input-field" placeholder="+94 11 269 1111" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1">Email</label>
+                  <input type="email" value={hospitalForm.email} onChange={e => setHospitalForm(f => ({ ...f, email: e.target.value }))} className="input-field" placeholder="info@nhsl.health.gov.lk" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-400 mb-1">Address</label>
+                <textarea rows={2} value={hospitalForm.address} onChange={e => setHospitalForm(f => ({ ...f, address: e.target.value }))} className="input-field resize-none" placeholder="Full address" />
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                <button type="button" onClick={() => setIsAddHospitalModalOpen(false)} className="px-4 py-2 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 text-xs">Cancel</button>
+                <button type="submit" disabled={hospitalForm.loading} className="btn-primary w-fit px-6">
+                  {hospitalForm.loading ? 'Creating...' : 'Save Hospital'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: ADD POLICE STATION ────────────────────────────────────────── */}
+      {isAddStationModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="glass max-w-lg w-full rounded-2xl p-6 glow-blue page-enter">
+            <h3 className="text-lg font-bold text-white mb-1">Add Police Station</h3>
+            <p className="text-xs text-gray-400 mb-5">Register a new police station into PostgreSQL</p>
+            {stationForm.error && <div className="mb-4 p-2.5 rounded bg-red-950/40 border border-red-800/50 text-red-300 text-xs">{stationForm.error}</div>}
+            <form onSubmit={handleAddStation} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-400 mb-1">Station Name *</label>
+                <input type="text" value={stationForm.station_name} onChange={e => setStationForm(f => ({ ...f, station_name: e.target.value }))} className="input-field" placeholder="e.g. Colombo Fort Police Station" required />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1">District</label>
+                  <input type="text" value={stationForm.district} onChange={e => setStationForm(f => ({ ...f, district: e.target.value }))} className="input-field" placeholder="e.g. Colombo" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1">Telephone</label>
+                  <input type="tel" value={stationForm.telephone} onChange={e => setStationForm(f => ({ ...f, telephone: e.target.value }))} className="input-field" placeholder="+94 11 243 3333" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-400 mb-1">Email</label>
+                <input type="email" value={stationForm.email} onChange={e => setStationForm(f => ({ ...f, email: e.target.value }))} className="input-field" placeholder="fort@police.lk" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-400 mb-1">Address</label>
+                <textarea rows={2} value={stationForm.address} onChange={e => setStationForm(f => ({ ...f, address: e.target.value }))} className="input-field resize-none" placeholder="Station address" />
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                <button type="button" onClick={() => setIsAddStationModalOpen(false)} className="px-4 py-2 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 text-xs">Cancel</button>
+                <button type="submit" disabled={stationForm.loading} className="btn-primary w-fit px-6">
+                  {stationForm.loading ? 'Creating...' : 'Save Station'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: ADD USER (ACTIVE IMMEDIATELY) ───────────────────────────────── */}
+      {isAddUserModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="glass max-w-2xl w-full rounded-2xl p-6 glow-blue page-enter max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-bold text-white mb-1">Add Active User Account</h3>
+            <p className="text-xs text-gray-400 mb-5">Create a user directly into PostgreSQL (automatically Active)</p>
+            {userForm.error && <div className="mb-4 p-2.5 rounded bg-red-950/40 border border-red-800/50 text-red-300 text-xs">{userForm.error}</div>}
+            <form onSubmit={handleAddUser} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1">Username *</label>
+                  <input type="text" value={userForm.username} onChange={e => setUserForm(f => ({ ...f, username: e.target.value }))} className="input-field" placeholder="Username" required />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1">Password *</label>
+                  <input type="password" value={userForm.password} onChange={e => setUserForm(f => ({ ...f, password: e.target.value }))} className="input-field" placeholder="Min 8 chars" required />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1">Email</label>
+                  <input type="email" value={userForm.email} onChange={e => setUserForm(f => ({ ...f, email: e.target.value }))} className="input-field" placeholder="email@fmis.gov.lk" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1">System Role *</label>
+                  <select value={userForm.role} onChange={e => setUserForm(f => ({ ...f, role: e.target.value }))} className="select-field">
+                    <option value="POLICE">Police Officer</option>
+                    <option value="JMO">Judicial Medical Officer</option>
+                    <option value="MEDICAL_OFFICER">Medical Officer</option>
+                    <option value="LAB_TECHNICIAN">Lab Technician</option>
+                    <option value="GOVERNMENT_ANALYST">Forensic Staff</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1">First Name *</label>
+                  <input type="text" value={userForm.first_name} onChange={e => setUserForm(f => ({ ...f, first_name: e.target.value }))} className="input-field" placeholder="First Name" required />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1">Last Name *</label>
+                  <input type="text" value={userForm.last_name} onChange={e => setUserForm(f => ({ ...f, last_name: e.target.value }))} className="input-field" placeholder="Last Name" required />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1">NIC</label>
+                  <input type="text" value={userForm.nic} onChange={e => setUserForm(f => ({ ...f, nic: e.target.value }))} className="input-field" placeholder="e.g. 990123456V" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1">Gender</label>
+                  <select value={userForm.gender} onChange={e => setUserForm(f => ({ ...f, gender: e.target.value }))} className="select-field">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Institution link */}
+              {HOSPITAL_ROLES.includes(userForm.role) && (
+                <div>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1">Assign Hospital *</label>
+                  <select value={userForm.hospital_id} onChange={e => setUserForm(f => ({ ...f, hospital_id: e.target.value }))} className="select-field" required>
+                    <option value="">Select hospital...</option>
+                    {hospitals.map(h => <option key={h.hospital_id} value={h.hospital_id}>{h.hospital_name}</option>)}
+                  </select>
+                </div>
+              )}
+
+              {STATION_ROLES.includes(userForm.role) && (
+                <div>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1">Assign Police Station *</label>
+                  <select value={userForm.station_id} onChange={e => setUserForm(f => ({ ...f, station_id: e.target.value }))} className="select-field" required>
+                    <option value="">Select police station...</option>
+                    {stations.map(s => <option key={s.station_id} value={s.station_id}>{s.station_name}</option>)}
+                  </select>
+                </div>
+              )}
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-800">
+                <button type="button" onClick={() => setIsAddUserModalOpen(false)} className="px-4 py-2 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 text-xs">Cancel</button>
+                <button type="submit" disabled={userForm.loading} className="btn-primary w-fit px-6">
+                  {userForm.loading ? 'Creating...' : 'Create Active User'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODALS: RESET PASSWORD, PROFILE, CONFIRMATION ─────────────────────── */}
       {isResetPasswordModalOpen && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="glass max-w-md w-full rounded-2xl p-6 glow-purple page-enter">
@@ -979,59 +1252,23 @@ const AdminDashboard = () => {
               <div className="bg-gray-900/30 p-4 rounded-xl border border-gray-800/40">
                 <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Core Account</h4>
                 <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
-                  <div>
-                    <span className="text-gray-500 text-xs block">Username</span>
-                    <strong className="text-white font-mono">@{selectedUser.username}</strong>
-                  </div>
-                  <div>
-                    <span className="text-gray-500 text-xs block">Role</span>
-                    <strong className="text-white"><RoleBadge role={selectedUser.role} /></strong>
-                  </div>
-                  <div>
-                    <span className="text-gray-500 text-xs block">Email Address</span>
-                    <strong className="text-white">{selectedUser.email || '—'}</strong>
-                  </div>
-                  <div>
-                    <span className="text-gray-500 text-xs block">Phone Connection</span>
-                    <strong className="text-white">{selectedUser.phone || '—'}</strong>
-                  </div>
-                  <div>
-                    <span className="text-gray-500 text-xs block">Created At</span>
-                    <strong className="text-white">{selectedUser.created_at ? new Date(selectedUser.created_at).toLocaleString('en-GB') : '—'}</strong>
-                  </div>
-                  <div>
-                    <span className="text-gray-500 text-xs block">Last Login</span>
-                    <strong className="text-white">{selectedUser.last_login ? new Date(selectedUser.last_login).toLocaleString('en-GB') : 'Never'}</strong>
-                  </div>
+                  <div><span className="text-gray-500 text-xs block">Username</span><strong className="text-white font-mono">@{selectedUser.username}</strong></div>
+                  <div><span className="text-gray-500 text-xs block">Role</span><strong className="text-white"><RoleBadge role={selectedUser.role} /></strong></div>
+                  <div><span className="text-gray-500 text-xs block">Email Address</span><strong className="text-white">{selectedUser.email || '—'}</strong></div>
+                  <div><span className="text-gray-500 text-xs block">Phone Connection</span><strong className="text-white">{selectedUser.phone || '—'}</strong></div>
+                  <div><span className="text-gray-500 text-xs block">Created At</span><strong className="text-white">{selectedUser.created_at ? new Date(selectedUser.created_at).toLocaleString('en-GB') : '—'}</strong></div>
+                  <div><span className="text-gray-500 text-xs block">Last Login</span><strong className="text-white">{selectedUser.last_login ? new Date(selectedUser.last_login).toLocaleString('en-GB') : 'Never'}</strong></div>
                 </div>
               </div>
               <div className="bg-gray-900/30 p-4 rounded-xl border border-gray-800/40">
                 <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Personal Information</h4>
                 <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
-                  <div className="col-span-2">
-                    <span className="text-gray-500 text-xs block">Full Name</span>
-                    <strong className="text-white">{selectedUser.first_name || '—'} {selectedUser.last_name || ''}</strong>
-                  </div>
-                  <div>
-                    <span className="text-gray-500 text-xs block">NIC / National ID</span>
-                    <strong className="text-white font-mono">{selectedUser.nic || '—'}</strong>
-                  </div>
-                  <div>
-                    <span className="text-gray-500 text-xs block">Gender</span>
-                    <strong className="text-white">{selectedUser.gender || '—'}</strong>
-                  </div>
-                  <div>
-                    <span className="text-gray-500 text-xs block">Date of Birth</span>
-                    <strong className="text-white">{selectedUser.date_of_birth ? new Date(selectedUser.date_of_birth).toLocaleDateString('en-GB') : '—'}</strong>
-                  </div>
-                  <div>
-                    <span className="text-gray-500 text-xs block">Personal Telephone</span>
-                    <strong className="text-white">{selectedUser.telephone || '—'}</strong>
-                  </div>
-                  <div className="col-span-2">
-                    <span className="text-gray-500 text-xs block">Residential Address</span>
-                    <strong className="text-white font-normal block mt-0.5 whitespace-pre-line text-xs text-gray-300">{selectedUser.address || '—'}</strong>
-                  </div>
+                  <div className="col-span-2"><span className="text-gray-500 text-xs block">Full Name</span><strong className="text-white">{selectedUser.first_name || '—'} {selectedUser.last_name || ''}</strong></div>
+                  <div><span className="text-gray-500 text-xs block">NIC / National ID</span><strong className="text-white font-mono">{selectedUser.nic || '—'}</strong></div>
+                  <div><span className="text-gray-500 text-xs block">Gender</span><strong className="text-white">{selectedUser.gender || '—'}</strong></div>
+                  <div><span className="text-gray-500 text-xs block">Date of Birth</span><strong className="text-white">{selectedUser.date_of_birth ? new Date(selectedUser.date_of_birth).toLocaleDateString('en-GB') : '—'}</strong></div>
+                  <div><span className="text-gray-500 text-xs block">Personal Telephone</span><strong className="text-white">{selectedUser.telephone || '—'}</strong></div>
+                  <div className="col-span-2"><span className="text-gray-500 text-xs block">Residential Address</span><strong className="text-white font-normal block mt-0.5 whitespace-pre-line text-xs text-gray-300">{selectedUser.address || '—'}</strong></div>
                 </div>
               </div>
             </div>
@@ -1055,8 +1292,7 @@ const AdminDashboard = () => {
                 } else {
                   handleUserAction(confirmConfig.userId, confirmConfig.action);
                 }
-              }} className={`px-4 py-2 text-white rounded-lg text-xs font-semibold
-                ${confirmConfig.action === 'reject' || confirmConfig.action === 'suspend' ? 'bg-red-600 hover:bg-red-500' : 'bg-primary-600 hover:bg-primary-500'}`}>
+              }} className={`px-4 py-2 text-white rounded-lg text-xs font-semibold ${confirmConfig.action === 'reject' || confirmConfig.action === 'suspend' ? 'bg-red-600 hover:bg-red-500' : 'bg-primary-600 hover:bg-primary-500'}`}>
                 Confirm Action
               </button>
             </div>

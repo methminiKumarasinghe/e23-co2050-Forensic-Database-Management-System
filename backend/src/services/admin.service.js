@@ -300,6 +300,49 @@ const getStationsList = async () => {
   return result.rows;
 };
 
+/**
+ * Create a new hospital in the DB
+ */
+const createHospital = async (data, adminUserId) => {
+  const { hospital_name, hospital_type, address, district, telephone, email } = data;
+  const result = await query(
+    `INSERT INTO hospital (hospital_name, hospital_type, address, district, telephone, email)
+     VALUES ($1, $2, $3, $4, $5, $6)
+     RETURNING *`,
+    [hospital_name, hospital_type || null, address || null, district || null, telephone || null, email || null]
+  );
+  const hospital = result.rows[0];
+  await logAudit(adminUserId, 'CREATE_HOSPITAL', 'hospital', hospital.hospital_id, `Created hospital: ${hospital.hospital_name}`);
+  return hospital;
+};
+
+/**
+ * Create a new police station in the DB
+ */
+const createPoliceStation = async (data, adminUserId) => {
+  const { station_name, district, address, telephone, email } = data;
+  const result = await query(
+    `INSERT INTO police_station (station_name, district, address, telephone, email)
+     VALUES ($1, $2, $3, $4, $5)
+     RETURNING *`,
+    [station_name, district || null, address || null, telephone || null, email || null]
+  );
+  const station = result.rows[0];
+  await logAudit(adminUserId, 'CREATE_POLICE_STATION', 'police_station', station.station_id, `Created police station: ${station.station_name}`);
+  return station;
+};
+
+/**
+ * Create a user directly by Admin (status = ACTIVE)
+ */
+const createUserByAdmin = async (userData, adminUserId) => {
+  const { registerUser } = require('./auth.service');
+  const newUser = await registerUser(userData);
+  await query("UPDATE users SET status = 'ACTIVE' WHERE user_id = $1", [newUser.user_id]);
+  await logAudit(adminUserId, 'CREATE_USER', 'users', newUser.user_id, `Admin created active user: ${newUser.username} (${newUser.role})`);
+  return { ...newUser, status: 'ACTIVE' };
+};
+
 module.exports = {
   logAudit,
   createNotification,
@@ -313,4 +356,7 @@ module.exports = {
   getLabRequestsList,
   getHospitalsList,
   getStationsList,
+  createHospital,
+  createPoliceStation,
+  createUserByAdmin,
 };

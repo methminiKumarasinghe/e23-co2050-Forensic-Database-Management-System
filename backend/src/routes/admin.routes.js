@@ -16,6 +16,9 @@ const {
   getLabRequests,
   getHospitals,
   getStations,
+  addHospital,
+  addStation,
+  addUser,
 } = require('../controllers/admin.controller');
 const { authenticate } = require('../middleware/auth.middleware');
 const { requireRole } = require('../middleware/rbac.middleware');
@@ -31,6 +34,7 @@ router.get('/stats', getStats);
 // User management
 router.get('/users/pending', listPendingUsers);
 router.get('/users', listAllUsers);
+router.post('/users', addUser);
 router.get('/users/:id', getUser);
 router.patch('/users/:id/approve', approve);
 router.patch('/users/:id/suspend', suspend);
@@ -42,11 +46,13 @@ router.post('/users/:id/reset-password', resetPassword);
 router.get('/audit-logs', getAuditLogs);
 router.get('/notifications', getNotifications);
 
-// Lists details
+// Lists details & creations
 router.get('/cases', getCases);
 router.get('/reports', getReports);
 router.get('/lab-requests', getLabRequests);
 router.get('/hospitals', getHospitals);
+router.post('/hospitals', addHospital);
 router.get('/stations', getStations);
+router.post('/stations', addStation);
 
 module.exports = router;
