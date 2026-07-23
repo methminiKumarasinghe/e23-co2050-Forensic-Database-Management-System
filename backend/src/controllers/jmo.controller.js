@@ -1,6 +1,42 @@
 const jmoService = require('../services/jmo.service');
 const { sendSuccess, sendCreated, sendBadRequest } = require('../utils/response');
 
+const getAssignedMlefs = async (req, res, next) => {
+    try {
+        const mlefs = await jmoService.getAssignedMlefs(req.user.user_id);
+        return sendSuccess(res, { message: 'Assigned MLEF cases retrieved', data: mlefs });
+    } catch (err) {
+        next(err);
+    }
+};
+
+const getMlefPoliceDetails = async (req, res, next) => {
+    try {
+        const details = await jmoService.getMlefPoliceDetails(req.user.user_id, req.params.id);
+        return sendSuccess(res, { message: 'Police MLEF details retrieved', data: details });
+    } catch (err) {
+        next(err);
+    }
+};
+
+const submitMlefExamination = async (req, res, next) => {
+    try {
+        const result = await jmoService.submitMlefExamination(req.user.user_id, req.params.id, req.body);
+        return sendCreated(res, { message: 'MLEF examination completed successfully', data: result });
+    } catch (err) {
+        next(err);
+    }
+};
+
+const getMlefReport = async (req, res, next) => {
+    try {
+        const report = await jmoService.getMlefReport(req.user.user_id, req.params.id);
+        return sendSuccess(res, { message: 'Full MLEF Report retrieved', data: report });
+    } catch (err) {
+        next(err);
+    }
+};
+
 const getLaboratories = async (req, res, next) => {
     try {
         const laboratories = await jmoService.getLaboratories();
@@ -93,6 +129,10 @@ const markNotificationRead = async (req, res, next) => {
 };
 
 module.exports = {
+    getAssignedMlefs,
+    getMlefPoliceDetails,
+    submitMlefExamination,
+    getMlefReport,
     getLaboratories,
     getJmoSpecimens,
     createLabRequest,

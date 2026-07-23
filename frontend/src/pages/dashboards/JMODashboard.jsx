@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Navbar from '../../components/Navbar';
-import { getNotifications, markNotificationRead } from '../../api/jmo.api';
+import { getNotifications, markNotificationRead, getAssignedMlefs } from '../../api/jmo.api';
 
 const InfoCard = ({ icon, title, subtitle, color, link }) => (
   <Link to={link || '#'} className={`glass rounded-xl p-5 border-l-4 ${color} hover:scale-[1.01] transition-transform block`}>
@@ -14,10 +14,14 @@ const InfoCard = ({ icon, title, subtitle, color, link }) => (
 
 const JMODashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
+  const [assignedMlefs, setAssignedMlefs] = useState([]);
+  const [loadingMlefs, setLoadingMlefs] = useState(true);
 
   useEffect(() => {
     fetchNotifications();
+    fetchAssignedMlefs();
     const interval = setInterval(fetchNotifications, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -28,6 +32,17 @@ const JMODashboard = () => {
       setNotifications(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Failed to fetch notifications', err);
+    }
+  };
+
+  const fetchAssignedMlefs = async () => {
+    try {
+      const data = await getAssignedMlefs();
+      setAssignedMlefs(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Failed to fetch assigned MLEFs', err);
+    } finally {
+      setLoadingMlefs(false);
     }
   };
 
@@ -74,40 +89,126 @@ const JMODashboard = () => {
               🩺
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">Welcome, {user?.username}</h1>
+              <h1 className="text-2xl font-bold text-white">Welcome, Dr. {user?.username}</h1>
               <p className="text-cyan-400 text-sm font-medium">Judicial Medical Officer Dashboard</p>
             </div>
           </div>
         </div>
 
+        {/* Assigned MLEF Cases Section */}
+        <div className="mb-10">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <span>📄</span> Assigned MLEF Cases
+            </h2>
+            <span className="px-3 py-1 bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-full text-xs font-semibold">
+              {assignedMlefs.filter(m => m.status !== 'COMPLETED').length} Pending Examination(s)
+            </span>
+          </div>
+
+          {loadingMlefs ? (
+            <div className="flex justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500"></div></div>
+          ) : assignedMlefs.length === 0 ? (
+            <div className="glass rounded-xl p-8 text-center text-gray-400 border border-gray-800">
+              <div className="text-3xl mb-2">📋</div>
+              <p className="text-sm">No assigned MLEF cases pending for examination.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {assignedMlefs.map(mlef => (
+                <div key={mlef.mlef_id} className="glass rounded-xl p-5 border border-cyan-800/40 hover:border-cyan-500/50 transition-all flex flex-col justify-between">
+                  <div>
+                    <div className="flex justify-between items-start mb-3">
+                      <span className="text-xs font-mono text-cyan-400 font-bold bg-cyan-950/60 px-2 py-1 rounded border border-cyan-800/50">
+                        {mlef.formatted_mlef_id || mlef.case_number}
+                      </span>
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        mlef.status === 'COMPLETED' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 
+                        mlef.status === 'ASSIGNED' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 
+                        'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                      }`}>
+                        {mlef.status}
+                      </span>
+                    </div>
+
+                    <h3 className="text-lg font-bold text-white mb-1">{mlef.patient_name}</h3>
+                    <p className="text-xs text-gray-300 font-medium mb-3 flex items-center gap-1">
+                      <span>🏷️</span> {mlef.case_title || mlef.case_type || 'Medico-Legal Examination'}
+                    </p>
+
+                    <div className="space-y-1.5 text-xs text-gray-400 border-t border-gray-800/80 pt-3 mb-4">
+                      <div className="flex justify-between">
+                        <span>Police Station:</span>
+                        <span className="text-gray-200 font-medium">{mlef.station_name || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Assigned Date:</span>
+                        <span className="text-gray-200">{new Date(mlef.request_date || mlef.assigned_date).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    {mlef.status === 'COMPLETED' ? (
+                      <Link 
+                        to={`/dashboard/jmo/mlef/${mlef.mlef_id}/report`}
+                        className="btn-secondary w-full text-center text-xs py-2 block border-green-500/30 text-green-400 hover:bg-green-500/10"
+                      >
+                        View MLEF Report
+                      </Link>
+                    ) : (
+                      <button 
+                        onClick={() => navigate(`/dashboard/jmo/mlef/${mlef.mlef_id}/complete`)}
+                        className="btn-primary bg-cyan-600 hover:bg-cyan-500 border-cyan-500 text-white w-full text-xs py-2 flex items-center justify-center gap-2"
+                      >
+                        <span>📝</span> Complete MLEF
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Quick Action Cards */}
+        <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+          <span>🔬</span> Laboratory & Quick Tools
+        </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-          <InfoCard icon="📋" title="MLEF Requests"
-            subtitle="View incoming examination requests from police"
-            color="border-cyan-500" />
-          <InfoCard icon="🔬" title="Examinations"
-            subtitle="Conduct and manage medico-legal examinations"
-            color="border-blue-500" />
-          <InfoCard icon="🩹" title="Injury Records"
-            subtitle="Document injuries and body diagrams"
-            color="border-red-500" />
-          <InfoCard icon="🧪" title="Create Laboratory Request"
-            subtitle="Submit new lab requests to hospital laboratories"
+          <InfoCard 
+            icon="🧪" 
+            title="Create Laboratory Request"
+            subtitle="Submit a new lab request to a hospital laboratory"
             link="/dashboard/jmo/create-lab-request"
-            color="border-purple-500" />
-          <InfoCard icon="📋" title="My Laboratory Requests"
+            color="border-cyan-500" 
+          />
+          <InfoCard 
+            icon="📋" 
+            title="My Laboratory Requests"
             subtitle="Track status of submitted lab requests"
             link="/dashboard/jmo/lab-requests"
-            color="border-amber-500" />
-          <InfoCard icon="📊" title="Completed Lab Results"
+            color="border-amber-500" 
+          />
+          <InfoCard 
+            icon="📊" 
+            title="Completed Lab Results"
             subtitle="View & download findings from laboratories"
             link="/dashboard/jmo/lab-results"
-            color="border-green-500" />
-          <InfoCard icon="📑" title="Medico-Legal Reports"
-            subtitle="Prepare and sign official MLR documents"
-            color="border-emerald-500" />
-          <InfoCard icon="⚰️" title="Autopsy Module"
-            subtitle="Conduct autopsies and cause of death reports"
-            color="border-gray-500" />
+            color="border-green-500" 
+          />
+          <InfoCard 
+            icon="📑" 
+            title="Medico-Legal Reports"
+            subtitle="Prepare official MLR documents"
+            color="border-emerald-500" 
+          />
+          <InfoCard 
+            icon="⚰️" 
+            title="Autopsy Module"
+            subtitle="Conduct autopsies and COD reports"
+            color="border-purple-500" 
+          />
         </div>
 
       </main>

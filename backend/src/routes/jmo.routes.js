@@ -8,6 +8,12 @@ const { requireRole } = require('../middleware/rbac.middleware');
 router.use(authenticate);
 router.use(requireRole('JMO'));
 
+// MLEF Assignment & Examination
+router.get('/assigned-mlef', jmoController.getAssignedMlefs);
+router.get('/mlef/:id/police-details', jmoController.getMlefPoliceDetails);
+router.post('/mlef/:id/examination', jmoController.submitMlefExamination);
+router.get('/mlef/:id/report', jmoController.getMlefReport);
+
 // Laboratories & Specimens for request form
 router.get('/laboratories', jmoController.getLaboratories);
 router.get('/specimens', jmoController.getJmoSpecimens);

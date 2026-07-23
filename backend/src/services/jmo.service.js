@@ -18,6 +18,213 @@ const getJmoDetails = async (userId) => {
 };
 
 /**
+ * Get all assigned MLEF cases for the logged-in JMO
+ */
+const getAssignedMlefs = async (userId) => {
+    let jmoId = null;
+    try {
+        const jmo = await getJmoDetails(userId);
+        jmoId = jmo.jmo_id;
+    } catch (err) {
+        console.warn('JMO profile warning:', err.message);
+    }
+
+    let sql = `
+        SELECT m.mlef_id, m.case_id, m.patient_id, m.request_date, m.reason, m.status,
+               pc.case_number, pc.case_type, pc.title AS case_title,
+               pat_p.first_name || ' ' || pat_p.last_name AS patient_name,
+               ps.station_name,
+               e.examination_id, e.examination_date, e.created_at AS assigned_date,
+               (SELECT COUNT(*)::int FROM mlef m2 WHERE m2.request_date <= m.request_date) AS seq_num
+        FROM mlef m
+        JOIN police_case pc ON m.case_id = pc.case_id
+        JOIN police_station ps ON pc.station_id = ps.station_id
+        JOIN patient pat ON m.patient_id = pat.patient_id
+        JOIN person pat_p ON pat.person_id = pat_p.person_id
+        LEFT JOIN examination e ON m.mlef_id = e.mlef_id
+    `;
+    const params = [];
+
+    if (jmoId) {
+        sql += ` WHERE e.jmo_id = $1 OR m.status = 'ASSIGNED' OR m.status = 'COMPLETED'`;
+        params.push(jmoId);
+    } else {
+        sql += ` WHERE m.status IN ('ASSIGNED', 'IN_PROGRESS', 'COMPLETED')`;
+    }
+
+    sql += ` ORDER BY m.request_date DESC`;
+
+    const result = await query(sql, params);
+    return result.rows.map(r => ({
+        ...r,
+        formatted_mlef_id: `MLEF-${String(r.seq_num).padStart(6, '0')}`
+    }));
+};
+
+/**
+ * Get read-only Police information for MLEF
+ */
+const getMlefPoliceDetails = async (userId, mlefId) => {
+    const result = await query(`
+        SELECT m.mlef_id, m.request_date, m.reason AS mlef_reason, m.status,
+               pc.case_number, pc.case_type, pc.title AS case_title, pc.description AS case_description, pc.date_reported,
+               ps.station_name, ps.district AS station_district, ps.telephone AS station_phone,
+               off_p.first_name || ' ' || off_p.last_name AS requesting_officer_name, po.badge_number,
+               pat_p.first_name || ' ' || pat_p.last_name AS patient_name,
+               pat_p.nic, pat_p.gender, pat_p.date_of_birth, pat_p.address AS patient_address, pat_p.telephone AS patient_phone,
+               pat.blood_group, pat.medical_record_number, pat.emergency_contact, pat.emergency_phone,
+               h.hospital_name,
+               (SELECT COUNT(*)::int FROM mlef m2 WHERE m2.request_date <= m.request_date) AS seq_num
+        FROM mlef m
+        JOIN police_case pc ON m.case_id = pc.case_id
+        JOIN police_station ps ON pc.station_id = ps.station_id
+        JOIN police_officer po ON m.requesting_officer = po.officer_id
+        JOIN person off_p ON po.person_id = off_p.person_id
+        JOIN patient pat ON m.patient_id = pat.patient_id
+        JOIN person pat_p ON pat.person_id = pat_p.person_id
+        JOIN hospital h ON m.hospital_id = h.hospital_id
+        WHERE m.mlef_id = $1
+    `, [mlefId]);
+
+    if (result.rowCount === 0) {
+        throw new Error('MLEF record not found.');
+    }
+
+    const row = result.rows[0];
+    return {
+        ...row,
+        formatted_mlef_id: `MLEF-${String(row.seq_num).padStart(6, '0')}`
+    };
+};
+
+/**
+ * Submit JMO Examination Form (Section B)
+ */
+const submitMlefExamination = async (userId, mlefId, examData) => {
+    const jmo = await getJmoDetails(userId);
+    const {
+        nic, consent, officerProducedBy, hospitalName, ward, bhtNumber,
+        admissionDate, examDateTime, dischargeDate,
+        bodilyHarm, internalInjuries, otherInjuries,
+        causativeWeapon, categoryOfHurt, endangersLife,
+        alcoholExam, sexualAssault, history,
+        investigations, referrals, otherOpinions, remarks
+    } = examData;
+
+    const examinationNotes = `
+[PART B: JMO MEDICAL EXAMINATION]
+Identification (NIC/Passport): ${nic || 'N/A'}
+Consent: ${consent || 'Given'}
+
+Admission & Production Details:
+- Officer Produced By: ${officerProducedBy || 'N/A'}
+- Hospital: ${hospitalName || 'N/A'}
+- Ward: ${ward || 'N/A'}
+- B.H.T. No.: ${bhtNumber || 'N/A'}
+- Date of Admission: ${admissionDate || 'N/A'}
+- Date of Discharge: ${dischargeDate || 'N/A'}
+
+Nature of Bodily Harm:
+- Injuries Present: ${Array.isArray(bodilyHarm) ? bodilyHarm.join(', ') : bodilyHarm || 'None'}
+- Internal Injuries: ${internalInjuries || 'None'}
+- Other Injuries: ${otherInjuries || 'None'}
+
+Nature of Causative Weapon & Category of Hurt:
+- Causative Weapon: ${Array.isArray(causativeWeapon) ? causativeWeapon.join(', ') : causativeWeapon || 'Unspecified'}
+- Category of Hurt: ${categoryOfHurt || 'Non-grievous'}
+- Endangers Life: ${endangersLife || 'No'}
+
+Alcohol / Drugs & Sexual Assault:
+- Alcohol/Drugs Exam: ${Array.isArray(alcoholExam) ? alcoholExam.join(', ') : alcoholExam || 'Negative'}
+- Sexual Assault Findings: ${Array.isArray(sexualAssault) ? sexualAssault.join(', ') : sexualAssault || 'None'}
+- History given by examinee: ${history || 'N/A'}
+
+Conclusions & Opinions:
+- Investigations: ${investigations || 'None'}
+- Referrals: ${referrals || 'None'}
+- Other Opinions: ${otherOpinions || 'None'}
+- Remarks: ${remarks || 'None'}
+    `.trim();
+
+    const conclusion = `Category of Hurt: ${categoryOfHurt || 'Non-grievous'}. Life Endangering: ${endangersLife || 'No'}. Recommendations/Opinions: ${otherOpinions || 'None'}. Remarks: ${remarks || 'None'}`;
+
+    return withTransaction(async (client) => {
+        // Check if examination record exists for this mlef_id
+        const existingExam = await client.query(
+            `SELECT examination_id FROM examination WHERE mlef_id = $1`,
+            [mlefId]
+        );
+
+        let examId;
+        const examDate = examDateTime ? new Date(examDateTime) : new Date();
+
+        if (existingExam.rowCount > 0) {
+            examId = existingExam.rows[0].examination_id;
+            await client.query(`
+                UPDATE examination 
+                SET jmo_id = $1, status_id = 3, examination_date = $2, examination_notes = $3, conclusion = $4
+                WHERE examination_id = $5
+            `, [jmo.jmo_id, examDate, examinationNotes, conclusion, examId]);
+        } else {
+            const newExam = await client.query(`
+                INSERT INTO examination (mlef_id, jmo_id, status_id, examination_date, examination_notes, conclusion)
+                VALUES ($1, $2, 3, $3, $4, $5)
+                RETURNING examination_id
+            `, [mlefId, jmo.jmo_id, examDate, examinationNotes, conclusion]);
+            examId = newExam.rows[0].examination_id;
+        }
+
+        // Update MLEF status to COMPLETED
+        await client.query(
+            `UPDATE mlef SET status = 'COMPLETED' WHERE mlef_id = $1`,
+            [mlefId]
+        );
+
+        // Upsert draft Medico-Legal Report
+        const reportNo = 'MLR-' + Date.now();
+        await client.query(`
+            INSERT INTO medico_legal_report (examination_id, report_number, findings, medical_opinion, recommendations, report_status)
+            VALUES ($1, $2, $3, $4, $5, 'DRAFT')
+            ON CONFLICT (examination_id)
+            DO UPDATE SET findings = EXCLUDED.findings, medical_opinion = EXCLUDED.medical_opinion, recommendations = EXCLUDED.recommendations
+        `, [examId, reportNo, examinationNotes, conclusion, recommendations || 'None']);
+
+        // Log Audit
+        await client.query(`
+            INSERT INTO audit_logs (user_id, action, entity_name, entity_id, description)
+            VALUES ($1, 'COMPLETE_MLEF_EXAM', 'examination', $2, 'JMO completed MLEF Examination')
+        `, [userId, examId]);
+
+        return { examination_id: examId, mlef_id: mlefId, status: 'COMPLETED' };
+    });
+};
+
+/**
+ * Get full completed MLEF Report (Police Section + JMO Section)
+ */
+const getMlefReport = async (userId, mlefId) => {
+    const policeDetails = await getMlefPoliceDetails(userId, mlefId);
+
+    const examResult = await query(`
+        SELECT e.examination_id, e.examination_date, e.examination_notes, e.conclusion, e.created_at,
+               jmo_p.first_name || ' ' || jmo_p.last_name AS jmo_name, jmo.registration_number AS jmo_reg_no,
+               h.hospital_name
+        FROM examination e
+        JOIN judicial_medical_officer jmo ON e.jmo_id = jmo.jmo_id
+        JOIN person jmo_p ON jmo.person_id = jmo_p.person_id
+        JOIN hospital h ON jmo.hospital_id = h.hospital_id
+        WHERE e.mlef_id = $1
+    `, [mlefId]);
+
+    const exam = examResult.rows[0] || null;
+
+    return {
+        policeSection: policeDetails,
+        jmoSection: exam
+    };
+};
+
+/**
  * Get all available laboratories from PostgreSQL
  */
 const getLaboratories = async () => {
@@ -62,7 +269,6 @@ const getJmoSpecimens = async (userId) => {
         `, [jmoId]);
     }
 
-    // Fallback: Load all collected specimens in database if none linked specifically to this JMO
     if (!result || result.rowCount === 0) {
         result = await query(`
             SELECT s.specimen_id, s.specimen_type, s.collection_datetime, s.remarks,
@@ -328,6 +534,10 @@ const markNotificationRead = async (userId, notificationId) => {
 };
 
 module.exports = {
+    getAssignedMlefs,
+    getMlefPoliceDetails,
+    submitMlefExamination,
+    getMlefReport,
     getLaboratories,
     getJmoSpecimens,
     createLabRequest,

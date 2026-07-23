@@ -23,11 +23,13 @@ import LabRequestDetails        from './pages/lab/LabRequestDetails';
 import PerformTest              from './pages/lab/PerformTest';
 import LabResultDetails         from './pages/lab/LabResultDetails';
 
-// JMO Lab Pages
+// JMO Lab & MLEF Pages
 import CreateLabRequest         from './pages/jmo/CreateLabRequest';
 import JMOLabRequestsList       from './pages/jmo/JMOLabRequestsList';
 import JMOLabResultsList        from './pages/jmo/JMOLabResultsList';
 import JMOLabResultDetails      from './pages/jmo/JMOLabResultDetails';
+import CompleteMLEFForm         from './pages/jmo/CompleteMLEFForm';
+import ViewMLEFReport           from './pages/jmo/ViewMLEFReport';
 
 const ROLE_DASHBOARDS = {
   ADMIN:             '/admin',
@@ -87,6 +89,20 @@ const App = () => (
         </RoleRoute>
       </PrivateRoute>
     } />
+    <Route path="/dashboard/jmo/mlef/:id/complete" element={
+      <PrivateRoute>
+        <RoleRoute roles={['JMO']}>
+          <CompleteMLEFForm />
+        </RoleRoute>
+      </PrivateRoute>
+    } />
+    <Route path="/dashboard/jmo/mlef/:id/report" element={
+      <PrivateRoute>
+        <RoleRoute roles={['JMO']}>
+          <ViewMLEFReport />
+        </RoleRoute>
+      </PrivateRoute>
+    } />
     <Route path="/dashboard/jmo/create-lab-request" element={
       <PrivateRoute>
         <RoleRoute roles={['JMO']}>
@@ -116,7 +132,7 @@ const App = () => (
       </PrivateRoute>
     } />
 
-    {/* Medical Officer */}
+    {/* Medical Officer / Staff */}
     <Route path="/dashboard/medical-officer" element={
       <PrivateRoute>
         <RoleRoute roles={['MEDICAL_OFFICER']}>
