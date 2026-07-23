@@ -1,0 +1,120 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base reset ──────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+:root {
+  --color-dark:     #0a0f1e;
+  --color-darker:   #060a14;
+  --color-card:     #111827;
+  --color-border:   #1f2937;
+  --color-accent:   #3b82f6;
+  --color-accent2:  #8b5cf6;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: var(--color-dark);
+  color: #f9fafb;
+  font-family: 'Inter', system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar            { width: 6px; }
+::-webkit-scrollbar-track      { background: var(--color-darker); }
+::-webkit-scrollbar-thumb      { background: #374151; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover{ background: #4b5563; }
+
+/* ── Glass card ──────────────────────────────────────────────────────────── */
+.glass {
+  background: rgba(17, 24, 39, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ── Input base ─────────────────────────────────────────────────────────── */
+.input-field {
+  @apply w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white
+         placeholder-gray-500 text-sm
+         focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500
+         transition-colors duration-200;
+}
+
+/* ── Select base ─────────────────────────────────────────────────────────── */
+.select-field {
+  @apply w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white
+         text-sm appearance-none
+         focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500
+         transition-colors duration-200;
+}
+
+/* ── Button primary ──────────────────────────────────────────────────────── */
+.btn-primary {
+  @apply w-full bg-primary-600 hover:bg-primary-500 disabled:bg-primary-900
+         disabled:cursor-not-allowed text-white font-semibold py-2.5 px-6 rounded-lg
+         transition-all duration-200 flex items-center justify-center gap-2
+         focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+         focus:ring-offset-gray-900;
+}
+
+/* ── Button danger ───────────────────────────────────────────────────────── */
+.btn-danger {
+  @apply bg-red-600 hover:bg-red-500 disabled:bg-red-900
+         disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded-lg
+         transition-all duration-200 flex items-center justify-center gap-1
+         focus:outline-none focus:ring-2 focus:ring-red-500;
+}
+
+/* ── Button success ──────────────────────────────────────────────────────── */
+.btn-success {
+  @apply bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-4 rounded-lg
+         transition-all duration-200 flex items-center justify-center gap-1
+         focus:outline-none focus:ring-2 focus:ring-emerald-500;
+}
+
+/* ── Stat card ────────────────────────────────────────────────────────────── */
+.stat-card {
+  @apply glass rounded-xl p-5 flex items-center gap-4 hover:border-primary-800
+         transition-all duration-300 cursor-default;
+}
+
+/* ── Badge ─────────────────────────────────────────────────────────────────── */
+.badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+.badge-active    { @apply badge bg-emerald-900/60 text-emerald-300 border border-emerald-700/50; }
+.badge-pending   { @apply badge bg-amber-900/60   text-amber-300   border border-amber-700/50;   }
+.badge-suspended { @apply badge bg-red-900/60     text-red-300     border border-red-700/50;     }
+
+/* ── Page enter animation ─────────────────────────────────────────────────── */
+.page-enter {
+  animation: slideUp 0.35s ease-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* ── Glow effect ─────────────────────────────────────────────────────────── */
+.glow-blue   { box-shadow: 0 0 30px rgba(59, 130, 246, 0.15); }
+.glow-purple { box-shadow: 0 0 30px rgba(139, 92, 246, 0.15); }
+
+/* ── Table ───────────────────────────────────────────────────────────────── */
+.data-table {
+  @apply w-full text-sm text-left;
+}
+.data-table th {
+  @apply px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400
+         border-b border-gray-800 bg-gray-900/50;
+}
+.data-table td {
+  @apply px-4 py-3 border-b border-gray-800/50 text-gray-300;
+}
+.data-table tr:last-child td { @apply border-b-0; }
+.data-table tbody tr:hover td { @apply bg-gray-800/30; }
