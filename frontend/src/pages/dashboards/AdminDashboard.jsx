@@ -2,10 +2,16 @@ import { useState, useEffect, useCallback } from 'react';
 import Navbar from '../../components/Navbar';
 import api from '../../api/axios';
 
-const TABS = [
+const NAV_ITEMS = [
+  { id: 'overview',      label: 'Admin Home',         icon: '🏠' },
   { id: 'users',         label: 'User Directory',      icon: '👥' },
+  { id: 'hospitals',     label: 'Hospitals',          icon: '🏥' },
+  { id: 'stations',      label: 'Police Stations',     icon: '🚔' },
+  { id: 'cases',         label: 'Open Cases',          icon: '📂' },
+  { id: 'reports',       label: 'Reports Ledger',      icon: '📄' },
+  { id: 'lab_requests',  label: 'Lab Requests',       icon: '🧪' },
   { id: 'audit_logs',    label: 'System Audits',       icon: '📜' },
-  { id: 'notifications', label: 'System Notifications',icon: '🔔' },
+  { id: 'notifications', label: 'Notifications',       icon: '🔔' },
 ];
 
 const ROLE_LABELS = {
@@ -43,47 +49,65 @@ const RoleBadge = ({ role }) => {
   );
 };
 
-const StatCard = ({ value, label, icon, color }) => (
-  <div className={`stat-card border-l-4 ${color}`}>
+const StatCard = ({ value, label, icon, color, onClick }) => (
+  <button 
+    onClick={onClick}
+    className={`stat-card border-l-4 ${color} text-left w-full hover:bg-gray-800/40 hover:-translate-y-0.5 transition-all duration-200`}
+  >
     <div className="text-3xl">{icon}</div>
     <div>
       <div className="text-2xl font-bold text-white">{value !== null ? value : '—'}</div>
       <div className="text-xs text-gray-400 mt-0.5">{label}</div>
     </div>
-  </div>
+  </button>
 );
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState('users');
+  const [activeTab, setActiveTab] = useState('overview');
   const [toast, setToast] = useState(null);
 
   // Stats State
   const [stats, setStats] = useState(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
-  // Users Tab States
+  // Directory Data States
   const [users, setUsers] = useState([]);
-  const [usersLoading, setUsersLoading] = useState(true);
-  const [userFilters, setUserFilters] = useState({
-    search: '',
-    role: '',
-    status: '',
-  });
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [userFilters, setUserFilters] = useState({ search: '', role: '', status: '' });
 
-  // Audits Tab States
+  const [hospitals, setHospitals] = useState([]);
+  const [hospitalsLoading, setHospitalsLoading] = useState(false);
+  const [hospitalsSearch, setHospitalsSearch] = useState('');
+
+  const [stations, setStations] = useState([]);
+  const [stationsLoading, setStationsLoading] = useState(false);
+  const [stationsSearch, setStationsSearch] = useState('');
+
+  const [cases, setCases] = useState([]);
+  const [casesLoading, setCasesLoading] = useState(false);
+  const [casesSearch, setCasesSearch] = useState('');
+
+  const [reports, setReports] = useState([]);
+  const [reportsLoading, setReportsLoading] = useState(false);
+  const [reportsSearch, setReportsSearch] = useState('');
+
+  const [labRequests, setLabRequests] = useState([]);
+  const [labLoading, setLabLoading] = useState(false);
+  const [labSearch, setLabSearch] = useState('');
+
+  // Audits / Notifications States
   const [auditLogs, setAuditLogs] = useState([]);
   const [auditsLoading, setAuditsLoading] = useState(false);
   const [auditsTotal, setAuditsTotal] = useState(0);
   const [auditsPage, setAuditsPage] = useState(1);
   const [auditsSearch, setAuditsSearch] = useState('');
 
-  // Notifications Tab States
   const [notifications, setNotifications] = useState([]);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
   const [notificationsTotal, setNotificationsTotal] = useState(0);
   const [notificationsPage, setNotificationsPage] = useState(1);
 
-  // Action / Modal States
+  // Modals & User Actions
   const [selectedUser, setSelectedUser] = useState(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState(false);
@@ -97,20 +121,20 @@ const AdminDashboard = () => {
     setTimeout(() => setToast(null), 3500);
   };
 
-  // ── FETCH STATS ─────────────────────────────────────────────────────────────
+  // ── FETCH OVERVIEW STATS ──────────────────────────────────────────────────
   const fetchStats = useCallback(async () => {
     setStatsLoading(true);
     try {
       const res = await api.get('/admin/stats');
       setStats(res.data.data);
     } catch (e) {
-      showToast(e.response?.data?.message || 'Failed to fetch dashboard stats', 'error');
+      showToast(e.response?.data?.message || 'Failed to fetch overview stats', 'error');
     } finally {
       setStatsLoading(false);
     }
   }, []);
 
-  // ── FETCH USERS ─────────────────────────────────────────────────────────────
+  // ── FETCH LISTS ────────────────────────────────────────────────────────────
   const fetchUsers = useCallback(async () => {
     setUsersLoading(true);
     try {
@@ -120,17 +144,75 @@ const AdminDashboard = () => {
       if (role) params.push(`role=${role}`);
       if (status) params.push(`status=${status}`);
       if (params.length) url += `?${params.join('&')}`;
-
       const res = await api.get(url);
       setUsers(res.data.data);
-    } catch (e) {
-      showToast(e.response?.data?.message || 'Failed to fetch users list', 'error');
+    } catch {
+      showToast('Failed to fetch users directory', 'error');
     } finally {
       setUsersLoading(false);
     }
   }, [userFilters]);
 
-  // ── FETCH AUDIT LOGS ────────────────────────────────────────────────────────
+  const fetchHospitals = useCallback(async () => {
+    setHospitalsLoading(true);
+    try {
+      const res = await api.get('/admin/hospitals');
+      setHospitals(res.data.data);
+    } catch {
+      showToast('Failed to fetch hospital records', 'error');
+    } finally {
+      setHospitalsLoading(false);
+    }
+  }, []);
+
+  const fetchStations = useCallback(async () => {
+    setStationsLoading(true);
+    try {
+      const res = await api.get('/admin/stations');
+      setStations(res.data.data);
+    } catch {
+      showToast('Failed to fetch station records', 'error');
+    } finally {
+      setStationsLoading(false);
+    }
+  }, []);
+
+  const fetchCases = useCallback(async () => {
+    setCasesLoading(true);
+    try {
+      const res = await api.get('/admin/cases');
+      setCases(res.data.data);
+    } catch {
+      showToast('Failed to fetch case list', 'error');
+    } finally {
+      setCasesLoading(false);
+    }
+  }, []);
+
+  const fetchReports = useCallback(async () => {
+    setReportsLoading(true);
+    try {
+      const res = await api.get('/admin/reports');
+      setReports(res.data.data);
+    } catch {
+      showToast('Failed to fetch reports ledger', 'error');
+    } finally {
+      setReportsLoading(false);
+    }
+  }, []);
+
+  const fetchLabRequests = useCallback(async () => {
+    setLabLoading(true);
+    try {
+      const res = await api.get('/admin/lab-requests');
+      setLabRequests(res.data.data);
+    } catch {
+      showToast('Failed to fetch lab request ledger', 'error');
+    } finally {
+      setLabLoading(false);
+    }
+  }, []);
+
   const fetchAuditLogs = useCallback(async () => {
     setAuditsLoading(true);
     try {
@@ -139,14 +221,13 @@ const AdminDashboard = () => {
       const res = await api.get(`/admin/audit-logs?limit=${limit}&offset=${offset}&search=${auditsSearch}`);
       setAuditLogs(res.data.data);
       setAuditsTotal(res.data.meta.total);
-    } catch (e) {
-      showToast(e.response?.data?.message || 'Failed to fetch audit logs', 'error');
+    } catch {
+      showToast('Failed to fetch audit ledger', 'error');
     } finally {
       setAuditsLoading(false);
     }
   }, [auditsPage, auditsSearch]);
 
-  // ── FETCH NOTIFICATIONS ─────────────────────────────────────────────────────
   const fetchNotifications = useCallback(async () => {
     setNotificationsLoading(true);
     try {
@@ -155,56 +236,56 @@ const AdminDashboard = () => {
       const res = await api.get(`/admin/notifications?limit=${limit}&offset=${offset}`);
       setNotifications(res.data.data);
       setNotificationsTotal(res.data.meta.total);
-    } catch (e) {
-      showToast(e.response?.data?.message || 'Failed to fetch notifications', 'error');
+    } catch {
+      showToast('Failed to fetch alerts log', 'error');
     } finally {
       setNotificationsLoading(false);
     }
   }, [notificationsPage]);
 
-  // Reload tab specific data on active tab change
+  // Load appropriate data when switching tabs
   useEffect(() => {
     fetchStats();
     if (activeTab === 'users') fetchUsers();
+    if (activeTab === 'hospitals') fetchHospitals();
+    if (activeTab === 'stations') fetchStations();
+    if (activeTab === 'cases') fetchCases();
+    if (activeTab === 'reports') fetchReports();
+    if (activeTab === 'lab_requests') fetchLabRequests();
     if (activeTab === 'audit_logs') fetchAuditLogs();
     if (activeTab === 'notifications') fetchNotifications();
-  }, [activeTab, fetchStats, fetchUsers, fetchAuditLogs, fetchNotifications]);
+  }, [
+    activeTab,
+    fetchStats,
+    fetchUsers,
+    fetchHospitals,
+    fetchStations,
+    fetchCases,
+    fetchReports,
+    fetchLabRequests,
+    fetchAuditLogs,
+    fetchNotifications,
+  ]);
 
-  // User list searches locally for responsive typing
-  const filteredUsers = users.filter(u => {
-    const term = userFilters.search.toLowerCase();
-    const fullName = `${u.first_name || ''} ${u.last_name || ''}`.toLowerCase();
-    return (
-      fullName.includes(term) ||
-      (u.username || '').toLowerCase().includes(term) ||
-      (u.email || '').toLowerCase().includes(term)
-    );
-  });
-
-  // ── TRIGGER APPROVAL / SUSPEND / ACTIVATE ──────────────────────────────────
+  // ── USER MANAGE ACTIONS ────────────────────────────────────────────────────
   const handleUserAction = async (userId, action) => {
     setActionId(userId);
     try {
       let res;
-      if (action === 'approve') {
-        res = await api.patch(`/admin/users/${userId}/approve`);
-      } else if (action === 'suspend') {
-        res = await api.patch(`/admin/users/${userId}/suspend`);
-      } else if (action === 'reactivate') {
-        res = await api.patch(`/admin/users/${userId}/reactivate`);
-      }
+      if (action === 'approve') res = await api.patch(`/admin/users/${userId}/approve`);
+      if (action === 'suspend') res = await api.patch(`/admin/users/${userId}/suspend`);
+      if (action === 'reactivate') res = await api.patch(`/admin/users/${userId}/reactivate`);
       showToast(res.data.message);
       fetchUsers();
       fetchStats();
     } catch (e) {
-      showToast(e.response?.data?.message || 'Action failed', 'error');
+      showToast(e.response?.data?.message || 'Access modification failed', 'error');
     } finally {
       setActionId(null);
       setIsConfirmModalOpen(false);
     }
   };
 
-  // ── REJECT (DELETE) USER ────────────────────────────────────────────────────
   const handleRejectUser = async (userId) => {
     setActionId(userId);
     try {
@@ -212,18 +293,17 @@ const AdminDashboard = () => {
       showToast(res.data.message);
       fetchUsers();
       fetchStats();
-    } catch (e) {
-      showToast(e.response?.data?.message || 'Failed to reject user', 'error');
+    } catch {
+      showToast('Failed to reject registration request', 'error');
     } finally {
       setActionId(null);
       setIsConfirmModalOpen(false);
     }
   };
 
-  // ── RESET PASSWORD ──────────────────────────────────────────────────────────
   const handleResetPassword = async (e) => {
     e.preventDefault();
-    if (!resetPassForm.password || resetPassForm.password.length < 8) {
+    if (resetPassForm.password.length < 8) {
       setResetPassForm(f => ({ ...f, error: 'Password must be at least 8 characters' }));
       return;
     }
@@ -231,200 +311,187 @@ const AdminDashboard = () => {
       setResetPassForm(f => ({ ...f, error: 'Passwords do not match' }));
       return;
     }
-
     try {
-      await api.post(`/admin/users/${selectedUser.user_id}/reset-password`, {
-        password: resetPassForm.password
-      });
+      await api.post(`/admin/users/${selectedUser.user_id}/reset-password`, { password: resetPassForm.password });
       setResetPassForm(f => ({ ...f, error: '', success: true }));
-      showToast('Password reset successfully');
+      showToast('Password credentials reset successfully');
       setTimeout(() => {
         setIsResetPasswordModalOpen(false);
         setResetPassForm({ password: '', confirmPassword: '', error: '', success: false });
       }, 1500);
     } catch (err) {
-      setResetPassForm(f => ({ ...f, error: err.response?.data?.message || 'Reset failed' }));
+      setResetPassForm(f => ({ ...f, error: err.response?.data?.message || 'Credentials update failed' }));
     }
   };
 
-  // ── VIEW PROFILE DETAILS ────────────────────────────────────────────────────
   const openProfile = async (userId) => {
     try {
       const res = await api.get(`/admin/users/${userId}`);
       setSelectedUser(res.data.data);
       setIsProfileModalOpen(true);
-    } catch (err) {
-      showToast('Failed to load user profile', 'error');
+    } catch {
+      showToast('Unable to load full user card', 'error');
     }
   };
 
-  const openConfirm = (userId, action, title, message) => {
-    setConfirmConfig({ userId, action, title, message });
-    setIsConfirmModalOpen(true);
-  };
-
   return (
-    <div className="min-h-screen bg-forensic-dark pb-16">
+    <div className="min-h-screen bg-forensic-dark flex flex-col">
       <Navbar />
 
-      <main className="pt-20 max-w-screen-2xl mx-auto px-4 sm:px-6">
+      {/* Main Container with Sidebar Navigator */}
+      <div className="flex flex-1 pt-16">
         
-        {/* Toast Alert */}
-        {toast && (
-          <div className={`fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl text-sm font-semibold shadow-2xl transition-all page-enter
-            ${toast.type === 'success'
-              ? 'bg-emerald-900/90 border border-emerald-700 text-emerald-200 glow-blue'
-              : 'bg-red-900/90 border border-red-700 text-red-200'}`}>
-            {toast.msg}
-          </div>
-        )}
-
-        {/* Dashboard Title */}
-        <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-extrabold text-white tracking-tight">System Administrator</h1>
-            <p className="text-gray-400 text-sm mt-1">Manage system configurations, user accounts, and review audit history</p>
-          </div>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-8">
-          <StatCard value={stats?.pendingUsers} label="Pending Users" icon="⏳" color="border-amber-500" />
-          <StatCard value={stats?.activeUsers} label="Active Users" icon="👥" color="border-primary-500" />
-          <StatCard value={stats?.hospitals} label="Hospitals" icon="🏥" color="border-rose-500" />
-          <StatCard value={stats?.policeStations} label="Police Stations" icon="🚔" color="border-blue-500" />
-          <StatCard value={stats?.openCases} label="Open Cases" icon="📂" color="border-emerald-500" />
-          <StatCard value={stats?.pendingReports} label="Pending Reports" icon="📄" color="border-purple-500" />
-          <StatCard value={stats?.pendingLabRequests} label="Lab Requests" icon="🧪" color="border-yellow-500" />
-        </div>
-
-        {/* Charts & Graphs Grid */}
-        {stats?.charts && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <div className="glass rounded-2xl p-6">
-              <h3 className="text-white font-semibold text-sm mb-4 flex items-center gap-2">
-                <span>📊</span> User Roles Distribution
-              </h3>
-              <div className="space-y-4">
-                {stats.charts.roles.map(r => {
-                  const max = Math.max(...stats.charts.roles.map(x => x.count), 1);
-                  return (
-                    <div key={r.role_name} className="space-y-1">
-                      <div className="flex justify-between text-xs font-medium text-gray-400">
-                        <span>{ROLE_LABELS[r.role_name] || r.role_name}</span>
-                        <span className="text-white">{r.count}</span>
-                      </div>
-                      <div className="w-full bg-gray-800/80 h-2.5 rounded-full overflow-hidden">
-                        <div 
-                          className="bg-primary-500 h-full rounded-full transition-all duration-1000"
-                          style={{ width: `${(r.count / max) * 100}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="glass rounded-2xl p-6">
-              <h3 className="text-white font-semibold text-sm mb-4 flex items-center gap-2">
-                <span>📁</span> Cases status Summary
-              </h3>
-              <div className="space-y-4">
-                {stats.charts.cases.length === 0 ? (
-                  <p className="text-gray-500 text-xs text-center py-10">No cases recorded in database</p>
-                ) : (
-                  stats.charts.cases.map(c => {
-                    const max = Math.max(...stats.charts.cases.map(x => x.count), 1);
-                    return (
-                      <div key={c.status_name} className="space-y-1">
-                        <div className="flex justify-between text-xs font-medium text-gray-400">
-                          <span>{c.status_name}</span>
-                          <span className="text-white">{c.count}</span>
-                        </div>
-                        <div className="w-full bg-gray-800/80 h-2.5 rounded-full overflow-hidden">
-                          <div 
-                            className="bg-emerald-500 h-full rounded-full transition-all duration-1000" 
-                            style={{ width: `${(c.count / max) * 100}%` }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Tab Controls */}
-        <div className="flex border-b border-gray-800 gap-6 mb-6">
-          {TABS.map(t => (
+        {/* Left Sidebar Navigator */}
+        <aside className="w-64 bg-gray-950/80 border-r border-gray-800/60 hidden md:flex flex-col p-4 space-y-1">
+          <div className="text-gray-500 text-xs font-bold px-3 py-2 uppercase tracking-wider">Navigation</div>
+          {NAV_ITEMS.map(item => (
             <button
-              key={t.id}
-              onClick={() => setActiveTab(t.id)}
-              className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-all
-                ${activeTab === t.id 
-                  ? 'border-primary-500 text-white' 
-                  : 'border-transparent text-gray-500 hover:text-gray-300'}`}
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-left
+                ${activeTab === item.id 
+                  ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/10' 
+                  : 'text-gray-400 hover:text-white hover:bg-gray-900/60'}`}
             >
-              <span>{t.icon}</span>
-              {t.label}
+              <span className="text-lg">{item.icon}</span>
+              {item.label}
             </button>
           ))}
-        </div>
+        </aside>
 
-        {/* ── TAB CONTENT: USERS DIRECTORY ──────────────────────────────────────── */}
-        {activeTab === 'users' && (
-          <div className="space-y-4">
-            
-            {/* Search & Filters */}
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 bg-gray-900/30 p-4 rounded-xl border border-gray-800/50">
-              <input
-                type="text"
-                value={userFilters.search}
-                onChange={e => setUserFilters(f => ({ ...f, search: e.target.value }))}
-                placeholder="Search user name, username, email..."
-                className="input-field sm:col-span-2"
-              />
-              <select
-                value={userFilters.role}
-                onChange={e => setUserFilters(f => ({ ...f, role: e.target.value }))}
-                className="select-field"
-              >
-                <option value="">All Roles</option>
-                <option value="POLICE">Police Officer</option>
-                <option value="JMO">Judicial Medical Officer</option>
-                <option value="MEDICAL_OFFICER">Medical Officer</option>
-                <option value="LAB_TECHNICIAN">Lab Technician</option>
-                <option value="GOVERNMENT_ANALYST">Forensic Staff</option>
-              </select>
-              <select
-                value={userFilters.status}
-                onChange={e => setUserFilters(f => ({ ...f, status: e.target.value }))}
-                className="select-field"
-              >
-                <option value="">All Statuses</option>
-                <option value="ACTIVE">Active</option>
-                <option value="INACTIVE">Pending</option>
-                <option value="SUSPENDED">Suspended</option>
-              </select>
+        {/* Dynamic Content Panel */}
+        <main className="flex-1 p-6 md:p-8 overflow-y-auto max-w-screen-2xl mx-auto w-full">
+          
+          {/* Mobile Tab Navigator Dropdown */}
+          <div className="md:hidden mb-6">
+            <label className="text-xs text-gray-400 block mb-1">Select View</label>
+            <select 
+              value={activeTab} 
+              onChange={e => setActiveTab(e.target.value)}
+              className="select-field"
+            >
+              {NAV_ITEMS.map(i => <option key={i.id} value={i.id}>{i.icon} {i.label}</option>)}
+            </select>
+          </div>
+
+          {/* Toast Notification Banner */}
+          {toast && (
+            <div className={`fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl text-sm font-semibold shadow-2xl transition-all page-enter
+              ${toast.type === 'success' ? 'bg-emerald-900/90 border border-emerald-700 text-emerald-200' : 'bg-red-900/90 border border-red-700 text-red-200'}`}>
+              {toast.msg}
             </div>
+          )}
 
-            {/* Table Container */}
-            <div className="glass rounded-2xl overflow-hidden border border-gray-800/40">
-              {usersLoading ? (
-                <div className="flex flex-col items-center justify-center py-20 gap-3">
-                  <div className="w-8 h-8 border-3 border-primary-500 border-t-transparent rounded-full animate-spin" />
-                  <span className="text-gray-400 text-sm">Querying system directory...</span>
+          {/* ────────────────────────────────────────────────────────────────────── */}
+          {/* ── VIEW: OVERVIEW (HOME) ───────────────────────────────────────────── */}
+          {activeTab === 'overview' && (
+            <div className="space-y-8 page-enter">
+              <div>
+                <h1 className="text-3xl font-extrabold text-white tracking-tight">System Home</h1>
+                <p className="text-gray-400 text-sm mt-1">Direct system snapshot of case registers, accounts, and organizations</p>
+              </div>
+
+              {/* Action Stats Cards (Click to navigate to details tab) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
+                <StatCard value={statsLoading ? null : stats?.pendingUsers} label="Pending Users" icon="⏳" color="border-amber-500" onClick={() => setActiveTab('users')} />
+                <StatCard value={statsLoading ? null : stats?.activeUsers} label="Active Users" icon="👥" color="border-primary-500" onClick={() => setActiveTab('users')} />
+                <StatCard value={statsLoading ? null : stats?.hospitals} label="Hospitals" icon="🏥" color="border-rose-500" onClick={() => setActiveTab('hospitals')} />
+                <StatCard value={statsLoading ? null : stats?.policeStations} label="Stations" icon="🚔" color="border-blue-500" onClick={() => setActiveTab('stations')} />
+                <StatCard value={statsLoading ? null : stats?.openCases} label="Open Cases" icon="📂" color="border-emerald-500" onClick={() => setActiveTab('cases')} />
+                <StatCard value={statsLoading ? null : stats?.pendingReports} label="Pending Reports" icon="📄" color="border-purple-500" onClick={() => setActiveTab('reports')} />
+                <StatCard value={statsLoading ? null : stats?.pendingLabRequests} label="Lab Requests" icon="🧪" color="border-yellow-500" onClick={() => setActiveTab('lab_requests')} />
+              </div>
+
+              {/* Visual SVG Progress Distribution */}
+              {stats?.charts && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="glass rounded-2xl p-6">
+                    <h3 className="text-white font-semibold text-sm mb-4">👥 User Roles distribution</h3>
+                    <div className="space-y-4">
+                      {stats.charts.roles.map(r => {
+                        const max = Math.max(...stats.charts.roles.map(x => x.count), 1);
+                        return (
+                          <div key={r.role_name} className="space-y-1">
+                            <div className="flex justify-between text-xs font-medium text-gray-400">
+                              <span>{ROLE_LABELS[r.role_name] || r.role_name}</span>
+                              <span className="text-white">{r.count}</span>
+                            </div>
+                            <div className="w-full bg-gray-800/80 h-2.5 rounded-full overflow-hidden">
+                              <div className="bg-primary-500 h-full rounded-full" style={{ width: `${(r.count / max) * 100}%` }} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="glass rounded-2xl p-6">
+                    <h3 className="text-white font-semibold text-sm mb-4">📂 Case status Summary</h3>
+                    <div className="space-y-4">
+                      {stats.charts.cases.length === 0 ? (
+                        <p className="text-gray-500 text-xs text-center py-10">No cases recorded in database</p>
+                      ) : (
+                        stats.charts.cases.map(c => {
+                          const max = Math.max(...stats.charts.cases.map(x => x.count), 1);
+                          return (
+                            <div key={c.status_name} className="space-y-1">
+                              <div className="flex justify-between text-xs font-medium text-gray-400">
+                                <span>{c.status_name}</span>
+                                <span className="text-white">{c.count}</span>
+                              </div>
+                              <div className="w-full bg-gray-800/80 h-2.5 rounded-full overflow-hidden">
+                                <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${(c.count / max) * 100}%` }} />
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
                 </div>
-              ) : filteredUsers.length === 0 ? (
-                <div className="text-center py-20">
-                  <div className="text-3xl mb-3">🔍</div>
-                  <p className="text-gray-400">No users match your filters</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
+              )}
+            </div>
+          )}
+
+          {/* ────────────────────────────────────────────────────────────────────── */}
+          {/* ── VIEW: USER DIRECTORY ────────────────────────────────────────────── */}
+          {activeTab === 'users' && (
+            <div className="space-y-4 page-enter">
+              <div>
+                <h1 className="text-2xl font-bold text-white">User Directory</h1>
+                <p className="text-gray-400 text-sm mt-0.5">Manage pending approval registrations, activate/deactivate accounts</p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 bg-gray-900/30 p-4 rounded-xl border border-gray-800/50">
+                <input
+                  type="text"
+                  value={userFilters.search}
+                  onChange={e => setUserFilters(f => ({ ...f, search: e.target.value }))}
+                  placeholder="Search user name, username, email..."
+                  className="input-field sm:col-span-2"
+                />
+                <select value={userFilters.role} onChange={e => setUserFilters(f => ({ ...f, role: e.target.value }))} className="select-field">
+                  <option value="">All Roles</option>
+                  <option value="POLICE">Police Officer</option>
+                  <option value="JMO">Judicial Medical Officer</option>
+                  <option value="MEDICAL_OFFICER">Medical Officer</option>
+                  <option value="LAB_TECHNICIAN">Lab Technician</option>
+                  <option value="GOVERNMENT_ANALYST">Forensic Staff</option>
+                </select>
+                <select value={userFilters.status} onChange={e => setUserFilters(f => ({ ...f, status: e.target.value }))} className="select-field">
+                  <option value="">All Statuses</option>
+                  <option value="ACTIVE">Active</option>
+                  <option value="INACTIVE">Pending</option>
+                  <option value="SUSPENDED">Suspended</option>
+                </select>
+              </div>
+
+              <div className="glass rounded-2xl overflow-hidden border border-gray-800/40">
+                {usersLoading ? (
+                  <div className="flex justify-center py-20"><div className="w-8 h-8 border-3 border-primary-500 border-t-transparent rounded-full animate-spin" /></div>
+                ) : filteredUsers.length === 0 ? (
+                  <p className="text-center py-20 text-gray-500">No users match query filter</p>
+                ) : (
                   <table className="data-table">
                     <thead>
                       <tr>
@@ -441,7 +508,7 @@ const AdminDashboard = () => {
                       {filteredUsers.map(u => (
                         <tr key={u.user_id}>
                           <td>
-                            <button onClick={() => openProfile(u.user_id)} className="font-semibold text-white hover:text-primary-400 hover:underline text-left">
+                            <button onClick={() => openProfile(u.user_id)} className="font-semibold text-white hover:text-primary-400 hover:underline">
                               {u.first_name && u.last_name ? `${u.first_name} ${u.last_name}` : u.username}
                             </button>
                           </td>
@@ -449,60 +516,24 @@ const AdminDashboard = () => {
                           <td className="text-xs">{u.email || '—'}</td>
                           <td><RoleBadge role={u.role} /></td>
                           <td><StatusBadge status={u.status} /></td>
-                          <td className="text-xs text-gray-500">
-                            {new Date(u.created_at).toLocaleDateString('en-GB')}
-                          </td>
+                          <td className="text-xs text-gray-500">{new Date(u.created_at).toLocaleDateString('en-GB')}</td>
                           <td className="text-right">
                             <div className="flex justify-end gap-2">
-                              <button onClick={() => openProfile(u.user_id)} className="px-2 py-1 bg-gray-800 hover:bg-gray-700 text-xs rounded-lg transition-colors">
-                                View Profile
-                              </button>
-
+                              <button onClick={() => openProfile(u.user_id)} className="px-2.5 py-1 bg-gray-800 hover:bg-gray-700 text-xs rounded-lg text-gray-300">View Profile</button>
                               {u.status === 'INACTIVE' && (
                                 <>
-                                  <button
-                                    onClick={() => handleUserAction(u.user_id, 'approve')}
-                                    disabled={actionId === u.user_id}
-                                    className="btn-success text-xs py-1 px-3"
-                                  >
-                                    Approve
-                                  </button>
-                                  <button
-                                    onClick={() => openConfirm(u.user_id, 'reject', 'Reject Registration Request', `Are you sure you want to permanently delete registration request for '${u.username}'?`)}
-                                    disabled={actionId === u.user_id}
-                                    className="btn-danger text-xs py-1 px-3"
-                                  >
-                                    Reject
-                                  </button>
+                                  <button onClick={() => handleUserAction(u.user_id, 'approve')} className="btn-success text-xs py-1 px-3">Approve</button>
+                                  <button onClick={() => openConfirm(u.user_id, 'reject', 'Reject Registrant', `Are you sure you want to permanently delete registration request for '${u.username}'?`)} className="btn-danger text-xs py-1 px-3">Reject</button>
                                 </>
                               )}
-
                               {u.status === 'ACTIVE' && (
                                 <>
-                                  <button
-                                    onClick={() => openConfirm(u.user_id, 'suspend', 'Suspend Account Access', `Are you sure you want to suspend account access for '${u.username}'?`)}
-                                    disabled={actionId === u.user_id}
-                                    className="btn-danger text-xs py-1 px-3"
-                                  >
-                                    Deactivate
-                                  </button>
-                                  <button
-                                    onClick={() => { setSelectedUser(u); setIsResetPasswordModalOpen(true); }}
-                                    className="px-2 py-1 bg-purple-900/30 text-purple-300 hover:bg-purple-800/40 text-xs rounded-lg transition-colors border border-purple-700/30"
-                                  >
-                                    Reset Password
-                                  </button>
+                                  <button onClick={() => openConfirm(u.user_id, 'suspend', 'Suspend Account', `Are you sure you want to suspend access for '${u.username}'?`)} className="btn-danger text-xs py-1 px-3">Deactivate</button>
+                                  <button onClick={() => { setSelectedUser(u); setIsResetPasswordModalOpen(true); }} className="px-2.5 py-1 bg-purple-900/30 text-purple-300 border border-purple-800/40 text-xs rounded-lg">Reset Password</button>
                                 </>
                               )}
-
                               {u.status === 'SUSPENDED' && (
-                                <button
-                                  onClick={() => handleUserAction(u.user_id, 'reactivate')}
-                                  disabled={actionId === u.user_id}
-                                  className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs transition-colors"
-                                >
-                                  Activate
-                                </button>
+                                <button onClick={() => handleUserAction(u.user_id, 'reactivate')} className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs">Activate</button>
                               )}
                             </div>
                           </td>
@@ -510,42 +541,311 @@ const AdminDashboard = () => {
                       ))}
                     </tbody>
                   </table>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* ── TAB CONTENT: SYSTEM AUDIT LOGS ────────────────────────────────────── */}
-        {activeTab === 'audit_logs' && (
-          <div className="space-y-4">
-            
-            {/* Search filter */}
-            <div className="bg-gray-900/30 p-4 rounded-xl border border-gray-800/50 flex gap-4">
-              <input
-                type="text"
-                value={auditsSearch}
-                onChange={e => { setAuditsSearch(e.target.value); setAuditsPage(1); }}
-                placeholder="Search audit actions, descriptions, performing users..."
-                className="input-field"
-              />
-              <button onClick={fetchAuditLogs} className="btn-primary w-fit px-6">Refresh</button>
+          {/* ────────────────────────────────────────────────────────────────────── */}
+          {/* ── VIEW: HOSPITALS ─────────────────────────────────────────────────── */}
+          {activeTab === 'hospitals' && (
+            <div className="space-y-4 page-enter">
+              <div>
+                <h1 className="text-2xl font-bold text-white">Registered Hospitals</h1>
+                <p className="text-gray-400 text-sm mt-0.5">Directory list of partner medical institutions and hospital points</p>
+              </div>
+
+              <div className="bg-gray-900/30 p-4 rounded-xl border border-gray-800/50 flex gap-4">
+                <input
+                  type="text"
+                  value={hospitalsSearch}
+                  onChange={e => setHospitalsSearch(e.target.value)}
+                  placeholder="Search hospital name, district..."
+                  className="input-field"
+                />
+              </div>
+
+              <div className="glass rounded-2xl overflow-hidden border border-gray-800/40">
+                {hospitalsLoading ? (
+                  <div className="flex justify-center py-20"><div className="w-8 h-8 border-3 border-primary-500 border-t-transparent rounded-full animate-spin" /></div>
+                ) : hospitals.length === 0 ? (
+                  <p className="text-center py-20 text-gray-500">No hospital records stored in database</p>
+                ) : (
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Hospital Name</th>
+                        <th>Classification</th>
+                        <th>District</th>
+                        <th>Phone</th>
+                        <th>Email Contact</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {hospitals.filter(h => h.hospital_name.toLowerCase().includes(hospitalsSearch.toLowerCase()) || h.district?.toLowerCase().includes(hospitalsSearch.toLowerCase())).map(h => (
+                        <tr key={h.hospital_id}>
+                          <td className="font-semibold text-white">{h.hospital_name}</td>
+                          <td><span className="px-2 py-0.5 text-xs rounded bg-rose-950/60 text-rose-300 border border-rose-800/40">{h.hospital_type || 'General'}</span></td>
+                          <td>{h.district || '—'}</td>
+                          <td className="font-mono text-xs">{h.telephone || '—'}</td>
+                          <td className="text-xs text-gray-400">{h.email || '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
             </div>
+          )}
 
-            <div className="glass rounded-2xl overflow-hidden border border-gray-800/40">
-              {auditsLoading ? (
-                <div className="flex flex-col items-center justify-center py-20 gap-3">
-                  <div className="w-8 h-8 border-3 border-primary-500 border-t-transparent rounded-full animate-spin" />
-                  <span className="text-gray-400 text-sm">Querying system ledger...</span>
-                </div>
-              ) : auditLogs.length === 0 ? (
-                <div className="text-center py-20">
-                  <div className="text-3xl mb-3">📜</div>
-                  <p className="text-gray-400">No logs found</p>
-                </div>
-              ) : (
-                <>
-                  <div className="overflow-x-auto">
+          {/* ────────────────────────────────────────────────────────────────────── */}
+          {/* ── VIEW: POLICE STATIONS ───────────────────────────────────────────── */}
+          {activeTab === 'stations' && (
+            <div className="space-y-4 page-enter">
+              <div>
+                <h1 className="text-2xl font-bold text-white">Police Stations</h1>
+                <p className="text-gray-400 text-sm mt-0.5">Directory list of connected police stations and districts</p>
+              </div>
+
+              <div className="bg-gray-900/30 p-4 rounded-xl border border-gray-800/50 flex gap-4">
+                <input
+                  type="text"
+                  value={stationsSearch}
+                  onChange={e => setStationsSearch(e.target.value)}
+                  placeholder="Search station name, district..."
+                  className="input-field"
+                />
+              </div>
+
+              <div className="glass rounded-2xl overflow-hidden border border-gray-800/40">
+                {stationsLoading ? (
+                  <div className="flex justify-center py-20"><div className="w-8 h-8 border-3 border-primary-500 border-t-transparent rounded-full animate-spin" /></div>
+                ) : stations.length === 0 ? (
+                  <p className="text-center py-20 text-gray-500">No police stations records stored in database</p>
+                ) : (
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Station Name</th>
+                        <th>District</th>
+                        <th>Phone</th>
+                        <th>Email Contact</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {stations.filter(s => s.station_name.toLowerCase().includes(stationsSearch.toLowerCase()) || s.district?.toLowerCase().includes(stationsSearch.toLowerCase())).map(s => (
+                        <tr key={s.station_id}>
+                          <td className="font-semibold text-white">{s.station_name}</td>
+                          <td>{s.district || '—'}</td>
+                          <td className="font-mono text-xs">{s.telephone || '—'}</td>
+                          <td className="text-xs text-gray-400">{s.email || '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ────────────────────────────────────────────────────────────────────── */}
+          {/* ── VIEW: OPEN CASES ────────────────────────────────────────────────── */}
+          {activeTab === 'cases' && (
+            <div className="space-y-4 page-enter">
+              <div>
+                <h1 className="text-2xl font-bold text-white">Cases Register</h1>
+                <p className="text-gray-400 text-sm mt-0.5">Overview ledger of registered police investigation cases</p>
+              </div>
+
+              <div className="bg-gray-900/30 p-4 rounded-xl border border-gray-800/50 flex gap-4">
+                <input
+                  type="text"
+                  value={casesSearch}
+                  onChange={e => setCasesSearch(e.target.value)}
+                  placeholder="Search case title, case number, station..."
+                  className="input-field"
+                />
+              </div>
+
+              <div className="glass rounded-2xl overflow-hidden border border-gray-800/40">
+                {casesLoading ? (
+                  <div className="flex justify-center py-20"><div className="w-8 h-8 border-3 border-primary-500 border-t-transparent rounded-full animate-spin" /></div>
+                ) : cases.length === 0 ? (
+                  <p className="text-center py-20 text-gray-500">No cases recorded in database</p>
+                ) : (
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Case Number</th>
+                        <th>Classification Type</th>
+                        <th>Title / Subject</th>
+                        <th>Originating Station</th>
+                        <th>Investigation status</th>
+                        <th>Reported Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {cases.filter(c => c.case_number.toLowerCase().includes(casesSearch.toLowerCase()) || c.title?.toLowerCase().includes(casesSearch.toLowerCase()) || c.station_name.toLowerCase().includes(casesSearch.toLowerCase())).map(c => (
+                        <tr key={c.case_id}>
+                          <td className="font-mono text-xs font-bold text-primary-400">{c.case_number}</td>
+                          <td className="text-xs">{c.case_type || '—'}</td>
+                          <td className="text-sm text-white font-medium">{c.title || '—'}</td>
+                          <td>{c.station_name}</td>
+                          <td>
+                            <span className="px-2 py-0.5 rounded text-xs bg-emerald-950/60 text-emerald-300 border border-emerald-800/40">
+                              {c.status}
+                            </span>
+                          </td>
+                          <td className="text-xs text-gray-500">{new Date(c.date_reported).toLocaleDateString('en-GB')}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ────────────────────────────────────────────────────────────────────── */}
+          {/* ── VIEW: REPORTS LEDGER ────────────────────────────────────────────── */}
+          {activeTab === 'reports' && (
+            <div className="space-y-4 page-enter">
+              <div>
+                <h1 className="text-2xl font-bold text-white">Reports Ledger</h1>
+                <p className="text-gray-400 text-sm mt-0.5">Database log of prepared Medico-Legal Reports and Autopsy Reports</p>
+              </div>
+
+              <div className="bg-gray-900/30 p-4 rounded-xl border border-gray-800/50 flex gap-4">
+                <input
+                  type="text"
+                  value={reportsSearch}
+                  onChange={e => setReportsSearch(e.target.value)}
+                  placeholder="Search report number, patient name..."
+                  className="input-field"
+                />
+              </div>
+
+              <div className="glass rounded-2xl overflow-hidden border border-gray-800/40">
+                {reportsLoading ? (
+                  <div className="flex justify-center py-20"><div className="w-8 h-8 border-3 border-primary-500 border-t-transparent rounded-full animate-spin" /></div>
+                ) : reports.length === 0 ? (
+                  <p className="text-center py-20 text-gray-500">No report records found in database</p>
+                ) : (
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Report Number</th>
+                        <th>Document Classification</th>
+                        <th>Patient Name</th>
+                        <th>Document status</th>
+                        <th>Date Created</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {reports.filter(r => r.report_number?.toLowerCase().includes(reportsSearch.toLowerCase()) || r.patient_name?.toLowerCase().includes(reportsSearch.toLowerCase())).map((r, idx) => (
+                        <tr key={r.report_id || idx}>
+                          <td className="font-mono text-xs font-bold text-white">{r.report_number || 'PENDING'}</td>
+                          <td>
+                            <span className={`px-2 py-0.5 text-xs rounded border
+                              ${r.report_type === 'AUTOPSY' ? 'bg-purple-950/60 text-purple-300 border-purple-800/40' : 'bg-cyan-950/60 text-cyan-300 border-cyan-800/40'}`}>
+                              {r.report_type === 'AUTOPSY' ? 'Autopsy Report' : 'Medico-Legal Report'}
+                            </span>
+                          </td>
+                          <td>{r.patient_name || '—'}</td>
+                          <td><span className="badge badge-active">{r.status || 'DRAFT'}</span></td>
+                          <td className="text-xs text-gray-500">{new Date(r.prepared_date).toLocaleString('en-GB')}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ────────────────────────────────────────────────────────────────────── */}
+          {/* ── VIEW: LAB REQUESTS ──────────────────────────────────────────────── */}
+          {activeTab === 'lab_requests' && (
+            <div className="space-y-4 page-enter">
+              <div>
+                <h1 className="text-2xl font-bold text-white">Laboratory Requests</h1>
+                <p className="text-gray-400 text-sm mt-0.5">Database log of lab test requests sent from forensic clinics</p>
+              </div>
+
+              <div className="bg-gray-900/30 p-4 rounded-xl border border-gray-800/50 flex gap-4">
+                <input
+                  type="text"
+                  value={labSearch}
+                  onChange={e => setLabSearch(e.target.value)}
+                  placeholder="Search specimen type, laboratory..."
+                  className="input-field"
+                />
+              </div>
+
+              <div className="glass rounded-2xl overflow-hidden border border-gray-800/40">
+                {labLoading ? (
+                  <div className="flex justify-center py-20"><div className="w-8 h-8 border-3 border-primary-500 border-t-transparent rounded-full animate-spin" /></div>
+                ) : labRequests.length === 0 ? (
+                  <p className="text-center py-20 text-gray-500">No laboratory requests stored in database</p>
+                ) : (
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Laboratory Name</th>
+                        <th>Specimen Type</th>
+                        <th>Priority</th>
+                        <th>Test status</th>
+                        <th>Date Requested</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {labRequests.filter(l => l.laboratory_name?.toLowerCase().includes(labSearch.toLowerCase()) || l.specimen_type?.toLowerCase().includes(labSearch.toLowerCase())).map(l => (
+                        <tr key={l.request_id}>
+                          <td className="font-semibold text-white">{l.laboratory_name}</td>
+                          <td><span className="px-2 py-0.5 text-xs rounded bg-blue-950/60 text-blue-300 border border-blue-800/40">{l.specimen_type}</span></td>
+                          <td>
+                            <span className={`badge ${l.priority === 'HIGH' ? 'badge-suspended' : 'badge-pending'}`}>
+                              {l.priority || 'NORMAL'}
+                            </span>
+                          </td>
+                          <td><span className="badge badge-active">{l.status}</span></td>
+                          <td className="text-xs text-gray-500">{new Date(l.request_date).toLocaleString('en-GB')}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ────────────────────────────────────────────────────────────────────── */}
+          {/* ── VIEW: SYSTEM AUDIT LOGS ────────────────────────────────────────── */}
+          {activeTab === 'audit_logs' && (
+            <div className="space-y-4 page-enter">
+              <div>
+                <h1 className="text-2xl font-bold text-white">System Audits</h1>
+                <p className="text-gray-400 text-sm mt-0.5">Read-only historical security logs and trace record updates</p>
+              </div>
+
+              <div className="bg-gray-900/30 p-4 rounded-xl border border-gray-800/50 flex gap-4">
+                <input
+                  type="text"
+                  value={auditsSearch}
+                  onChange={e => { setAuditsSearch(e.target.value); setAuditsPage(1); }}
+                  placeholder="Search logs action, performer, description..."
+                  className="input-field"
+                />
+                <button onClick={fetchAuditLogs} className="btn-primary w-fit px-6">Refresh</button>
+              </div>
+
+              <div className="glass rounded-2xl overflow-hidden border border-gray-800/40">
+                {auditsLoading ? (
+                  <div className="flex justify-center py-20"><div className="w-8 h-8 border-3 border-primary-500 border-t-transparent rounded-full animate-spin" /></div>
+                ) : auditLogs.length === 0 ? (
+                  <p className="text-center py-20 text-gray-500">No audit logs stored in database</p>
+                ) : (
+                  <>
                     <table className="data-table">
                       <thead>
                         <tr>
@@ -567,66 +867,46 @@ const AdminDashboard = () => {
                             </td>
                             <td className="font-mono text-xs text-gray-400">{log.entity_name || '—'}</td>
                             <td className="text-xs text-gray-300 max-w-md truncate" title={log.description}>{log.description}</td>
-                            <td className="text-xs text-gray-500">
-                              {new Date(log.created_at).toLocaleString('en-GB')}
-                            </td>
+                            <td className="text-xs text-gray-500">{new Date(log.created_at).toLocaleString('en-GB')}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
-                  </div>
-
-                  {/* Pagination control */}
-                  <div className="flex justify-between items-center p-4 border-t border-gray-800 bg-gray-950/20">
-                    <span className="text-xs text-gray-500">
-                      Showing logs {((auditsPage - 1) * 15) + 1} to {Math.min(auditsPage * 15, auditsTotal)} of {auditsTotal}
-                    </span>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setAuditsPage(p => Math.max(p - 1, 1))}
-                        disabled={auditsPage === 1}
-                        className="px-3 py-1.5 bg-gray-800 text-gray-300 text-xs rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-700 transition-colors"
-                      >
-                        Previous
-                      </button>
-                      <button
-                        onClick={() => setAuditsPage(p => p + 1)}
-                        disabled={auditsPage * 15 >= auditsTotal}
-                        className="px-3 py-1.5 bg-gray-800 text-gray-300 text-xs rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-700 transition-colors"
-                      >
-                        Next
-                      </button>
+                    <div className="flex justify-between items-center p-4 border-t border-gray-800 bg-gray-950/20">
+                      <span className="text-xs text-gray-500">Showing logs {((auditsPage - 1) * 15) + 1} to {Math.min(auditsPage * 15, auditsTotal)} of {auditsTotal}</span>
+                      <div className="flex gap-2">
+                        <button onClick={() => setAuditsPage(p => Math.max(p - 1, 1))} disabled={auditsPage === 1} className="px-3 py-1.5 bg-gray-800 text-gray-300 text-xs rounded-lg disabled:opacity-30">Previous</button>
+                        <button onClick={() => setAuditsPage(p => p + 1)} disabled={auditsPage * 15 >= auditsTotal} className="px-3 py-1.5 bg-gray-800 text-gray-300 text-xs rounded-lg disabled:opacity-30">Next</button>
+                      </div>
                     </div>
-                  </div>
-                </>
-              )}
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* ── TAB CONTENT: NOTIFICATIONS ────────────────────────────────────────── */}
-        {activeTab === 'notifications' && (
-          <div className="space-y-4">
-            <div className="glass rounded-2xl overflow-hidden border border-gray-800/40">
-              {notificationsLoading ? (
-                <div className="flex flex-col items-center justify-center py-20 gap-3">
-                  <div className="w-8 h-8 border-3 border-primary-500 border-t-transparent rounded-full animate-spin" />
-                  <span className="text-gray-400 text-sm">Querying system alerts...</span>
-                </div>
-              ) : notifications.length === 0 ? (
-                <div className="text-center py-20">
-                  <div className="text-3xl mb-3">🔔</div>
-                  <p className="text-gray-400">No system notifications found</p>
-                </div>
-              ) : (
-                <>
-                  <div className="overflow-x-auto">
+          {/* ────────────────────────────────────────────────────────────────────── */}
+          {/* ── VIEW: SYSTEM NOTIFICATIONS ──────────────────────────────────────── */}
+          {activeTab === 'notifications' && (
+            <div className="space-y-4 page-enter">
+              <div>
+                <h1 className="text-2xl font-bold text-white">System Notifications</h1>
+                <p className="text-gray-400 text-sm mt-0.5">Database log of prepared notifications and user alerts</p>
+              </div>
+
+              <div className="glass rounded-2xl overflow-hidden border border-gray-800/40">
+                {notificationsLoading ? (
+                  <div className="flex justify-center py-20"><div className="w-8 h-8 border-3 border-primary-500 border-t-transparent rounded-full animate-spin" /></div>
+                ) : notifications.length === 0 ? (
+                  <p className="text-center py-20 text-gray-500">No alerts log found</p>
+                ) : (
+                  <>
                     <table className="data-table">
                       <thead>
                         <tr>
                           <th>Recipient</th>
-                          <th>Notification Type</th>
-                          <th>Message</th>
+                          <th>Alert Type</th>
+                          <th>Message Body</th>
                           <th>Status</th>
                           <th>Date Created</th>
                         </tr>
@@ -635,141 +915,67 @@ const AdminDashboard = () => {
                         {notifications.map(n => (
                           <tr key={n.notification_id}>
                             <td className="font-semibold text-white">{n.recipient_username}</td>
-                            <td>
-                              <span className="px-2 py-0.5 rounded text-xs bg-purple-950/60 text-purple-300 border border-purple-800/50">
-                                {n.notification_type}
-                              </span>
-                            </td>
+                            <td><span className="px-2 py-0.5 rounded text-xs bg-purple-950/60 text-purple-300 border border-purple-800/50">{n.notification_type}</span></td>
                             <td className="text-xs">{n.message}</td>
-                            <td>
-                              <span className={`badge ${n.is_read ? 'badge-active' : 'badge-pending'}`}>
-                                {n.is_read ? 'Read' : 'Unread'}
-                              </span>
-                            </td>
-                            <td className="text-xs text-gray-500">
-                              {new Date(n.created_at).toLocaleString('en-GB')}
-                            </td>
+                            <td><span className={`badge ${n.is_read ? 'badge-active' : 'badge-pending'}`}>{n.is_read ? 'Read' : 'Unread'}</span></td>
+                            <td className="text-xs text-gray-500">{new Date(n.created_at).toLocaleString('en-GB')}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
-                  </div>
-
-                  {/* Pagination control */}
-                  <div className="flex justify-between items-center p-4 border-t border-gray-800 bg-gray-950/20">
-                    <span className="text-xs text-gray-500">
-                      Showing alerts {((notificationsPage - 1) * 15) + 1} to {Math.min(notificationsPage * 15, notificationsTotal)} of {notificationsTotal}
-                    </span>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setNotificationsPage(p => Math.max(p - 1, 1))}
-                        disabled={notificationsPage === 1}
-                        className="px-3 py-1.5 bg-gray-800 text-gray-300 text-xs rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-700 transition-colors"
-                      >
-                        Previous
-                      </button>
-                      <button
-                        onClick={() => setNotificationsPage(p => p + 1)}
-                        disabled={notificationsPage * 15 >= notificationsTotal}
-                        className="px-3 py-1.5 bg-gray-800 text-gray-300 text-xs rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-700 transition-colors"
-                      >
-                        Next
-                      </button>
+                    <div className="flex justify-between items-center p-4 border-t border-gray-800 bg-gray-950/20">
+                      <span className="text-xs text-gray-500">Showing alerts {((notificationsPage - 1) * 15) + 1} to {Math.min(notificationsPage * 15, notificationsTotal)} of {notificationsTotal}</span>
+                      <div className="flex gap-2">
+                        <button onClick={() => setNotificationsPage(p => Math.max(p - 1, 1))} disabled={notificationsPage === 1} className="px-3 py-1.5 bg-gray-800 text-gray-300 text-xs rounded-lg disabled:opacity-30">Previous</button>
+                        <button onClick={() => setNotificationsPage(p => p + 1)} disabled={notificationsPage * 15 >= notificationsTotal} className="px-3 py-1.5 bg-gray-800 text-gray-300 text-xs rounded-lg disabled:opacity-30">Next</button>
+                      </div>
                     </div>
-                  </div>
-                </>
-              )}
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-      </main>
+        </main>
+      </div>
 
-      {/* ── MODAL: RESET PASSWORD ─────────────────────────────────────────────── */}
+      {/* ── MODALS (UserProfileModal, ResetPasswordModal, ConfirmActionModal) ── */}
       {isResetPasswordModalOpen && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="glass max-w-md w-full rounded-2xl p-6 glow-purple page-enter">
             <h3 className="text-lg font-bold text-white mb-2">Reset Password</h3>
-            <p className="text-xs text-gray-400 mb-6">
-              Setting new credentials for <strong className="text-white">@{selectedUser.username}</strong>
-            </p>
-
-            {resetPassForm.error && (
-              <div className="mb-4 p-2.5 rounded bg-red-950/40 border border-red-800/50 text-red-300 text-xs">
-                {resetPassForm.error}
-              </div>
-            )}
-            {resetPassForm.success && (
-              <div className="mb-4 p-2.5 rounded bg-emerald-950/40 border border-emerald-800/50 text-emerald-300 text-xs">
-                Password updated successfully. Closing...
-              </div>
-            )}
-
+            <p className="text-xs text-gray-400 mb-6">Setting new credentials for <strong className="text-white">@{selectedUser.username}</strong></p>
+            {resetPassForm.error && <div className="mb-4 p-2.5 rounded bg-red-950/40 border border-red-800/50 text-red-300 text-xs">{resetPassForm.error}</div>}
+            {resetPassForm.success && <div className="mb-4 p-2.5 rounded bg-emerald-950/40 border border-emerald-800/50 text-emerald-300 text-xs">Password updated successfully. Closing...</div>}
             <form onSubmit={handleResetPassword} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-gray-400 mb-1">New Password</label>
-                <input
-                  type="password"
-                  value={resetPassForm.password}
-                  onChange={e => setResetPassForm(f => ({ ...f, password: e.target.value }))}
-                  className="input-field"
-                  placeholder="Min 8 characters"
-                  required
-                />
+                <input type="password" value={resetPassForm.password} onChange={e => setResetPassForm(f => ({ ...f, password: e.target.value }))} className="input-field" placeholder="Min 8 characters" required />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-400 mb-1">Confirm New Password</label>
-                <input
-                  type="password"
-                  value={resetPassForm.confirmPassword}
-                  onChange={e => setResetPassForm(f => ({ ...f, confirmPassword: e.target.value }))}
-                  className="input-field"
-                  placeholder="Repeat new password"
-                  required
-                />
+                <input type="password" value={resetPassForm.confirmPassword} onChange={e => setResetPassForm(f => ({ ...f, confirmPassword: e.target.value }))} className="input-field" placeholder="Repeat new password" required />
               </div>
-
               <div className="flex justify-end gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setIsResetPasswordModalOpen(false)}
-                  className="px-4 py-2 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 text-xs transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-xs font-semibold transition-colors"
-                >
-                  Save New Password
-                </button>
+                <button type="button" onClick={() => setIsResetPasswordModalOpen(false)} className="px-4 py-2 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 text-xs">Cancel</button>
+                <button type="submit" className="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-xs font-semibold">Save New Password</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* ── MODAL: USER PROFILE ───────────────────────────────────────────────── */}
       {isProfileModalOpen && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="glass max-w-xl w-full rounded-2xl p-6 glow-blue page-enter max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-start mb-6">
               <div>
-                <h3 className="text-xl font-bold text-white">User Profile Profile</h3>
+                <h3 className="text-xl font-bold text-white">User Profile</h3>
                 <p className="text-xs text-gray-400 mt-1">Detailed system audit information</p>
               </div>
-              <button 
-                onClick={() => setIsProfileModalOpen(false)}
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                ✕
-              </button>
+              <button onClick={() => setIsProfileModalOpen(false)} className="text-gray-400 hover:text-white">✕</button>
             </div>
-
-            {/* Profile Grid */}
             <div className="space-y-6">
-              
-              {/* Core Account Details */}
               <div className="bg-gray-900/30 p-4 rounded-xl border border-gray-800/40">
                 <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Core Account</h4>
                 <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
@@ -799,8 +1005,6 @@ const AdminDashboard = () => {
                   </div>
                 </div>
               </div>
-
-              {/* Personal details */}
               <div className="bg-gray-900/30 p-4 rounded-xl border border-gray-800/40">
                 <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Personal Information</h4>
                 <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
@@ -826,58 +1030,33 @@ const AdminDashboard = () => {
                   </div>
                   <div className="col-span-2">
                     <span className="text-gray-500 text-xs block">Residential Address</span>
-                    <strong className="text-white font-normal block mt-0.5 whitespace-pre-line text-xs leading-relaxed text-gray-300">
-                      {selectedUser.address || '—'}
-                    </strong>
+                    <strong className="text-white font-normal block mt-0.5 whitespace-pre-line text-xs text-gray-300">{selectedUser.address || '—'}</strong>
                   </div>
                 </div>
               </div>
-
             </div>
-
             <div className="flex justify-end pt-6">
-              <button
-                onClick={() => setIsProfileModalOpen(false)}
-                className="px-6 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-xs font-semibold transition-colors"
-              >
-                Close View
-              </button>
+              <button onClick={() => setIsProfileModalOpen(false)} className="px-6 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-xs font-semibold">Close View</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── MODAL: CONFIRM ACTION ─────────────────────────────────────────────── */}
       {isConfirmModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="glass max-w-sm w-full rounded-2xl p-6 glow-blue page-enter">
             <h3 className="text-lg font-bold text-white mb-2">{confirmConfig.title}</h3>
-            <p className="text-xs text-gray-400 mb-6 leading-relaxed">
-              {confirmConfig.message}
-            </p>
-
+            <p className="text-xs text-gray-400 mb-6 leading-relaxed">{confirmConfig.message}</p>
             <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setIsConfirmModalOpen(false)}
-                className="px-4 py-2 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 text-xs transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (confirmConfig.action === 'reject') {
-                    handleRejectUser(confirmConfig.userId);
-                  } else {
-                    handleUserAction(confirmConfig.userId, confirmConfig.action);
-                  }
-                }}
-                className={`px-4 py-2 text-white rounded-lg text-xs font-semibold transition-colors
-                  ${confirmConfig.action === 'reject' || confirmConfig.action === 'suspend'
-                    ? 'bg-red-600 hover:bg-red-500' 
-                    : 'bg-primary-600 hover:bg-primary-500'}`}
-              >
+              <button type="button" onClick={() => setIsConfirmModalOpen(false)} className="px-4 py-2 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 text-xs">Cancel</button>
+              <button type="button" onClick={() => {
+                if (confirmConfig.action === 'reject') {
+                  handleRejectUser(confirmConfig.userId);
+                } else {
+                  handleUserAction(confirmConfig.userId, confirmConfig.action);
+                }
+              }} className={`px-4 py-2 text-white rounded-lg text-xs font-semibold
+                ${confirmConfig.action === 'reject' || confirmConfig.action === 'suspend' ? 'bg-red-600 hover:bg-red-500' : 'bg-primary-600 hover:bg-primary-500'}`}>
                 Confirm Action
               </button>
             </div>

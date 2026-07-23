@@ -11,6 +11,11 @@ const {
   resetPassword,
   getAuditLogs,
   getNotifications,
+  getCases,
+  getReports,
+  getLabRequests,
+  getHospitals,
+  getStations,
 } = require('../controllers/admin.controller');
 const { authenticate } = require('../middleware/auth.middleware');
 const { requireRole } = require('../middleware/rbac.middleware');
@@ -36,5 +41,12 @@ router.post('/users/:id/reset-password', resetPassword);
 // Audits & Notifications
 router.get('/audit-logs', getAuditLogs);
 router.get('/notifications', getNotifications);
+
+// Lists details
+router.get('/cases', getCases);
+router.get('/reports', getReports);
+router.get('/lab-requests', getLabRequests);
+router.get('/hospitals', getHospitals);
+router.get('/stations', getStations);
 
 module.exports = router;

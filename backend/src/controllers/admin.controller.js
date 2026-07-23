@@ -13,6 +13,11 @@ const {
   getAuditLogsList,
   getNotificationsList,
   logAudit,
+  getCasesList,
+  getReportsList,
+  getLabRequestsList,
+  getHospitalsList,
+  getStationsList,
 } = require('../services/admin.service');
 const { sendSuccess, sendBadRequest } = require('../utils/response');
 
@@ -227,6 +232,66 @@ const getNotifications = async (req, res, next) => {
   }
 };
 
+/**
+ * GET /api/admin/cases
+ */
+const getCases = async (req, res, next) => {
+  try {
+    const data = await getCasesList();
+    return sendSuccess(res, { data });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * GET /api/admin/reports
+ */
+const getReports = async (req, res, next) => {
+  try {
+    const data = await getReportsList();
+    return sendSuccess(res, { data });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * GET /api/admin/lab-requests
+ */
+const getLabRequests = async (req, res, next) => {
+  try {
+    const data = await getLabRequestsList();
+    return sendSuccess(res, { data });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * GET /api/admin/hospitals
+ */
+const getHospitals = async (req, res, next) => {
+  try {
+    const data = await getHospitalsList();
+    return sendSuccess(res, { data });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * GET /api/admin/stations
+ */
+const getStations = async (req, res, next) => {
+  try {
+    const data = await getStationsList();
+    return sendSuccess(res, { data });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   getStats,
   listPendingUsers,
@@ -239,4 +304,9 @@ module.exports = {
   resetPassword,
   getAuditLogs,
   getNotifications,
+  getCases,
+  getReports,
+  getLabRequests,
+  getHospitals,
+  getStations,
 };

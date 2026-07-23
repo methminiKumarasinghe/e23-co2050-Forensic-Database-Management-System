@@ -221,6 +221,85 @@ const getNotificationsList = async ({ limit = 20, offset = 0 }) => {
   };
 };
 
+/**
+ * Fetch all cases with status and station info
+ */
+const getCasesList = async () => {
+  const result = await query(
+    `SELECT pc.case_id, pc.case_number, pc.case_type, pc.title, pc.date_reported,
+            cs.status_name AS status, ps.station_name
+     FROM police_case pc
+     JOIN case_status cs ON pc.status_id = cs.status_id
+     JOIN police_station ps ON pc.station_id = ps.station_id
+     ORDER BY pc.date_reported DESC`
+  );
+  return result.rows;
+};
+
+/**
+ * Fetch unified reports (Medico-Legal and Autopsy Reports)
+ */
+const getReportsList = async () => {
+  const result = await query(
+    `SELECT 'MEDICO_LEGAL' AS report_type, mlr.report_id, mlr.report_number, mlr.report_status AS status, mlr.prepared_date,
+            p.first_name || ' ' || p.last_name AS patient_name
+     FROM medico_legal_report mlr
+     JOIN examination e ON mlr.examination_id = e.examination_id
+     JOIN mlef m ON e.mlef_id = m.mlef_id
+     JOIN patient pat ON m.patient_id = pat.patient_id
+     JOIN person p ON pat.person_id = p.person_id
+     UNION ALL
+     SELECT 'AUTOPSY' AS report_type, ar.autopsy_report_id AS report_id, doc.document_number AS report_number, doc.status, doc.created_at AS prepared_date,
+            p.first_name || ' ' || p.last_name AS patient_name
+     FROM autopsy_report ar
+     JOIN document doc ON ar.document_id = doc.document_id
+     JOIN autopsy a ON ar.autopsy_id = a.autopsy_id
+     JOIN deceased d ON a.deceased_id = d.deceased_id
+     JOIN person p ON d.person_id = p.person_id
+     ORDER BY prepared_date DESC`
+  );
+  return result.rows;
+};
+
+/**
+ * Fetch laboratory test requests
+ */
+const getLabRequestsList = async () => {
+  const result = await query(
+    `SELECT lr.request_id, lr.request_date, lr.priority, lr.status,
+            l.laboratory_name, s.specimen_type
+     FROM laboratory_request lr
+     JOIN laboratory l ON lr.laboratory_id = l.laboratory_id
+     JOIN specimen s ON lr.specimen_id = s.specimen_id
+     ORDER BY lr.request_date DESC`
+  );
+  return result.rows;
+};
+
+/**
+ * Fetch all hospitals list
+ */
+const getHospitalsList = async () => {
+  const result = await query(
+    `SELECT hospital_id, hospital_name, hospital_type, district, telephone, email
+     FROM hospital
+     ORDER BY hospital_name ASC`
+  );
+  return result.rows;
+};
+
+/**
+ * Fetch all police stations list
+ */
+const getStationsList = async () => {
+  const result = await query(
+    `SELECT station_id, station_name, district, telephone, email
+     FROM police_station
+     ORDER BY station_name ASC`
+  );
+  return result.rows;
+};
+
 module.exports = {
   logAudit,
   createNotification,
@@ -229,4 +308,9 @@ module.exports = {
   resetUserPassword,
   getAuditLogsList,
   getNotificationsList,
+  getCasesList,
+  getReportsList,
+  getLabRequestsList,
+  getHospitalsList,
+  getStationsList,
 };
