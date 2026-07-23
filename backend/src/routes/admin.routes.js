@@ -1,11 +1,24 @@
 const { Router } = require('express');
 const {
+  getStats,
   listPendingUsers,
   listAllUsers,
   getUser,
   approve,
   suspend,
   reactivate,
+  reject,
+  resetPassword,
+  getAuditLogs,
+  getNotifications,
+  getCases,
+  getReports,
+  getLabRequests,
+  getHospitals,
+  getStations,
+  addHospital,
+  addStation,
+  addUser,
 } = require('../controllers/admin.controller');
 const { authenticate } = require('../middleware/auth.middleware');
 const { requireRole } = require('../middleware/rbac.middleware');
@@ -15,12 +28,31 @@ const router = Router();
 // All admin routes require authentication + ADMIN role
 router.use(authenticate, requireRole('ADMIN'));
 
+// Dashboard stats
+router.get('/stats', getStats);
+
 // User management
 router.get('/users/pending', listPendingUsers);
 router.get('/users', listAllUsers);
+router.post('/users', addUser);
 router.get('/users/:id', getUser);
 router.patch('/users/:id/approve', approve);
 router.patch('/users/:id/suspend', suspend);
 router.patch('/users/:id/reactivate', reactivate);
+router.delete('/users/:id/reject', reject);
+router.post('/users/:id/reset-password', resetPassword);
+
+// Audits & Notifications
+router.get('/audit-logs', getAuditLogs);
+router.get('/notifications', getNotifications);
+
+// Lists details & creations
+router.get('/cases', getCases);
+router.get('/reports', getReports);
+router.get('/lab-requests', getLabRequests);
+router.get('/hospitals', getHospitals);
+router.post('/hospitals', addHospital);
+router.get('/stations', getStations);
+router.post('/stations', addStation);
 
 module.exports = router;
