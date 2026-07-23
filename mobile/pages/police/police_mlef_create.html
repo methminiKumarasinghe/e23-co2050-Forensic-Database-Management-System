@@ -99,55 +99,46 @@
             <p>Health 886</p>
           </div>
 
-          <form onsubmit="event.preventDefault(); alert('MLEF successfully submitted to Hospital! Examinee must now present to the JMO.'); window.location.href='police.html';">
+          <form id="mlefForm" onsubmit="event.preventDefault(); submitMlef();">
             
             <div class="form-row-3">
               <div class="form-group">
                 <label class="form-label">1. Police Station</label>
-                <input type="text" class="form-control" value="Kandy Police Station" required />
+                <input type="text" class="form-control" id="stationName" readonly />
               </div>
               <div class="form-group">
-                <label class="form-label">2. Date of Issue</label>
-                <input type="date" class="form-control" required />
+                <label class="form-label">2. Case Selection</label>
+                <select class="form-control" id="caseSelect" required>
+                  <option value="">-- Select Case --</option>
+                </select>
               </div>
               <div class="form-group">
                 <label class="form-label">3. MLEF No.</label>
-                <input type="text" class="form-control" placeholder="Auto-generated: MLEF-2026-0814" />
+                <input type="text" class="form-control" placeholder="Auto-generated" readonly />
               </div>
             </div>
 
             <div class="section-title">Examinee Information</div>
             
             <div class="form-group">
-              <label class="form-label">4. Full Name of Examinee</label>
-              <input type="text" class="form-control" placeholder="e.g. Sunil Perera" required />
+              <label class="form-label">4. Select Examinee (Patient)</label>
+              <select class="form-control" id="patientSelect" required>
+                 <option value="">-- Select Patient --</option>
+              </select>
             </div>
             
             <div class="form-group">
-              <label class="form-label">Address of Examinee</label>
-              <input type="text" class="form-control" placeholder="e.g. 15, Peradeniya Road, Kandy" required />
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">5. Age</label>
-                <input type="number" class="form-control" placeholder="e.g. 35" required />
-              </div>
-              <div class="form-group">
-                <label class="form-label">Sex</label>
-                <select class="form-control">
-                  <option>Male</option>
-                  <option>Female</option>
-                  <option>Other</option>
-                </select>
-              </div>
+              <label class="form-label">5. Select Hospital</label>
+              <select class="form-control" id="hospitalSelect" required>
+                 <option value="">-- Select Hospital --</option>
+              </select>
             </div>
 
             <div class="section-title">Case Details</div>
 
             <div class="form-group">
               <label class="form-label">6. Reason for referring for examination</label>
-              <textarea class="form-control" rows="3" placeholder="e.g. Assaulted by neighbor with a blunt weapon..."></textarea>
+              <textarea class="form-control" id="reason" rows="3" placeholder="e.g. Assaulted by neighbor with a blunt weapon..." required></textarea>
             </div>
 
             <div class="section-title">Officer Details</div>
@@ -155,19 +146,19 @@
             <div class="form-row-3">
               <div class="form-group">
                 <label class="form-label">7. Name of Police Officer issuing</label>
-                <input type="text" class="form-control" value="S. Silva" required />
+                <input type="text" class="form-control" id="officerName" readonly />
               </div>
               <div class="form-group">
                 <label class="form-label">Rank</label>
-                <input type="text" class="form-control" value="Inspector" required />
+                <input type="text" class="form-control" id="officerRank" readonly />
               </div>
               <div class="form-group">
                 <label class="form-label">No.</label>
-                <input type="text" class="form-control" value="10442" required />
+                <input type="text" class="form-control" id="officerBadge" readonly />
               </div>
             </div>
 
-            <button type="submit" class="btn-save">Submit to Hospital (JMO Dashboard) ➜</button>
+            <button type="submit" class="btn-save" id="btnSubmit">Submit to Hospital ➜</button>
           </form>
         </div>
       </div>
@@ -175,6 +166,7 @@
   </div>
 </div>
 
+<script src="../../js/api.js"></script>
 <script>
   function tick() {
     const el = document.getElementById("dashClock");
@@ -182,6 +174,73 @@
   }
   tick(); setInterval(tick, 1000);
   function logout() { sessionStorage.clear(); window.location.href = "../../index.html"; }
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      const statsData = await API.get('/police/dashboard');
+      if (statsData && statsData.officer) {
+        document.getElementById('stationName').value = statsData.officer.station_name;
+        document.getElementById('officerName').value = statsData.officer.first_name + ' ' + statsData.officer.last_name;
+        document.getElementById('officerRank').value = statsData.officer.rank;
+        document.getElementById('officerBadge').value = statsData.officer.badge_number;
+      }
+
+      const cases = await API.get('/police/cases');
+      const caseSelect = document.getElementById('caseSelect');
+      cases.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.case_id;
+        opt.textContent = c.case_number + ' - ' + c.title;
+        caseSelect.appendChild(opt);
+      });
+
+      const hospitals = await API.get('/police/hospitals');
+      const hospSelect = document.getElementById('hospitalSelect');
+      hospitals.forEach(h => {
+        const opt = document.createElement('option');
+        opt.value = h.hospital_id;
+        opt.textContent = h.hospital_name;
+        hospSelect.appendChild(opt);
+      });
+
+      const patients = await API.get('/police/patients');
+      const patSelect = document.getElementById('patientSelect');
+      patients.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.patient_id;
+        opt.textContent = p.first_name + ' ' + p.last_name + ' (' + p.nic + ')';
+        patSelect.appendChild(opt);
+      });
+
+    } catch(e) {
+      console.error('Failed to load data', e);
+      alert('Failed to load data for form');
+    }
+  });
+
+  async function submitMlef() {
+    const btn = document.getElementById('btnSubmit');
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
+
+    const payload = {
+      case_id: document.getElementById('caseSelect').value,
+      patient_id: document.getElementById('patientSelect').value,
+      hospital_id: document.getElementById('hospitalSelect').value,
+      reason: document.getElementById('reason').value
+    };
+
+    try {
+      await API.post('/police/mlef', payload);
+      alert('MLEF successfully submitted to Hospital! Examinee must now present to the JMO.');
+      window.location.href = 'police.html';
+    } catch(e) {
+      console.error(e);
+      alert('Error submitting MLEF: ' + (e.message || 'Unknown error'));
+      btn.disabled = false;
+      btn.textContent = 'Submit to Hospital ➜';
+    }
+  }
 </script>
 </body>
 </html>

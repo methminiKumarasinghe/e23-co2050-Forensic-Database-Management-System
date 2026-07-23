@@ -109,4 +109,22 @@ router.use((err, req, res, next) => {
   next();
 });
 
+
+// Helper lookup endpoints for the frontend
+router.get('/hospitals', async (req, res, next) => {
+  try {
+    const pool = require('../database/connection');
+    const result = await pool.query('SELECT * FROM hospital');
+    res.json(result.rows);
+  } catch(e) { next(e); }
+});
+
+router.get('/patients', async (req, res, next) => {
+  try {
+    const pool = require('../database/connection');
+    const result = await pool.query('SELECT pt.patient_id, p.first_name, p.last_name, p.nic FROM patient pt JOIN person p ON pt.person_id = p.person_id');
+    res.json(result.rows);
+  } catch(e) { next(e); }
+});
+
 module.exports = router;
