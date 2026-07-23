@@ -11,6 +11,7 @@ const authRoutes = require('./routes/auth.routes');
 const adminRoutes = require('./routes/admin.routes');
 const labRoutes = require('./routes/lab.routes');
 const jmoRoutes = require('./routes/jmo.routes');
+const policeRoutes = require('./routes/police.routes');
 
 const app = express();
 
@@ -49,6 +50,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/lab', labRoutes);
 app.use('/api/jmo', jmoRoutes);
+app.use('/api/police', policeRoutes);
 
 // ── Static files ──────────────────────────────────────────────────────────────
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));

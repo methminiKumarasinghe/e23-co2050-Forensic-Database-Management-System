@@ -1,11 +1,15 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
+const isLocalDb = process.env.DATABASE_URL && (
+  process.env.DATABASE_URL.includes('localhost') ||
+  process.env.DATABASE_URL.includes('127.0.0.1') ||
+  process.env.DATABASE_URL.includes('sslmode=disable')
+);
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  ssl: isLocalDb ? false : { rejectUnauthorized: false },
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 30000, // 30 seconds to allow Neon compute endpoint to wake up
