@@ -52,7 +52,7 @@ const LabResultDetails = () => {
   return (
     <div className="min-h-screen bg-forensic-dark">
       <Navbar />
-      <main className="pt-16 max-w-screen-xl mx-auto px-4 sm:px-6 py-8">
+      <main className="pt-24 print:pt-0 max-w-screen-xl mx-auto px-4 sm:px-6 py-8 space-y-6">
         
         <div className="mb-6 flex justify-between items-center">
           <div>

@@ -40,7 +40,7 @@ const MedicalOfficerDashboard = () => {
   return (
     <div className="min-h-screen bg-forensic-dark">
       <Navbar />
-      <main className="pt-16 max-w-screen-xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+      <main className="pt-24 max-w-screen-xl mx-auto px-4 sm:px-6 py-8 space-y-8">
         
         {/* Welcome Header */}
         <div className="page-enter">
@@ -90,7 +90,6 @@ const MedicalOfficerDashboard = () => {
             link="/dashboard/medical-officer/notes"
             color="border-amber-500"
           />
-
           <InfoCard
             icon="🔔"
             title="Notifications"
@@ -98,23 +97,6 @@ const MedicalOfficerDashboard = () => {
             link="/dashboard/medical-officer/notifications"
             color="border-rose-500"
           />
-        </div>
-
-        {/* Role Information Banner */}
-        <div className="glass rounded-xl p-6 border border-emerald-800/30">
-          <div className="flex gap-3 items-start">
-            <div className="text-emerald-400 mt-0.5">
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-white font-medium text-sm">Role: Medical Officer</p>
-              <p className="text-gray-400 text-xs mt-1">
-                Touch the <strong>Pending MLEF Requisitions</strong> flash card above to view full details and assign available Judicial Medical Officers (JMOs).
-              </p>
-            </div>
-          </div>
         </div>
 
         {/* Full Details Modal */}

@@ -46,7 +46,7 @@ const ViewMLRReport = () => {
         <Navbar />
       </div>
       
-      <main className="pt-16 print:pt-0 max-w-screen-xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+      <main className="pt-24 print:pt-0 max-w-screen-xl mx-auto px-4 sm:px-6 py-8 space-y-6">
         
         {/* Top Controls Bar */}
         <div className="flex justify-between items-center print:hidden">

@@ -55,7 +55,7 @@ const DigitalSignatureMLR = () => {
   return (
     <div className="min-h-screen bg-forensic-dark">
       <Navbar />
-      <main className="pt-16 max-w-screen-md mx-auto px-4 py-12">
+      <main className="pt-24 max-w-screen-md mx-auto px-4 py-12">
         <div className="mb-6 text-center">
           <div className="text-xs text-emerald-400 mb-1">
             <Link to="/dashboard/jmo/mlr-reports" className="hover:underline">MLR Cases</Link> &gt; Digital Signature

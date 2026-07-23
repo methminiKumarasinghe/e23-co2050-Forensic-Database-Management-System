@@ -109,7 +109,7 @@ const PrepareMLRPage = () => {
   return (
     <div className="min-h-screen bg-forensic-dark text-gray-100">
       <Navbar />
-      <main className="pt-16 max-w-screen-xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+      <main className="pt-24 max-w-screen-xl mx-auto px-4 sm:px-6 py-8 space-y-8">
         
         {/* Page Header */}
         <div className="flex justify-between items-center">

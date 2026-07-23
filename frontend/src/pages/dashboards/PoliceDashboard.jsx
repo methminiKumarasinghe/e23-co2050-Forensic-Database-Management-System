@@ -206,8 +206,7 @@ const PoliceDashboard = () => {
       <Navbar />
 
       {/* Main Layout Container with Sidebar Navigator */}
-      <div className="flex flex-1 pt-16">
-        
+      <div className="flex flex-1 pt-24">
         {/* Left Sidebar Navigator */}
         <aside className="w-64 bg-gray-950/80 border-r border-gray-800/60 hidden md:flex flex-col p-4 space-y-1 shrink-0">
           <div className="text-gray-500 text-xs font-bold px-3 py-2 uppercase tracking-wider">Police Module</div>

@@ -37,7 +37,7 @@ const JMOMedicoLegalReports = () => {
   return (
     <div className="min-h-screen bg-forensic-dark">
       <Navbar />
-      <main className="pt-16 max-w-screen-xl mx-auto px-4 sm:px-6 py-8">
+      <main className="pt-24 max-w-screen-xl mx-auto px-4 sm:px-6 py-8">
         
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>

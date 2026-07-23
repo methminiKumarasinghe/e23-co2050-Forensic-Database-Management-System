@@ -480,7 +480,7 @@ const AdminDashboard = () => {
       <Navbar />
 
       {/* Main Layout Container with Fast Sub-page Navigator */}
-      <div className="flex flex-1 pt-16">
+      <div className="flex flex-1 pt-24">
         
         {/* Left Sidebar Navigator */}
         <aside className="w-64 bg-gray-950/80 border-r border-gray-800/60 hidden md:flex flex-col p-4 space-y-1">
