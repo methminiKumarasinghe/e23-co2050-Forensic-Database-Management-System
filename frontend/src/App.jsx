@@ -45,7 +45,7 @@ import StaffPatientRecords      from './pages/staff/StaffPatientRecords';
 import StaffMedicalReports      from './pages/staff/StaffMedicalReports';
 import StaffCaseConsultations   from './pages/staff/StaffCaseConsultations';
 import StaffTreatmentNotes      from './pages/staff/StaffTreatmentNotes';
-import StaffDocumentArchive     from './pages/staff/StaffDocumentArchive';
+
 import StaffNotifications       from './pages/staff/StaffNotifications';
 
 const ROLE_DASHBOARDS = {
@@ -234,13 +234,7 @@ const App = () => (
         </RoleRoute>
       </PrivateRoute>
     } />
-    <Route path="/dashboard/medical-officer/documents" element={
-      <PrivateRoute>
-        <RoleRoute roles={['MEDICAL_OFFICER', 'GOVERNMENT_ANALYST']}>
-          <StaffDocumentArchive />
-        </RoleRoute>
-      </PrivateRoute>
-    } />
+
     <Route path="/dashboard/medical-officer/notifications" element={
       <PrivateRoute>
         <RoleRoute roles={['MEDICAL_OFFICER', 'GOVERNMENT_ANALYST']}>

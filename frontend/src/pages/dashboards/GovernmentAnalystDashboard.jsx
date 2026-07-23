@@ -65,13 +65,6 @@ const GovernmentAnalystDashboard = () => {
 
           {/* Connected Dashboard Cards */}
           <InfoCard
-            icon="📄"
-            title="Document Management"
-            subtitle="Manage official hospital and legal documents"
-            link="/dashboard/medical-officer/documents"
-            color="border-rose-500"
-          />
-          <InfoCard
             icon="🏛️"
             title="Court Documents"
             subtitle="Track documents submitted to court"
@@ -84,13 +77,6 @@ const GovernmentAnalystDashboard = () => {
             subtitle="Manage document delivery and examinee records"
             link="/dashboard/medical-officer/patients"
             color="border-blue-500"
-          />
-          <InfoCard
-            icon="📁"
-            title="File Archive"
-            subtitle="Access uploaded files and attachments"
-            link="/dashboard/medical-officer/documents"
-            color="border-amber-500"
           />
           <InfoCard
             icon="🔍"

@@ -90,13 +90,7 @@ const MedicalOfficerDashboard = () => {
             link="/dashboard/medical-officer/notes"
             color="border-amber-500"
           />
-          <InfoCard
-            icon="📁"
-            title="Document Archive"
-            subtitle="Access and manage medical documents"
-            link="/dashboard/medical-officer/documents"
-            color="border-cyan-500"
-          />
+
           <InfoCard
             icon="🔔"
             title="Notifications"
