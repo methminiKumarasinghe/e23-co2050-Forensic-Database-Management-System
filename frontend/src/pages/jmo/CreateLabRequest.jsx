@@ -39,9 +39,9 @@ const CreateLabRequest = () => {
   }, []);
 
   const handleSpecimenChange = (e) => {
-    const specId = e.target.value;
-    setFormData(prev => ({ ...prev, specimenId: specId }));
-    const found = specimens.find(s => s.specimen_id === specId);
+    const val = e.target.value;
+    setFormData(prev => ({ ...prev, specimenId: val }));
+    const found = specimens.find(s => s.specimen_id === val || s.specimen_type === val);
     setSelectedSpecimen(found || null);
   };
 
@@ -53,7 +53,7 @@ const CreateLabRequest = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.specimenId || !formData.laboratoryId || !formData.testName) {
-      alert('Please select a specimen, target laboratory, and enter test type.');
+      alert('Please enter or select a specimen, target laboratory, and test type.');
       return;
     }
 
@@ -103,28 +103,38 @@ const CreateLabRequest = () => {
           <div className="lg:col-span-2">
             <form onSubmit={handleSubmit} className="glass rounded-xl p-6 border border-gray-800 space-y-6">
               
-              {/* Select Specimen */}
+              {/* Typeable Specimen Input */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Select Specimen <span className="text-red-500">*</span>
+                  Specimen Details / Type <span className="text-red-500">*</span>
                 </label>
-                <select 
+                <input 
+                  type="text"
                   name="specimenId"
+                  list="specimen-suggestions"
                   value={formData.specimenId}
                   onChange={handleSpecimenChange}
-                  className="input-field w-full"
+                  placeholder="Type specimen description (e.g. Blood Sample, Viscera, Fingerprint Swab) or choose suggestion..."
+                  className="input-field w-full text-white bg-gray-900 border-gray-700"
                   required
-                >
-                  <option value="">-- Choose Specimen --</option>
+                />
+                <datalist id="specimen-suggestions">
                   {specimens.map(s => (
                     <option key={s.specimen_id} value={s.specimen_id}>
                       {s.specimen_type} — Case {s.case_number} ({s.patient_name})
                     </option>
                   ))}
-                </select>
-                {specimens.length === 0 && (
-                  <p className="text-xs text-amber-400 mt-1">No specimens found associated with your examinations.</p>
-                )}
+                  <option value="Blood Sample (Toxicology / DNA)" />
+                  <option value="Urine Sample (Drug Screen)" />
+                  <option value="Visceral Tissue Sample" />
+                  <option value="Vaginal / Cervical Swab" />
+                  <option value="Gastric Contents" />
+                  <option value="Hair & Nail Clippings" />
+                  <option value="Fingerprint / Latent Trace Evidence" />
+                </datalist>
+                <p className="text-xs text-gray-400 mt-1">
+                  You can type any custom specimen description or select from previous examinations.
+                </p>
               </div>
 
               {/* Select Laboratory */}
@@ -240,7 +250,7 @@ const CreateLabRequest = () => {
                 </div>
               ) : (
                 <div className="text-center text-gray-500 py-8 text-sm">
-                  Select a specimen from the dropdown to auto-fill case and patient context.
+                  Type any custom specimen description or select from suggestions.
                 </div>
               )}
             </div>

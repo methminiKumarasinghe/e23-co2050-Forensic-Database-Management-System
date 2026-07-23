@@ -943,13 +943,41 @@ const getJmoSpecimens = async (userId) => {
  */
 const createLabRequest = async (userId, { specimenId, laboratoryId, testName, priority = 'NORMAL', clinicalNotes }) => {
     const jmo = await getJmoDetails(userId);
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
     return withTransaction(async (client) => {
+        let finalSpecimenId = specimenId;
+
+        if (!specimenId || !uuidRegex.test(specimenId)) {
+            const examRes = await client.query(`SELECT examination_id FROM examination WHERE jmo_id = $1 LIMIT 1`, [jmo.jmo_id]);
+            let examId = examRes.rowCount > 0 ? examRes.rows[0].examination_id : null;
+            
+            if (!examId) {
+                const mlefRes = await client.query(`SELECT mlef_id FROM mlef LIMIT 1`);
+                if (mlefRes.rowCount > 0) {
+                    const newExam = await client.query(`
+                        INSERT INTO examination (mlef_id, jmo_id, status_id, examination_notes)
+                        VALUES ($1, $2, 3, 'Examination initialized for lab request')
+                        RETURNING examination_id
+                    `, [mlefRes.rows[0].mlef_id, jmo.jmo_id]);
+                    examId = newExam.rows[0].examination_id;
+                }
+            }
+
+            const specType = specimenId && specimenId.trim() ? specimenId.trim() : 'Forensic Sample';
+            const newSpec = await client.query(`
+                INSERT INTO specimen (examination_id, specimen_type, collected_by, remarks)
+                VALUES ($1, $2, $3, 'Specimen entered manually in Lab Request form')
+                RETURNING specimen_id
+            `, [examId, specType, jmo.jmo_id]);
+            finalSpecimenId = newSpec.rows[0].specimen_id;
+        }
+
         const reqResult = await client.query(`
             INSERT INTO laboratory_request (specimen_id, laboratory_id, requested_by, priority, status)
             VALUES ($1, $2, $3, $4, 'PENDING')
             RETURNING request_id, specimen_id, laboratory_id, requested_by, request_date, priority, status
-        `, [specimenId, laboratoryId, jmo.jmo_id, priority]);
+        `, [finalSpecimenId, laboratoryId, jmo.jmo_id, priority]);
 
         const newRequest = reqResult.rows[0];
 
