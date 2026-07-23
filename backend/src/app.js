@@ -8,6 +8,7 @@ const { errorHandler, notFoundHandler } = require('./middleware/error.middleware
 // Route modules
 const authRoutes = require('./routes/auth.routes');
 const adminRoutes = require('./routes/admin.routes');
+const policeRoutes = require('./routes/police.routes');
 
 const app = express();
 
@@ -44,6 +45,7 @@ app.get('/health', (req, res) => {
 // ── API routes ────────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/police', policeRoutes);
 
 // ── 404 handler ───────────────────────────────────────────────────────────────
 app.use(notFoundHandler);
