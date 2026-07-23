@@ -1,5 +1,8 @@
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import Navbar from '../../components/Navbar';
+import { MlefFlashCard, MlefDetailsModal } from '../../components/staff/ForensicStaffMlefSection';
+import { getHospitalMlefs } from '../../api/medicalApi';
 
 const InfoCard = ({ icon, title, subtitle, color }) => (
   <div className={`glass rounded-xl p-5 border-l-4 ${color} hover:scale-[1.01] transition-transform`}>
@@ -11,13 +14,36 @@ const InfoCard = ({ icon, title, subtitle, color }) => (
 
 const MedicalOfficerDashboard = () => {
   const { user } = useAuth();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+
+  // Load initial pending count
+  useEffect(() => {
+    const loadPendingCount = async () => {
+      try {
+        const res = await getHospitalMlefs();
+        const list = res.data || [];
+        const count = list.filter((m) => m.status === 'PENDING').length;
+        setPendingCount(count);
+      } catch (err) {
+        console.error('Failed to load pending MLEF count:', err);
+      }
+    };
+    loadPendingCount();
+  }, []);
+
+  const handleDataChange = (mlefList) => {
+    const count = mlefList.filter((m) => m.status === 'PENDING').length;
+    setPendingCount(count);
+  };
 
   return (
     <div className="min-h-screen bg-forensic-dark">
       <Navbar />
-      <main className="pt-16 max-w-screen-xl mx-auto px-4 sm:px-6 py-8">
-        <div className="mb-8 page-enter">
-          <div className="flex items-center gap-4 mb-4">
+      <main className="pt-16 max-w-screen-xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+        {/* Welcome Header */}
+        <div className="page-enter">
+          <div className="flex items-center gap-4 mb-2">
             <div className="w-14 h-14 rounded-2xl bg-emerald-600/20 border border-emerald-700/30 flex items-center justify-center text-2xl">
               👨‍⚕️
             </div>
@@ -28,27 +54,54 @@ const MedicalOfficerDashboard = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-          <InfoCard icon="👤" title="Patient Records"
+        {/* Dashboard Grid of Flash Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* New Interactive Flash Card for MLEF Requisitions */}
+          <MlefFlashCard
+            pendingCount={pendingCount}
+            onClick={() => setIsModalOpen(true)}
+          />
+
+          {/* Previous Dashboard Cards */}
+          <InfoCard
+            icon="👤"
+            title="Patient Records"
             subtitle="View and manage patient medical records"
-            color="border-emerald-500" />
-          <InfoCard icon="📋" title="Medical Reports"
+            color="border-emerald-500"
+          />
+          <InfoCard
+            icon="📋"
+            title="Medical Reports"
             subtitle="Create and review medical reports"
-            color="border-blue-500" />
-          <InfoCard icon="🔍" title="Case Consultation"
+            color="border-blue-500"
+          />
+          <InfoCard
+            icon="🔍"
+            title="Case Consultation"
             subtitle="Assist with medico-legal case investigations"
-            color="border-purple-500" />
-          <InfoCard icon="💊" title="Treatment Notes"
+            color="border-purple-500"
+          />
+          <InfoCard
+            icon="💊"
+            title="Treatment Notes"
             subtitle="Document clinical observations and notes"
-            color="border-amber-500" />
-          <InfoCard icon="📁" title="Document Archive"
+            color="border-amber-500"
+          />
+          <InfoCard
+            icon="📁"
+            title="Document Archive"
             subtitle="Access and manage medical documents"
-            color="border-cyan-500" />
-          <InfoCard icon="🔔" title="Notifications"
+            color="border-cyan-500"
+          />
+          <InfoCard
+            icon="🔔"
+            title="Notifications"
             subtitle="View alerts and system messages"
-            color="border-rose-500" />
+            color="border-rose-500"
+          />
         </div>
 
+        {/* Role Information Banner */}
         <div className="glass rounded-xl p-6 border border-emerald-800/30">
           <div className="flex gap-3 items-start">
             <div className="text-emerald-400 mt-0.5">
@@ -59,11 +112,18 @@ const MedicalOfficerDashboard = () => {
             <div>
               <p className="text-white font-medium text-sm">Role: Medical Officer</p>
               <p className="text-gray-400 text-xs mt-1">
-                You have access to patient records, medical report creation, and case consultation features within your hospital.
+                Touch the <strong>Pending MLEF Requisitions</strong> flash card above to view full details and assign available Judicial Medical Officers (JMOs).
               </p>
             </div>
           </div>
         </div>
+
+        {/* Full Details Modal */}
+        <MlefDetailsModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onDataChange={handleDataChange}
+        />
       </main>
     </div>
   );
