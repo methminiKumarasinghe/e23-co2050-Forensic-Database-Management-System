@@ -1,0 +1,11 @@
+{
+  "name": "fmis-project",
+  "version": "1.0.0",
+  "description": "Forensic Medical Information System",
+  "scripts": {
+    "install:all": "npm install --prefix backend && npm install --prefix frontend",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev": "npx concurrently -k -p \"[{name}]\" -n \"Backend,Frontend\" -c \"cyan,magenta\" \"npm run dev:backend\" \"npm run dev:frontend\""
+  }
+}
