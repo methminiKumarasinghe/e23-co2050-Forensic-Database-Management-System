@@ -1,5 +1,16 @@
 import api from './axios';
 
+// MLR Module APIs
+export const getMlrCases = () => api.get('/jmo/mlr/cases').then(res => res.data.data);
+
+export const getMlrCaseData = (mlefId) => api.get(`/jmo/mlr/${mlefId}/case-data`).then(res => res.data.data);
+
+export const saveMlrReport = (mlefId, data) => api.post(`/jmo/mlr/${mlefId}`, data).then(res => res.data.data);
+
+export const signMlrReport = (reportId, data) => api.post(`/jmo/mlr/${reportId}/sign`, data).then(res => res.data.data);
+
+export const getFinalMlrReport = (reportId) => api.get(`/jmo/mlr/${reportId}/final-report`).then(res => res.data.data);
+
 // MLEF Assignment & Examination
 export const getAssignedMlefs = () => api.get('/jmo/assigned-mlef').then(res => res.data.data);
 

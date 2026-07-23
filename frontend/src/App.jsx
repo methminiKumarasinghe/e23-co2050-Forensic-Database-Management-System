@@ -33,6 +33,9 @@ import JMOLabResultDetails      from './pages/jmo/JMOLabResultDetails';
 import CompleteMLEFForm         from './pages/jmo/CompleteMLEFForm';
 import ViewMLEFReport           from './pages/jmo/ViewMLEFReport';
 import JMOMedicoLegalReports    from './pages/jmo/JMOMedicoLegalReports';
+import PrepareMLRPage           from './pages/jmo/PrepareMLRPage';
+import DigitalSignatureMLR      from './pages/jmo/DigitalSignatureMLR';
+import ViewMLRReport            from './pages/jmo/ViewMLRReport';
 import JMOAutopsyModule         from './pages/jmo/JMOAutopsyModule';
 
 // Staff / Medical Officer Pages
@@ -119,6 +122,27 @@ const App = () => (
       <PrivateRoute>
         <RoleRoute roles={['JMO']}>
           <JMOMedicoLegalReports />
+        </RoleRoute>
+      </PrivateRoute>
+    } />
+    <Route path="/dashboard/jmo/mlr/:mlefId/prepare" element={
+      <PrivateRoute>
+        <RoleRoute roles={['JMO']}>
+          <PrepareMLRPage />
+        </RoleRoute>
+      </PrivateRoute>
+    } />
+    <Route path="/dashboard/jmo/mlr/:reportId/signature" element={
+      <PrivateRoute>
+        <RoleRoute roles={['JMO']}>
+          <DigitalSignatureMLR />
+        </RoleRoute>
+      </PrivateRoute>
+    } />
+    <Route path="/dashboard/jmo/mlr/:reportId/view" element={
+      <PrivateRoute>
+        <RoleRoute roles={['JMO', 'MEDICAL_OFFICER', 'GOVERNMENT_ANALYST']}>
+          <ViewMLRReport />
         </RoleRoute>
       </PrivateRoute>
     } />

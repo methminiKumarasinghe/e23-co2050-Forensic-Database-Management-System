@@ -1,6 +1,51 @@
 const jmoService = require('../services/jmo.service');
 const { sendSuccess, sendCreated, sendBadRequest } = require('../utils/response');
 
+const getMlrCases = async (req, res, next) => {
+    try {
+        const cases = await jmoService.getMlrCases(req.user.user_id);
+        return sendSuccess(res, { message: 'MLR cases retrieved', data: cases });
+    } catch (err) {
+        next(err);
+    }
+};
+
+const getMlrCaseData = async (req, res, next) => {
+    try {
+        const data = await jmoService.getMlrCaseData(req.user.user_id, req.params.mlefId);
+        return sendSuccess(res, { message: 'MLR case details loaded', data });
+    } catch (err) {
+        next(err);
+    }
+};
+
+const saveMlrReport = async (req, res, next) => {
+    try {
+        const report = await jmoService.saveMlrReport(req.user.user_id, req.params.mlefId, req.body);
+        return sendCreated(res, { message: 'MLR report saved', data: report });
+    } catch (err) {
+        next(err);
+    }
+};
+
+const signMlrReport = async (req, res, next) => {
+    try {
+        const signedReport = await jmoService.signMlrReport(req.user.user_id, req.params.reportId, req.body);
+        return sendSuccess(res, { message: 'MLR report digitally signed successfully', data: signedReport });
+    } catch (err) {
+        next(err);
+    }
+};
+
+const getFinalMlrReport = async (req, res, next) => {
+    try {
+        const report = await jmoService.getFinalMlrReport(req.user.user_id, req.params.reportId);
+        return sendSuccess(res, { message: 'Final MLR report retrieved', data: report });
+    } catch (err) {
+        next(err);
+    }
+};
+
 const getAssignedMlefs = async (req, res, next) => {
     try {
         const mlefs = await jmoService.getAssignedMlefs(req.user.user_id);
@@ -147,6 +192,11 @@ const markNotificationRead = async (req, res, next) => {
 };
 
 module.exports = {
+    getMlrCases,
+    getMlrCaseData,
+    saveMlrReport,
+    signMlrReport,
+    getFinalMlrReport,
     getAssignedMlefs,
     getMlefPoliceDetails,
     submitMlefExamination,
