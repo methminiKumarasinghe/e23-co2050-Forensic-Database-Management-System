@@ -281,11 +281,7 @@ ${finalJmoOpinion || 'N/A'}
 /**
  * Apply Digital Signature to MLR
  */
-const signMlrReport = async (userId, reportId, signatureData) => {
-    const { signaturePin } = signatureData;
-    if (!signaturePin) {
-        throw new Error('Digital Signature Verification PIN is required.');
-    }
+const signMlrReport = async (userId, reportId, signatureData = {}) => {
 
     const result = await query(`
         UPDATE medico_legal_report

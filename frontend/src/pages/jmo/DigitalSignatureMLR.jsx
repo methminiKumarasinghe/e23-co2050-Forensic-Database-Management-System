@@ -8,7 +8,6 @@ const DigitalSignatureMLR = () => {
   const navigate = useNavigate();
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [pin, setPin] = useState('');
   const [signing, setSigning] = useState(false);
 
   useEffect(() => {
@@ -29,19 +28,14 @@ const DigitalSignatureMLR = () => {
 
   const handleSign = async (e) => {
     e.preventDefault();
-    if (!pin.trim()) {
-      alert('Please enter your JMO Security PIN to sign this report.');
-      return;
-    }
-
     setSigning(true);
     try {
-      await signMlrReport(reportId, { signaturePin: pin });
+      await signMlrReport(reportId, {});
       alert('Report digitally signed and finalized successfully!');
       navigate(`/dashboard/jmo/mlr/${reportId}/view`);
     } catch (err) {
       console.error('Signature failed', err);
-      alert(err.response?.data?.message || 'Digital signature authorization failed.');
+      alert(err.response?.data?.message || 'Digital signature submission failed.');
     } finally {
       setSigning(false);
     }
@@ -70,7 +64,7 @@ const DigitalSignatureMLR = () => {
             🔏 Digital Signature & Authorization
           </h1>
           <p className="text-xs text-gray-400 mt-2">
-            You are authorizing the release of official Medico-Legal Report 
+            You are authorizing and signing the official Medico-Legal Report 
             <span className="text-emerald-400 font-mono font-bold ml-1">{report?.report_number}</span>.
           </p>
         </div>
@@ -96,30 +90,16 @@ const DigitalSignatureMLR = () => {
           </div>
         </div>
 
-        {/* Digital Signature Pin Form */}
+        {/* One-Click Digital Signature Confirmation Form */}
         <form onSubmit={handleSign} className="glass rounded-xl p-8 border border-emerald-500/50 space-y-6">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-2xl">
               ✍️
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white">Enter JMO Security PIN</h2>
-              <p className="text-xs text-gray-400">Confirm your digital identity to apply an cryptographic signature mark.</p>
+              <h2 className="text-lg font-bold text-white">Sign & Authorize Report</h2>
+              <p className="text-xs text-gray-400">Click below to apply your official JMO digital signature seal and release the report.</p>
             </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-gray-300 mb-2">
-              JMO Authorization PIN / Passcode:
-            </label>
-            <input 
-              type="password"
-              value={pin}
-              onChange={e => setPin(e.target.value)}
-              placeholder="Enter PIN (e.g. 1234 or JMO Key)"
-              className="input-field text-center text-lg tracking-widest bg-gray-900 border-gray-700 text-white w-full py-3"
-              required
-            />
           </div>
 
           <div className="pt-2 flex justify-between items-center gap-4">
