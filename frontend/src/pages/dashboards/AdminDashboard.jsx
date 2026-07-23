@@ -544,20 +544,23 @@ const AdminDashboard = () => {
                   <div className="glass rounded-2xl p-6">
                     <h3 className="text-white font-semibold text-sm mb-4">👥 User Roles distribution</h3>
                     <div className="space-y-4">
-                      {stats.charts.roles.map(r => {
-                        const max = Math.max(...stats.charts.roles.map(x => x.count), 1);
-                        return (
-                          <div key={r.role_name} className="space-y-1">
-                            <div className="flex justify-between text-xs font-medium text-gray-400">
-                              <span>{ROLE_LABELS[r.role_name] || r.role_name}</span>
-                              <span className="text-white">{r.count}</span>
+                      {stats.charts.roles
+                        .filter(r => r.role_name !== 'FORENSIC_STAFF')
+                        .map(r => {
+                          const filteredRoles = stats.charts.roles.filter(r => r.role_name !== 'FORENSIC_STAFF');
+                          const max = Math.max(...filteredRoles.map(x => x.count), 1);
+                          return (
+                            <div key={r.role_name} className="space-y-1">
+                              <div className="flex justify-between text-xs font-medium text-gray-400">
+                                <span>{ROLE_LABELS[r.role_name] || r.role_name}</span>
+                                <span className="text-white">{r.count}</span>
+                              </div>
+                              <div className="w-full bg-gray-800/80 h-2.5 rounded-full overflow-hidden">
+                                <div className="bg-primary-500 h-full rounded-full" style={{ width: `${(r.count / max) * 100}%` }} />
+                              </div>
                             </div>
-                            <div className="w-full bg-gray-800/80 h-2.5 rounded-full overflow-hidden">
-                              <div className="bg-primary-500 h-full rounded-full" style={{ width: `${(r.count / max) * 100}%` }} />
-                            </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
                     </div>
                   </div>
 
