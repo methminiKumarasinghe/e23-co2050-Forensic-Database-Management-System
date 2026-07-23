@@ -23,7 +23,7 @@ const GovernmentAnalystDashboard = () => {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">Welcome, {user?.username}</h1>
-              <p className="text-rose-400 text-sm font-medium">Hospital Staff Dashboard</p>
+              <p className="text-rose-400 text-sm font-medium">Forensic Staff Dashboard</p>
             </div>
           </div>
         </div>
@@ -57,9 +57,9 @@ const GovernmentAnalystDashboard = () => {
               </svg>
             </div>
             <div>
-              <p className="text-white font-medium text-sm">Role: Hospital Staff</p>
+              <p className="text-white font-medium text-sm">Role: Forensic Staff</p>
               <p className="text-gray-400 text-xs mt-1">
-                You have access to document management, court document tracking, and hospital administrative
+                You have access to document management, court document tracking, and forensic administrative
                 functions within the forensic medical information system.
               </p>
             </div>

@@ -23,7 +23,7 @@ const ROLE_DASHBOARDS = {
   JMO:               '/dashboard/jmo',
   MEDICAL_OFFICER:   '/dashboard/medical-officer',
   LAB_TECHNICIAN:    '/dashboard/lab-technician',
-  GOVERNMENT_ANALYST:'/dashboard/hospital-staff',
+  GOVERNMENT_ANALYST:'/dashboard/forensic-staff',
 };
 
 /**
@@ -94,8 +94,8 @@ const App = () => (
       </PrivateRoute>
     } />
 
-    {/* Hospital Staff */}
-    <Route path="/dashboard/hospital-staff" element={
+    {/* Forensic Staff */}
+    <Route path="/dashboard/forensic-staff" element={
       <PrivateRoute>
         <RoleRoute roles={['GOVERNMENT_ANALYST']}>
           <GovernmentAnalystDashboard />

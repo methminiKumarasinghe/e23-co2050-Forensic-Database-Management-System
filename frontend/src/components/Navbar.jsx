@@ -7,7 +7,7 @@ const ROLE_LABELS = {
   JMO:               'Judicial Medical Officer',
   MEDICAL_OFFICER:   'Medical Officer',
   LAB_TECHNICIAN:    'Lab Technician',
-  GOVERNMENT_ANALYST:'Hospital Staff',
+  GOVERNMENT_ANALYST:'Forensic Staff',
 };
 
 const ROLE_COLORS = {

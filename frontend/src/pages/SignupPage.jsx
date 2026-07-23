@@ -7,7 +7,7 @@ const ROLES = [
   { label: 'Judicial Medical Officer',  value: 'JMO' },
   { label: 'Medical Officer',           value: 'MEDICAL_OFFICER' },
   { label: 'Laboratory Technician',     value: 'LAB_TECHNICIAN' },
-  { label: 'Hospital Staff',            value: 'GOVERNMENT_ANALYST' },
+  { label: 'Forensic Staff',            value: 'GOVERNMENT_ANALYST' },
 ];
 
 const HOSPITAL_ROLES = ['JMO', 'MEDICAL_OFFICER', 'LAB_TECHNICIAN', 'GOVERNMENT_ANALYST'];
@@ -341,7 +341,7 @@ const SignupPage = () => {
                   </div>
                 )}
 
-                {/* Hospital Staff / Government Analyst specific */}
+                {/* Forensic Staff / Government Analyst specific */}
                 {form.role === 'GOVERNMENT_ANALYST' && (
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
