@@ -74,6 +74,7 @@ const getDashboardStats = async () => {
     `SELECT r.role_name, COUNT(ur.user_role_id)::int AS count
      FROM roles r
      LEFT JOIN user_roles ur ON r.role_id = ur.role_id
+     WHERE r.role_name != 'FORENSIC_STAFF'
      GROUP BY r.role_name`
   );
 
