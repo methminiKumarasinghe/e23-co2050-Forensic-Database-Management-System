@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const path = require('path');
 const helmet = require('helmet');
 const cors = require('cors');
 const { httpLogger } = require('./utils/logger');
@@ -8,6 +9,8 @@ const { errorHandler, notFoundHandler } = require('./middleware/error.middleware
 // Route modules
 const authRoutes = require('./routes/auth.routes');
 const adminRoutes = require('./routes/admin.routes');
+const labRoutes = require('./routes/lab.routes');
+const jmoRoutes = require('./routes/jmo.routes');
 
 const app = express();
 
@@ -44,6 +47,11 @@ app.get('/health', (req, res) => {
 // ── API routes ────────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/lab', labRoutes);
+app.use('/api/jmo', jmoRoutes);
+
+// ── Static files ──────────────────────────────────────────────────────────────
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // ── 404 handler ───────────────────────────────────────────────────────────────
 app.use(notFoundHandler);
