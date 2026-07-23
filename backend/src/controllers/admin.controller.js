@@ -21,6 +21,8 @@ const {
   createHospital,
   createPoliceStation,
   createUserByAdmin,
+  createDepartment,
+  getDepartmentsList,
 } = require('../services/admin.service');
 const { sendSuccess, sendCreated, sendBadRequest } = require('../utils/response');
 
@@ -339,6 +341,34 @@ const addUser = async (req, res, next) => {
   }
 };
 
+/**
+ * GET /api/admin/departments
+ */
+const getDepartments = async (req, res, next) => {
+  try {
+    const data = await getDepartmentsList();
+    return sendSuccess(res, { data });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * POST /api/admin/departments
+ */
+const addDepartment = async (req, res, next) => {
+  try {
+    const { hospital_id, department_name } = req.body;
+    if (!hospital_id || !department_name || !department_name.trim()) {
+      return sendBadRequest(res, 'Hospital ID and department name are required');
+    }
+    const dept = await createDepartment(req.body, req.user.user_id);
+    return sendCreated(res, { message: 'Department created successfully', data: dept });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   getStats,
   listPendingUsers,
@@ -359,4 +389,6 @@ module.exports = {
   addHospital,
   addStation,
   addUser,
+  getDepartments,
+  addDepartment,
 };

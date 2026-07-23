@@ -343,6 +343,35 @@ const createUserByAdmin = async (userData, adminUserId) => {
   return { ...newUser, status: 'ACTIVE' };
 };
 
+/**
+ * Create a new department in the DB
+ */
+const createDepartment = async (data, adminUserId) => {
+  const { hospital_id, department_name, description } = data;
+  const result = await query(
+    `INSERT INTO department (hospital_id, department_name, description)
+     VALUES ($1, $2, $3)
+     RETURNING *`,
+    [hospital_id, department_name, description || null]
+  );
+  const dept = result.rows[0];
+  await logAudit(adminUserId, 'CREATE_DEPARTMENT', 'department', dept.department_id, `Created department: ${dept.department_name}`);
+  return dept;
+};
+
+/**
+ * Fetch all departments list
+ */
+const getDepartmentsList = async () => {
+  const result = await query(
+    `SELECT d.department_id, d.department_name, d.description, d.hospital_id, h.hospital_name
+     FROM department d
+     JOIN hospital h ON d.hospital_id = h.hospital_id
+     ORDER BY d.department_name ASC`
+  );
+  return result.rows;
+};
+
 module.exports = {
   logAudit,
   createNotification,
@@ -359,4 +388,6 @@ module.exports = {
   createHospital,
   createPoliceStation,
   createUserByAdmin,
+  createDepartment,
+  getDepartmentsList,
 };

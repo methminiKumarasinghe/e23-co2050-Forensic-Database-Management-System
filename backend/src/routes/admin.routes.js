@@ -19,6 +19,8 @@ const {
   addHospital,
   addStation,
   addUser,
+  getDepartments,
+  addDepartment,
 } = require('../controllers/admin.controller');
 const { authenticate } = require('../middleware/auth.middleware');
 const { requireRole } = require('../middleware/rbac.middleware');
@@ -54,5 +56,7 @@ router.get('/hospitals', getHospitals);
 router.post('/hospitals', addHospital);
 router.get('/stations', getStations);
 router.post('/stations', addStation);
+router.get('/departments', getDepartments);
+router.post('/departments', addDepartment);
 
 module.exports = router;

@@ -46,6 +46,7 @@ const SignupPage = () => {
   const [hospitals, setHospitals]       = useState([]);
   const [stations, setStations]         = useState([]);
   const [laboratories, setLaboratories] = useState([]);
+  const [departments, setDepartments]   = useState([]);
   const [errors, setErrors]             = useState({});
   const [submitError, setSubmitError]   = useState('');
 
@@ -69,6 +70,7 @@ const SignupPage = () => {
     api.get('/auth/hospitals').then(r => setHospitals(r.data.data)).catch(() => {});
     api.get('/auth/stations').then(r => setStations(r.data.data)).catch(() => {});
     api.get('/auth/laboratories').then(r => setLaboratories(r.data.data)).catch(() => {});
+    api.get('/auth/departments').then(r => setDepartments(r.data.data)).catch(() => {});
   }, []);
 
   const set = (field) => (e) => {
@@ -367,12 +369,23 @@ const SignupPage = () => {
                       </FormField>
                       <FormField label="Designation" id="s-desg" error={errors.designation}>
                         <input id="s-desg" className="input-field" type="text"
-                          value={form.designation} onChange={set('designation')} placeholder="Job title" />
+                          value={form.designation} onChange={set('designation')} placeholder="Job title (e.g. Senior Forensic Analyst)" />
                       </FormField>
                     </div>
-                    <FormField label="Organization / Department" id="s-org" error={errors.organization_name}>
-                      <input id="s-org" className="input-field" type="text"
-                        value={form.organization_name} onChange={set('organization_name')} placeholder="Department or organization" />
+                    <FormField label="Assigned Department" id="s-org" required error={errors.organization_name}>
+                      {departments.length > 0 ? (
+                        <select id="s-org" className="select-field" value={form.organization_name} onChange={set('organization_name')}>
+                          <option value="">Select department...</option>
+                          {departments.map(d => (
+                            <option key={d.department_id} value={d.department_name}>
+                              {d.department_name} ({d.hospital_name})
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input id="s-org" className="input-field" type="text"
+                          value={form.organization_name} onChange={set('organization_name')} placeholder="e.g. Department of Forensic Medicine" />
+                      )}
                     </FormField>
                   </div>
                 )}
