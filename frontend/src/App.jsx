@@ -24,6 +24,8 @@ import PerformTest              from './pages/lab/PerformTest';
 import LabResultDetails         from './pages/lab/LabResultDetails';
 
 // JMO Lab Pages
+import CreateLabRequest         from './pages/jmo/CreateLabRequest';
+import JMOLabRequestsList       from './pages/jmo/JMOLabRequestsList';
 import JMOLabResultsList        from './pages/jmo/JMOLabResultsList';
 import JMOLabResultDetails      from './pages/jmo/JMOLabResultDetails';
 
@@ -82,6 +84,20 @@ const App = () => (
       <PrivateRoute>
         <RoleRoute roles={['JMO']}>
           <JMODashboard />
+        </RoleRoute>
+      </PrivateRoute>
+    } />
+    <Route path="/dashboard/jmo/create-lab-request" element={
+      <PrivateRoute>
+        <RoleRoute roles={['JMO']}>
+          <CreateLabRequest />
+        </RoleRoute>
+      </PrivateRoute>
+    } />
+    <Route path="/dashboard/jmo/lab-requests" element={
+      <PrivateRoute>
+        <RoleRoute roles={['JMO']}>
+          <JMOLabRequestsList />
         </RoleRoute>
       </PrivateRoute>
     } />

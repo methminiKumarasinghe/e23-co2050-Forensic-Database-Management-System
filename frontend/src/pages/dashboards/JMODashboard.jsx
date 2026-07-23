@@ -80,20 +80,47 @@ const JMODashboard = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <InfoCard icon="📋" title="MLEF Requests"
-            subtitle="Incoming examination requests"
-            color="border-cyan-500" />
-          <InfoCard icon="🔬" title="Examinations"
-            subtitle="Conduct medico-legal examinations"
-            color="border-blue-500" />
-          <InfoCard icon="🧪" title="Laboratory Results"
-            subtitle="View completed lab results"
+        {/* Action Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          <InfoCard 
+            icon="🧪" 
+            title="Create Laboratory Request"
+            subtitle="Submit a new lab request to a hospital laboratory"
+            link="/dashboard/jmo/create-lab-request"
+            color="border-cyan-500" 
+          />
+          <InfoCard 
+            icon="📋" 
+            title="My Laboratory Requests"
+            subtitle="Track status of submitted lab requests"
+            link="/dashboard/jmo/lab-requests"
+            color="border-amber-500" 
+          />
+          <InfoCard 
+            icon="📊" 
+            title="Completed Lab Results"
+            subtitle="View & download findings from laboratories"
             link="/dashboard/jmo/lab-results"
-            color="border-amber-500" />
-          <InfoCard icon="📑" title="Medico-Legal Reports"
+            color="border-green-500" 
+          />
+          <InfoCard 
+            icon="🔬" 
+            title="Examinations"
+            subtitle="Conduct medico-legal examinations"
+            color="border-blue-500" 
+          />
+          <InfoCard 
+            icon="📑" 
+            title="Medico-Legal Reports"
             subtitle="Prepare official MLR documents"
-            color="border-emerald-500" />
+            color="border-emerald-500" 
+          />
+          <InfoCard 
+            icon="⚰️" 
+            title="Autopsy Module"
+            subtitle="Conduct autopsies and COD reports"
+            color="border-purple-500" 
+          />
         </div>
 
         <div className="glass rounded-xl p-6 border border-cyan-800/30">
@@ -107,7 +134,7 @@ const JMODashboard = () => {
               <p className="text-white font-medium text-sm">Role: Judicial Medical Officer</p>
               <p className="text-gray-400 text-xs mt-1">
                 You can manage medico-legal examinations, injury documentation, specimen collection, autopsy reports,
-                laboratory result review, and official medico-legal report generation.
+                laboratory request creation & result review, and official medico-legal report generation.
               </p>
             </div>
           </div>

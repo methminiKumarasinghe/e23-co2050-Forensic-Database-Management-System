@@ -1,5 +1,59 @@
 const jmoService = require('../services/jmo.service');
-const { sendSuccess } = require('../utils/response');
+const { sendSuccess, sendCreated, sendBadRequest } = require('../utils/response');
+
+const getLaboratories = async (req, res, next) => {
+    try {
+        const laboratories = await jmoService.getLaboratories();
+        return sendSuccess(res, { message: 'Laboratories retrieved', data: laboratories });
+    } catch (err) {
+        next(err);
+    }
+};
+
+const getJmoSpecimens = async (req, res, next) => {
+    try {
+        const specimens = await jmoService.getJmoSpecimens(req.user.user_id);
+        return sendSuccess(res, { message: 'Specimens retrieved', data: specimens });
+    } catch (err) {
+        next(err);
+    }
+};
+
+const createLabRequest = async (req, res, next) => {
+    try {
+        const { specimenId, laboratoryId, testName, priority, clinicalNotes } = req.body;
+        if (!specimenId || !laboratoryId) {
+            return sendBadRequest(res, 'Specimen and Laboratory are required');
+        }
+
+        const request = await jmoService.createLabRequest(req.user.user_id, {
+            specimenId, laboratoryId, testName, priority, clinicalNotes
+        });
+
+        return sendCreated(res, { message: 'Laboratory request submitted successfully', data: request });
+    } catch (err) {
+        next(err);
+    }
+};
+
+const getJmoRequests = async (req, res, next) => {
+    try {
+        const { search, status, priority } = req.query;
+        const requests = await jmoService.getJmoRequests(req.user.user_id, search, { status, priority });
+        return sendSuccess(res, { message: 'Laboratory requests retrieved', data: requests });
+    } catch (err) {
+        next(err);
+    }
+};
+
+const cancelLabRequest = async (req, res, next) => {
+    try {
+        const result = await jmoService.cancelLabRequest(req.user.user_id, req.params.id);
+        return sendSuccess(res, { message: 'Request cancelled successfully', data: result });
+    } catch (err) {
+        next(err);
+    }
+};
 
 const getLabResults = async (req, res, next) => {
     try {
@@ -39,6 +93,11 @@ const markNotificationRead = async (req, res, next) => {
 };
 
 module.exports = {
+    getLaboratories,
+    getJmoSpecimens,
+    createLabRequest,
+    getJmoRequests,
+    cancelLabRequest,
     getLabResults,
     getResultById,
     getNotifications,
