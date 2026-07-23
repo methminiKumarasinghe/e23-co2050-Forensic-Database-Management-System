@@ -1,5 +1,8 @@
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import Navbar from '../../components/Navbar';
+import { MlefFlashCard, MlefDetailsModal } from '../../components/staff/ForensicStaffMlefSection';
+import { getHospitalMlefs } from '../../api/medicalApi';
 
 const InfoCard = ({ icon, title, subtitle, color }) => (
   <div className={`glass rounded-xl p-5 border-l-4 ${color} hover:scale-[1.01] transition-transform`}>
@@ -11,13 +14,36 @@ const InfoCard = ({ icon, title, subtitle, color }) => (
 
 const GovernmentAnalystDashboard = () => {
   const { user } = useAuth();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+
+  // Load initial pending MLEF count for flash card badge
+  useEffect(() => {
+    const loadPendingCount = async () => {
+      try {
+        const res = await getHospitalMlefs();
+        const list = res.data || [];
+        const count = list.filter((m) => m.status === 'PENDING').length;
+        setPendingCount(count);
+      } catch (err) {
+        console.error('Failed to load pending MLEF count:', err);
+      }
+    };
+    loadPendingCount();
+  }, []);
+
+  const handleDataChange = (mlefList) => {
+    const count = mlefList.filter((m) => m.status === 'PENDING').length;
+    setPendingCount(count);
+  };
 
   return (
     <div className="min-h-screen bg-forensic-dark">
       <Navbar />
-      <main className="pt-16 max-w-screen-xl mx-auto px-4 sm:px-6 py-8">
-        <div className="mb-8 page-enter">
-          <div className="flex items-center gap-4 mb-4">
+      <main className="pt-16 max-w-screen-xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+        {/* Welcome Header */}
+        <div className="page-enter">
+          <div className="flex items-center gap-4 mb-2">
             <div className="w-14 h-14 rounded-2xl bg-rose-600/20 border border-rose-700/30 flex items-center justify-center text-2xl">
               🏥
             </div>
@@ -28,27 +54,54 @@ const GovernmentAnalystDashboard = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-          <InfoCard icon="📄" title="Document Management"
+        {/* Dashboard Grid of Flash Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* New Interactive Flash Card for MLEF Requisitions */}
+          <MlefFlashCard
+            pendingCount={pendingCount}
+            onClick={() => setIsModalOpen(true)}
+          />
+
+          {/* Previous Dashboard Cards */}
+          <InfoCard
+            icon="📄"
+            title="Document Management"
             subtitle="Manage official hospital and legal documents"
-            color="border-rose-500" />
-          <InfoCard icon="🏛️" title="Court Documents"
+            color="border-rose-500"
+          />
+          <InfoCard
+            icon="🏛️"
+            title="Court Documents"
             subtitle="Track documents submitted to court"
-            color="border-purple-500" />
-          <InfoCard icon="📬" title="Document Recipients"
+            color="border-purple-500"
+          />
+          <InfoCard
+            icon="📬"
+            title="Document Recipients"
             subtitle="Manage document delivery and acknowledgements"
-            color="border-blue-500" />
-          <InfoCard icon="📁" title="File Archive"
+            color="border-blue-500"
+          />
+          <InfoCard
+            icon="📁"
+            title="File Archive"
             subtitle="Access uploaded files and attachments"
-            color="border-amber-500" />
-          <InfoCard icon="🔍" title="Case References"
+            color="border-amber-500"
+          />
+          <InfoCard
+            icon="🔍"
+            title="Case References"
             subtitle="View cases linked to hospital documents"
-            color="border-emerald-500" />
-          <InfoCard icon="🔔" title="Notifications"
+            color="border-emerald-500"
+          />
+          <InfoCard
+            icon="🔔"
+            title="Notifications"
             subtitle="System alerts and document requests"
-            color="border-cyan-500" />
+            color="border-cyan-500"
+          />
         </div>
 
+        {/* Role Information Banner */}
         <div className="glass rounded-xl p-6 border border-rose-800/30">
           <div className="flex gap-3 items-start">
             <div className="text-rose-400 mt-0.5">
@@ -59,12 +112,18 @@ const GovernmentAnalystDashboard = () => {
             <div>
               <p className="text-white font-medium text-sm">Role: Forensic Staff</p>
               <p className="text-gray-400 text-xs mt-1">
-                You have access to document management, court document tracking, and forensic administrative
-                functions within the forensic medical information system.
+                Touch the <strong>Pending MLEF Requisitions</strong> flash card above to view full details and assign available Judicial Medical Officers (JMOs).
               </p>
             </div>
           </div>
         </div>
+
+        {/* Full Details Modal */}
+        <MlefDetailsModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onDataChange={handleDataChange}
+        />
       </main>
     </div>
   );
