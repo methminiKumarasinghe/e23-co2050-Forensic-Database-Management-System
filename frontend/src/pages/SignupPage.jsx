@@ -10,8 +10,10 @@ const ROLES = [
   { label: 'Forensic Staff',            value: 'GOVERNMENT_ANALYST' },
 ];
 
-const HOSPITAL_ROLES = ['JMO', 'MEDICAL_OFFICER', 'LAB_TECHNICIAN', 'GOVERNMENT_ANALYST'];
+const HOSPITAL_ROLES = ['JMO', 'MEDICAL_OFFICER'];
+const LAB_ROLES      = ['LAB_TECHNICIAN'];
 const STATION_ROLES  = ['POLICE'];
+const DEPT_ROLES     = ['GOVERNMENT_ANALYST'];
 
 const GENDERS = ['Male', 'Female', 'Other'];
 
@@ -43,10 +45,12 @@ const SignupPage = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [hospitals, setHospitals] = useState([]);
-  const [stations, setStations]   = useState([]);
-  const [errors, setErrors] = useState({});
-  const [submitError, setSubmitError] = useState('');
+  const [hospitals, setHospitals]       = useState([]);
+  const [stations, setStations]         = useState([]);
+  const [laboratories, setLaboratories] = useState([]);
+  const [departments, setDepartments]   = useState([]);
+  const [errors, setErrors]             = useState({});
+  const [submitError, setSubmitError]   = useState('');
 
   const [form, setForm] = useState({
     // Account
@@ -67,6 +71,8 @@ const SignupPage = () => {
   useEffect(() => {
     api.get('/auth/hospitals').then(r => setHospitals(r.data.data)).catch(() => {});
     api.get('/auth/stations').then(r => setStations(r.data.data)).catch(() => {});
+    api.get('/auth/laboratories').then(r => setLaboratories(r.data.data)).catch(() => {});
+    api.get('/auth/departments').then(r => setDepartments(r.data.data)).catch(() => {});
   }, []);
 
   const set = (field) => (e) => {
@@ -102,6 +108,10 @@ const SignupPage = () => {
       errs.station_id = 'Please select a police station';
     if (HOSPITAL_ROLES.includes(form.role) && !form.hospital_id)
       errs.hospital_id = 'Please select a hospital';
+    if (LAB_ROLES.includes(form.role) && !form.hospital_id)
+      errs.hospital_id = 'Please select a laboratory';
+    if (DEPT_ROLES.includes(form.role) && !form.organization_name)
+      errs.organization_name = 'Please select a department';
     return errs;
   };
 
@@ -264,8 +274,8 @@ const SignupPage = () => {
             {/* ── STEP 3: Professional Details ───────────────────── */}
             {step === 3 && (
               <div className="space-y-4">
-                {/* Hospital / Station */}
-                {needsHospital && (
+                {/* Hospital (for JMO and Medical Officer) */}
+                {HOSPITAL_ROLES.includes(form.role) && (
                   <FormField label="Hospital" id="s-hospital" required error={errors.hospital_id}>
                     <select id="s-hospital" className="select-field" value={form.hospital_id} onChange={set('hospital_id')}>
                       <option value="">Select hospital...</option>
@@ -274,6 +284,27 @@ const SignupPage = () => {
                           {h.hospital_name} {h.district ? `— ${h.district}` : ''}
                         </option>
                       ))}
+                    </select>
+                  </FormField>
+                )}
+
+                {/* Laboratory (for Lab Technician) */}
+                {LAB_ROLES.includes(form.role) && (
+                  <FormField label="Assigned Laboratory" id="s-lab" required error={errors.hospital_id}>
+                    <select id="s-lab" className="select-field" value={form.hospital_id} onChange={set('hospital_id')}>
+                      <option value="">Select laboratory / hospital...</option>
+                      {laboratories.length > 0
+                        ? laboratories.map(l => (
+                            <option key={l.laboratory_id} value={l.hospital_id}>
+                              {l.laboratory_name} ({l.hospital_name})
+                            </option>
+                          ))
+                        : hospitals.map(h => (
+                            <option key={h.hospital_id} value={h.hospital_id}>
+                              {h.hospital_name} {h.district ? `— ${h.district}` : ''}
+                            </option>
+                          ))
+                      }
                     </select>
                   </FormField>
                 )}
@@ -351,12 +382,23 @@ const SignupPage = () => {
                       </FormField>
                       <FormField label="Designation" id="s-desg" error={errors.designation}>
                         <input id="s-desg" className="input-field" type="text"
-                          value={form.designation} onChange={set('designation')} placeholder="Job title" />
+                          value={form.designation} onChange={set('designation')} placeholder="Job title (e.g. Senior Forensic Analyst)" />
                       </FormField>
                     </div>
-                    <FormField label="Organization / Department" id="s-org" error={errors.organization_name}>
-                      <input id="s-org" className="input-field" type="text"
-                        value={form.organization_name} onChange={set('organization_name')} placeholder="Department or organization" />
+                    <FormField label="Assigned Department" id="s-org" required error={errors.organization_name}>
+                      {departments.length > 0 ? (
+                        <select id="s-org" className="select-field" value={form.organization_name} onChange={set('organization_name')}>
+                          <option value="">Select department...</option>
+                          {departments.map(d => (
+                            <option key={d.department_id} value={d.department_name}>
+                              {d.department_name} ({d.hospital_name})
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input id="s-org" className="input-field" type="text"
+                          value={form.organization_name} onChange={set('organization_name')} placeholder="e.g. Department of Forensic Medicine" />
+                      )}
                     </FormField>
                   </div>
                 )}

@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { id: 'overview',      label: 'Admin Home',         icon: '🏠' },
   { id: 'users',         label: 'User Directory',      icon: '👥' },
   { id: 'hospitals',     label: 'Hospitals',          icon: '🏥' },
+  { id: 'departments',   label: 'Departments',        icon: '🏢' },
   { id: 'stations',      label: 'Police Stations',     icon: '🚔' },
   { id: 'cases',         label: 'Open Cases',          icon: '📂' },
   { id: 'reports',       label: 'Reports Ledger',      icon: '📄' },
@@ -82,6 +83,10 @@ const AdminDashboard = () => {
   const [hospitalsLoading, setHospitalsLoading] = useState(false);
   const [hospitalsSearch, setHospitalsSearch] = useState('');
 
+  const [departments, setDepartments] = useState([]);
+  const [departmentsLoading, setDepartmentsLoading] = useState(false);
+  const [departmentsSearch, setDepartmentsSearch] = useState('');
+
   const [stations, setStations] = useState([]);
   const [stationsLoading, setStationsLoading] = useState(false);
   const [stationsSearch, setStationsSearch] = useState('');
@@ -122,6 +127,9 @@ const AdminDashboard = () => {
   // Creation Modals
   const [isAddHospitalModalOpen, setIsAddHospitalModalOpen] = useState(false);
   const [hospitalForm, setHospitalForm] = useState({ hospital_name: '', hospital_type: 'Teaching Hospital', district: '', telephone: '', email: '', address: '', error: '', loading: false });
+
+  const [isAddDepartmentModalOpen, setIsAddDepartmentModalOpen] = useState(false);
+  const [departmentForm, setDepartmentForm] = useState({ hospital_id: '', department_name: '', description: '', error: '', loading: false });
 
   const [isAddStationModalOpen, setIsAddStationModalOpen] = useState(false);
   const [stationForm, setStationForm] = useState({ station_name: '', district: '', telephone: '', email: '', address: '', error: '', loading: false });
@@ -180,6 +188,18 @@ const AdminDashboard = () => {
       showToast('Failed to fetch hospital records', 'error');
     } finally {
       setHospitalsLoading(false);
+    }
+  }, []);
+
+  const fetchDepartments = useCallback(async () => {
+    setDepartmentsLoading(true);
+    try {
+      const res = await api.get('/admin/departments');
+      setDepartments(res.data.data);
+    } catch {
+      showToast('Failed to fetch department records', 'error');
+    } finally {
+      setDepartmentsLoading(false);
     }
   }, []);
 
@@ -266,6 +286,7 @@ const AdminDashboard = () => {
     fetchStats();
     if (activeTab === 'users') fetchUsers();
     if (activeTab === 'hospitals') fetchHospitals();
+    if (activeTab === 'departments') fetchDepartments();
     if (activeTab === 'stations') fetchStations();
     if (activeTab === 'cases') fetchCases();
     if (activeTab === 'reports') fetchReports();
@@ -277,6 +298,7 @@ const AdminDashboard = () => {
     fetchStats,
     fetchUsers,
     fetchHospitals,
+    fetchDepartments,
     fetchStations,
     fetchCases,
     fetchReports,
@@ -290,10 +312,29 @@ const AdminDashboard = () => {
     if (isAddUserModalOpen) {
       fetchHospitals();
       fetchStations();
+      fetchDepartments();
     }
-  }, [isAddUserModalOpen, fetchHospitals, fetchStations]);
+  }, [isAddUserModalOpen, fetchHospitals, fetchStations, fetchDepartments]);
 
   // ── CREATION HANDLERS (UPDATES POSTGRES DIRECTLY) ─────────────────────────
+  const handleAddDepartment = async (e) => {
+    e.preventDefault();
+    if (!departmentForm.hospital_id || !departmentForm.department_name.trim()) {
+      setDepartmentForm(f => ({ ...f, error: 'Hospital and Department Name are required' }));
+      return;
+    }
+    setDepartmentForm(f => ({ ...f, loading: true, error: '' }));
+    try {
+      await api.post('/admin/departments', departmentForm);
+      showToast('Department created successfully in database');
+      setIsAddDepartmentModalOpen(false);
+      setDepartmentForm({ hospital_id: '', department_name: '', description: '', error: '', loading: false });
+      fetchDepartments();
+    } catch (err) {
+      setDepartmentForm(f => ({ ...f, error: err.response?.data?.message || 'Failed to create department', loading: false }));
+    }
+  };
+
   const handleAddHospital = async (e) => {
     e.preventDefault();
     if (!hospitalForm.hospital_name.trim()) {
@@ -701,6 +742,58 @@ const AdminDashboard = () => {
             </div>
           )}
 
+          {/* ── SUB-PAGE: DEPARTMENTS ────────────────────────────────────────── */}
+          {activeTab === 'departments' && (
+            <div className="space-y-4 page-enter">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl font-bold text-white">Registered Departments</h1>
+                  <p className="text-gray-400 text-sm mt-0.5">Directory list of departments linked to medical & forensic institutions</p>
+                </div>
+                <button onClick={() => setIsAddDepartmentModalOpen(true)} className="btn-primary w-fit px-5 py-2">
+                  + Add Department
+                </button>
+              </div>
+
+              <div className="bg-gray-900/30 p-4 rounded-xl border border-gray-800/50 flex gap-4">
+                <input
+                  type="text"
+                  value={departmentsSearch}
+                  onChange={e => setDepartmentsSearch(e.target.value)}
+                  placeholder="Search department name, hospital..."
+                  className="input-field"
+                />
+              </div>
+
+              <div className="glass rounded-2xl overflow-hidden border border-gray-800/40">
+                {departmentsLoading ? (
+                  <div className="flex justify-center py-20"><div className="w-8 h-8 border-3 border-primary-500 border-t-transparent rounded-full animate-spin" /></div>
+                ) : departments.length === 0 ? (
+                  <p className="text-center py-20 text-gray-500">No department records stored in database</p>
+                ) : (
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Department Name</th>
+                        <th>Parent Hospital</th>
+                        <th>Description</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {departments.filter(d => d.department_name.toLowerCase().includes(departmentsSearch.toLowerCase()) || d.hospital_name?.toLowerCase().includes(departmentsSearch.toLowerCase())).map(d => (
+                        <tr key={d.department_id}>
+                          <td className="font-semibold text-white">{d.department_name}</td>
+                          <td><span className="px-2 py-0.5 text-xs rounded bg-purple-950/60 text-purple-300 border border-purple-800/40">{d.hospital_name || 'Hospital'}</span></td>
+                          <td className="text-xs text-gray-400">{d.description || '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* ── SUB-PAGE: POLICE STATIONS ──────────────────────────────────────── */}
           {activeTab === 'stations' && (
             <div className="space-y-4 page-enter">
@@ -1080,7 +1173,39 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {/* ── MODAL: ADD POLICE STATION ────────────────────────────────────────── */}
+      {/* ── MODAL: ADD DEPARTMENT ───────────────────────────────────────────── */}
+      {isAddDepartmentModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="glass max-w-lg w-full rounded-2xl p-6 glow-purple page-enter">
+            <h3 className="text-lg font-bold text-white mb-1">Add Department</h3>
+            <p className="text-xs text-gray-400 mb-5">Create a department entry linked to a hospital in PostgreSQL</p>
+            {departmentForm.error && <div className="mb-4 p-2.5 rounded bg-red-950/40 border border-red-800/50 text-red-300 text-xs">{departmentForm.error}</div>}
+            <form onSubmit={handleAddDepartment} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-400 mb-1">Parent Institution / Hospital *</label>
+                <select value={departmentForm.hospital_id} onChange={e => setDepartmentForm(f => ({ ...f, hospital_id: e.target.value }))} className="select-field" required>
+                  <option value="">Select hospital...</option>
+                  {hospitals.map(h => <option key={h.hospital_id} value={h.hospital_id}>{h.hospital_name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-400 mb-1">Department Name *</label>
+                <input type="text" value={departmentForm.department_name} onChange={e => setDepartmentForm(f => ({ ...f, department_name: e.target.value }))} className="input-field" placeholder="e.g. Department of Forensic Medicine" required />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-400 mb-1">Description / Notes</label>
+                <textarea rows={2} value={departmentForm.description} onChange={e => setDepartmentForm(f => ({ ...f, description: e.target.value }))} className="input-field resize-none" placeholder="Department description" />
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                <button type="button" onClick={() => setIsAddDepartmentModalOpen(false)} className="px-4 py-2 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 text-xs">Cancel</button>
+                <button type="submit" disabled={departmentForm.loading} className="btn-primary w-fit px-6">
+                  {departmentForm.loading ? 'Creating...' : 'Save Department'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       {isAddStationModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="glass max-w-lg w-full rounded-2xl p-6 glow-blue page-enter">
@@ -1180,13 +1305,31 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              {/* Institution link */}
-              {HOSPITAL_ROLES.includes(userForm.role) && (
+              {/* Institution / Department link */}
+              {['JMO', 'MEDICAL_OFFICER', 'LAB_TECHNICIAN'].includes(userForm.role) && (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-400 mb-1">Assign Hospital *</label>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1">
+                    {userForm.role === 'LAB_TECHNICIAN' ? "Assign Laboratory / Hospital *" : "Assign Hospital *"}
+                  </label>
                   <select value={userForm.hospital_id} onChange={e => setUserForm(f => ({ ...f, hospital_id: e.target.value }))} className="select-field" required>
-                    <option value="">Select hospital...</option>
+                    <option value="">
+                      {userForm.role === 'LAB_TECHNICIAN' ? "Select laboratory / hospital..." : "Select hospital..."}
+                    </option>
                     {hospitals.map(h => <option key={h.hospital_id} value={h.hospital_id}>{h.hospital_name}</option>)}
+                  </select>
+                </div>
+              )}
+
+              {userForm.role === 'GOVERNMENT_ANALYST' && (
+                <div>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1">Assign Department *</label>
+                  <select value={userForm.organization_name} onChange={e => setUserForm(f => ({ ...f, organization_name: e.target.value }))} className="select-field" required>
+                    <option value="">Select department...</option>
+                    {departments.map(d => (
+                      <option key={d.department_id} value={d.department_name}>
+                        {d.department_name} ({d.hospital_name})
+                      </option>
+                    ))}
                   </select>
                 </div>
               )}
