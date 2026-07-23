@@ -334,6 +334,8 @@ const AdminDashboard = () => {
       setDepartmentForm(f => ({ ...f, error: err.response?.data?.message || 'Failed to create department', loading: false }));
     }
   };
+
+  const handleAddHospital = async (e) => {
     e.preventDefault();
     if (!hospitalForm.hospital_name.trim()) {
       setHospitalForm(f => ({ ...f, error: 'Hospital name is required' }));

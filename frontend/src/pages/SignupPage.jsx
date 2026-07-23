@@ -10,8 +10,10 @@ const ROLES = [
   { label: 'Forensic Staff',            value: 'GOVERNMENT_ANALYST' },
 ];
 
-const HOSPITAL_ROLES = ['JMO', 'MEDICAL_OFFICER', 'LAB_TECHNICIAN', 'GOVERNMENT_ANALYST'];
+const HOSPITAL_ROLES = ['JMO', 'MEDICAL_OFFICER'];
+const LAB_ROLES      = ['LAB_TECHNICIAN'];
 const STATION_ROLES  = ['POLICE'];
+const DEPT_ROLES     = ['GOVERNMENT_ANALYST'];
 
 const GENDERS = ['Male', 'Female', 'Other'];
 
@@ -106,6 +108,10 @@ const SignupPage = () => {
       errs.station_id = 'Please select a police station';
     if (HOSPITAL_ROLES.includes(form.role) && !form.hospital_id)
       errs.hospital_id = 'Please select a hospital';
+    if (LAB_ROLES.includes(form.role) && !form.hospital_id)
+      errs.hospital_id = 'Please select a laboratory';
+    if (DEPT_ROLES.includes(form.role) && !form.organization_name)
+      errs.organization_name = 'Please select a department';
     return errs;
   };
 
@@ -268,19 +274,26 @@ const SignupPage = () => {
             {/* ── STEP 3: Professional Details ───────────────────── */}
             {step === 3 && (
               <div className="space-y-4">
-                {/* Hospital / Laboratory / Station */}
-                {needsHospital && (
-                  <FormField 
-                    label={form.role === 'LAB_TECHNICIAN' ? "Assigned Laboratory" : "Hospital"} 
-                    id="s-hospital" 
-                    required 
-                    error={errors.hospital_id}
-                  >
+                {/* Hospital (for JMO and Medical Officer) */}
+                {HOSPITAL_ROLES.includes(form.role) && (
+                  <FormField label="Hospital" id="s-hospital" required error={errors.hospital_id}>
                     <select id="s-hospital" className="select-field" value={form.hospital_id} onChange={set('hospital_id')}>
-                      <option value="">
-                        {form.role === 'LAB_TECHNICIAN' ? "Select laboratory / hospital..." : "Select hospital..."}
-                      </option>
-                      {form.role === 'LAB_TECHNICIAN' && laboratories.length > 0
+                      <option value="">Select hospital...</option>
+                      {hospitals.map(h => (
+                        <option key={h.hospital_id} value={h.hospital_id}>
+                          {h.hospital_name} {h.district ? `— ${h.district}` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </FormField>
+                )}
+
+                {/* Laboratory (for Lab Technician) */}
+                {LAB_ROLES.includes(form.role) && (
+                  <FormField label="Assigned Laboratory" id="s-lab" required error={errors.hospital_id}>
+                    <select id="s-lab" className="select-field" value={form.hospital_id} onChange={set('hospital_id')}>
+                      <option value="">Select laboratory / hospital...</option>
+                      {laboratories.length > 0
                         ? laboratories.map(l => (
                             <option key={l.laboratory_id} value={l.hospital_id}>
                               {l.laboratory_name} ({l.hospital_name})
