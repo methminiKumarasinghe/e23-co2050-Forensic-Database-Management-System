@@ -1183,9 +1183,13 @@ const AdminDashboard = () => {
               {/* Institution link */}
               {HOSPITAL_ROLES.includes(userForm.role) && (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-400 mb-1">Assign Hospital *</label>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1">
+                    {userForm.role === 'LAB_TECHNICIAN' ? "Assign Laboratory / Hospital *" : "Assign Hospital *"}
+                  </label>
                   <select value={userForm.hospital_id} onChange={e => setUserForm(f => ({ ...f, hospital_id: e.target.value }))} className="select-field" required>
-                    <option value="">Select hospital...</option>
+                    <option value="">
+                      {userForm.role === 'LAB_TECHNICIAN' ? "Select laboratory / hospital..." : "Select hospital..."}
+                    </option>
                     {hospitals.map(h => <option key={h.hospital_id} value={h.hospital_id}>{h.hospital_name}</option>)}
                   </select>
                 </div>

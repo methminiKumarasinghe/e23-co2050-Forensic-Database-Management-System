@@ -107,4 +107,21 @@ const getStations = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, me, getHospitals, getStations };
+/**
+ * GET /api/auth/laboratories — public, used in signup form
+ */
+const getLaboratories = async (req, res, next) => {
+  try {
+    const result = await query(
+      `SELECT l.laboratory_id, l.laboratory_name, l.laboratory_type, l.hospital_id, h.hospital_name
+       FROM laboratory l
+       JOIN hospital h ON l.hospital_id = h.hospital_id
+       ORDER BY l.laboratory_name ASC`
+    );
+    return sendSuccess(res, { data: result.rows });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { register, login, me, getHospitals, getStations, getLaboratories };

@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { body } = require('express-validator');
-const { register, login, me, getHospitals, getStations } = require('../controllers/auth.controller');
+const { register, login, me, getHospitals, getStations, getLaboratories } = require('../controllers/auth.controller');
 const { authenticate } = require('../middleware/auth.middleware');
 const { ROLES } = require('../config/constants');
 
@@ -51,6 +51,7 @@ router.post(
 // Public lookup endpoints (used in signup form dropdowns)
 router.get('/hospitals', getHospitals);
 router.get('/stations', getStations);
+router.get('/laboratories', getLaboratories);
 
 // ── Protected endpoints ───────────────────────────────────────────────────────
 

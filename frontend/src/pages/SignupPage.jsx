@@ -43,10 +43,11 @@ const SignupPage = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [hospitals, setHospitals] = useState([]);
-  const [stations, setStations]   = useState([]);
-  const [errors, setErrors] = useState({});
-  const [submitError, setSubmitError] = useState('');
+  const [hospitals, setHospitals]       = useState([]);
+  const [stations, setStations]         = useState([]);
+  const [laboratories, setLaboratories] = useState([]);
+  const [errors, setErrors]             = useState({});
+  const [submitError, setSubmitError]   = useState('');
 
   const [form, setForm] = useState({
     // Account
@@ -67,6 +68,7 @@ const SignupPage = () => {
   useEffect(() => {
     api.get('/auth/hospitals').then(r => setHospitals(r.data.data)).catch(() => {});
     api.get('/auth/stations').then(r => setStations(r.data.data)).catch(() => {});
+    api.get('/auth/laboratories').then(r => setLaboratories(r.data.data)).catch(() => {});
   }, []);
 
   const set = (field) => (e) => {
@@ -264,16 +266,30 @@ const SignupPage = () => {
             {/* ── STEP 3: Professional Details ───────────────────── */}
             {step === 3 && (
               <div className="space-y-4">
-                {/* Hospital / Station */}
+                {/* Hospital / Laboratory / Station */}
                 {needsHospital && (
-                  <FormField label="Hospital" id="s-hospital" required error={errors.hospital_id}>
+                  <FormField 
+                    label={form.role === 'LAB_TECHNICIAN' ? "Assigned Laboratory" : "Hospital"} 
+                    id="s-hospital" 
+                    required 
+                    error={errors.hospital_id}
+                  >
                     <select id="s-hospital" className="select-field" value={form.hospital_id} onChange={set('hospital_id')}>
-                      <option value="">Select hospital...</option>
-                      {hospitals.map(h => (
-                        <option key={h.hospital_id} value={h.hospital_id}>
-                          {h.hospital_name} {h.district ? `— ${h.district}` : ''}
-                        </option>
-                      ))}
+                      <option value="">
+                        {form.role === 'LAB_TECHNICIAN' ? "Select laboratory / hospital..." : "Select hospital..."}
+                      </option>
+                      {form.role === 'LAB_TECHNICIAN' && laboratories.length > 0
+                        ? laboratories.map(l => (
+                            <option key={l.laboratory_id} value={l.hospital_id}>
+                              {l.laboratory_name} ({l.hospital_name})
+                            </option>
+                          ))
+                        : hospitals.map(h => (
+                            <option key={h.hospital_id} value={h.hospital_id}>
+                              {h.hospital_name} {h.district ? `— ${h.district}` : ''}
+                            </option>
+                          ))
+                      }
                     </select>
                   </FormField>
                 )}
