@@ -29,6 +29,15 @@ const getRequestById = async (req, res, next) => {
     }
 };
 
+const getLabSpecimens = async (req, res, next) => {
+    try {
+        const specimens = await labService.getLabSpecimens(req.user.user_id);
+        return sendSuccess(res, { message: 'Lab specimens retrieved', data: specimens });
+    } catch (err) {
+        next(err);
+    }
+};
+
 const acceptRequest = async (req, res, next) => {
     try {
         const result = await labService.updateRequestStatus(req.user.user_id, req.params.id, 'ACCEPTED');
@@ -97,6 +106,7 @@ module.exports = {
     getDashboardStats,
     getRequests,
     getRequestById,
+    getLabSpecimens,
     acceptRequest,
     rejectRequest,
     startTest,

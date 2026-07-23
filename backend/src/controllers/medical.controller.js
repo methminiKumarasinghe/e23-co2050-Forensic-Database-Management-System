@@ -53,8 +53,48 @@ const assignMlefController = async (req, res, next) => {
   }
 };
 
+const getHospitalPatientsController = async (req, res, next) => {
+  try {
+    const patients = await medicalService.getHospitalPatients(req.user.user_id);
+    return sendSuccess(res, { message: 'Hospital patient records retrieved', data: patients });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getHospitalReportsController = async (req, res, next) => {
+  try {
+    const reports = await medicalService.getHospitalReports(req.user.user_id);
+    return sendSuccess(res, { message: 'Hospital medical reports retrieved', data: reports });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getHospitalCasesController = async (req, res, next) => {
+  try {
+    const cases = await medicalService.getHospitalCases(req.user.user_id);
+    return sendSuccess(res, { message: 'Hospital police cases retrieved', data: cases });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getHospitalDocumentsController = async (req, res, next) => {
+  try {
+    const documents = await medicalService.getHospitalDocuments(req.user.user_id);
+    return sendSuccess(res, { message: 'Hospital document archive retrieved', data: documents });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   getHospitalMlefsController,
   getHospitalJmosController,
   assignMlefController,
+  getHospitalPatientsController,
+  getHospitalReportsController,
+  getHospitalCasesController,
+  getHospitalDocumentsController,
 };

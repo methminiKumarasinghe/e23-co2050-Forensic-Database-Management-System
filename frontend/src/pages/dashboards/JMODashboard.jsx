@@ -200,13 +200,15 @@ const JMODashboard = () => {
           <InfoCard 
             icon="📑" 
             title="Medico-Legal Reports"
-            subtitle="Prepare official MLR documents"
+            subtitle="Prepare and review official MLR documents"
+            link="/dashboard/jmo/mlr-reports"
             color="border-emerald-500" 
           />
           <InfoCard 
             icon="⚰️" 
             title="Autopsy Module"
-            subtitle="Conduct autopsies and COD reports"
+            subtitle="Conduct autopsies and post-mortem reports"
+            link="/dashboard/jmo/autopsies"
             color="border-purple-500" 
           />
         </div>

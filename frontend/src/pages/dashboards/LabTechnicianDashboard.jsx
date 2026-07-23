@@ -18,6 +18,14 @@ const StatCard = ({ icon, title, value, colorClass, link }) => (
   </Link>
 );
 
+const InfoCard = ({ icon, title, subtitle, color, link }) => (
+  <Link to={link || '#'} className={`glass rounded-xl p-5 border-l-4 ${color} hover:scale-[1.01] transition-transform block`}>
+    <div className="text-2xl mb-2">{icon}</div>
+    <div className="font-semibold text-white text-sm">{title}</div>
+    <div className="text-xs text-gray-400 mt-0.5">{subtitle}</div>
+  </Link>
+);
+
 const LabTechnicianDashboard = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState({
@@ -86,6 +94,17 @@ const LabTechnicianDashboard = () => {
               <StatCard icon="✓" title="Accepted Requests" value={stats.accepted} colorClass="border-green-500" link="/dashboard/lab-technician/requests?status=ACCEPTED" />
               <StatCard icon="⚗️" title="Tests in Progress" value={stats.processing} colorClass="border-yellow-500" link="/dashboard/lab-technician/requests?status=PROCESSING" />
               <StatCard icon="📊" title="Completed Tests" value={stats.completed} colorClass="border-purple-500" link="/dashboard/lab-technician/requests?status=COMPLETED" />
+            </div>
+
+            {/* Quick Action Navigation Grid */}
+            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <span>🧫</span> Laboratory Actions & Navigation
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+              <InfoCard icon="🧪" title="Lab Requests" subtitle="View incoming laboratory test requests" link="/dashboard/lab-technician/requests" color="border-amber-500" />
+              <InfoCard icon="⚗️" title="Active Tests" subtitle="Manage tests currently in progress" link="/dashboard/lab-technician/requests?status=PROCESSING" color="border-yellow-500" />
+              <InfoCard icon="🧫" title="Specimen Tracking" subtitle="Track specimen collection and chain of custody" link="/dashboard/lab-technician/specimens" color="border-purple-500" />
+              <InfoCard icon="📁" title="Result Archive" subtitle="View historical completed laboratory results" link="/dashboard/lab-technician/archive" color="border-blue-500" />
             </div>
 
             <div className="glass rounded-xl p-6 border border-amber-800/30">

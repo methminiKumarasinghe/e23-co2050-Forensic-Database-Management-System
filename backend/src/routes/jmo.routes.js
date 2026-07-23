@@ -14,6 +14,10 @@ router.get('/mlef/:id/police-details', jmoController.getMlefPoliceDetails);
 router.post('/mlef/:id/examination', jmoController.submitMlefExamination);
 router.get('/mlef/:id/report', jmoController.getMlefReport);
 
+// MLR & Autopsy
+router.get('/mlr-reports', jmoController.getMlrReports);
+router.get('/autopsies', jmoController.getAutopsies);
+
 // Laboratories & Specimens for request form
 router.get('/laboratories', jmoController.getLaboratories);
 router.get('/specimens', jmoController.getJmoSpecimens);

@@ -9,6 +9,10 @@ export const submitMlefExamination = (id, data) => api.post(`/jmo/mlef/${id}/exa
 
 export const getMlefReport = (id) => api.get(`/jmo/mlef/${id}/report`).then(res => res.data.data);
 
+export const getMlrReports = () => api.get('/jmo/mlr-reports').then(res => res.data.data);
+
+export const getAutopsies = () => api.get('/jmo/autopsies').then(res => res.data.data);
+
 // Laboratory & Request APIs
 export const getLaboratories = () => api.get('/jmo/laboratories').then(res => res.data.data);
 

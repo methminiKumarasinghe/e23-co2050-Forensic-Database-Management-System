@@ -22,14 +22,26 @@ import LabRequestsList          from './pages/lab/LabRequestsList';
 import LabRequestDetails        from './pages/lab/LabRequestDetails';
 import PerformTest              from './pages/lab/PerformTest';
 import LabResultDetails         from './pages/lab/LabResultDetails';
+import LabSpecimenTracking      from './pages/lab/LabSpecimenTracking';
+import LabResultArchive         from './pages/lab/LabResultArchive';
 
-// JMO Lab & MLEF Pages
+// JMO Pages
 import CreateLabRequest         from './pages/jmo/CreateLabRequest';
 import JMOLabRequestsList       from './pages/jmo/JMOLabRequestsList';
 import JMOLabResultsList        from './pages/jmo/JMOLabResultsList';
 import JMOLabResultDetails      from './pages/jmo/JMOLabResultDetails';
 import CompleteMLEFForm         from './pages/jmo/CompleteMLEFForm';
 import ViewMLEFReport           from './pages/jmo/ViewMLEFReport';
+import JMOMedicoLegalReports    from './pages/jmo/JMOMedicoLegalReports';
+import JMOAutopsyModule         from './pages/jmo/JMOAutopsyModule';
+
+// Staff / Medical Officer Pages
+import StaffPatientRecords      from './pages/staff/StaffPatientRecords';
+import StaffMedicalReports      from './pages/staff/StaffMedicalReports';
+import StaffCaseConsultations   from './pages/staff/StaffCaseConsultations';
+import StaffTreatmentNotes      from './pages/staff/StaffTreatmentNotes';
+import StaffDocumentArchive     from './pages/staff/StaffDocumentArchive';
+import StaffNotifications       from './pages/staff/StaffNotifications';
 
 const ROLE_DASHBOARDS = {
   ADMIN:             '/admin',
@@ -103,6 +115,20 @@ const App = () => (
         </RoleRoute>
       </PrivateRoute>
     } />
+    <Route path="/dashboard/jmo/mlr-reports" element={
+      <PrivateRoute>
+        <RoleRoute roles={['JMO']}>
+          <JMOMedicoLegalReports />
+        </RoleRoute>
+      </PrivateRoute>
+    } />
+    <Route path="/dashboard/jmo/autopsies" element={
+      <PrivateRoute>
+        <RoleRoute roles={['JMO']}>
+          <JMOAutopsyModule />
+        </RoleRoute>
+      </PrivateRoute>
+    } />
     <Route path="/dashboard/jmo/create-lab-request" element={
       <PrivateRoute>
         <RoleRoute roles={['JMO']}>
@@ -140,6 +166,48 @@ const App = () => (
         </RoleRoute>
       </PrivateRoute>
     } />
+    <Route path="/dashboard/medical-officer/patients" element={
+      <PrivateRoute>
+        <RoleRoute roles={['MEDICAL_OFFICER']}>
+          <StaffPatientRecords />
+        </RoleRoute>
+      </PrivateRoute>
+    } />
+    <Route path="/dashboard/medical-officer/reports" element={
+      <PrivateRoute>
+        <RoleRoute roles={['MEDICAL_OFFICER']}>
+          <StaffMedicalReports />
+        </RoleRoute>
+      </PrivateRoute>
+    } />
+    <Route path="/dashboard/medical-officer/cases" element={
+      <PrivateRoute>
+        <RoleRoute roles={['MEDICAL_OFFICER']}>
+          <StaffCaseConsultations />
+        </RoleRoute>
+      </PrivateRoute>
+    } />
+    <Route path="/dashboard/medical-officer/notes" element={
+      <PrivateRoute>
+        <RoleRoute roles={['MEDICAL_OFFICER']}>
+          <StaffTreatmentNotes />
+        </RoleRoute>
+      </PrivateRoute>
+    } />
+    <Route path="/dashboard/medical-officer/documents" element={
+      <PrivateRoute>
+        <RoleRoute roles={['MEDICAL_OFFICER']}>
+          <StaffDocumentArchive />
+        </RoleRoute>
+      </PrivateRoute>
+    } />
+    <Route path="/dashboard/medical-officer/notifications" element={
+      <PrivateRoute>
+        <RoleRoute roles={['MEDICAL_OFFICER']}>
+          <StaffNotifications />
+        </RoleRoute>
+      </PrivateRoute>
+    } />
 
     {/* Lab Technician */}
     <Route path="/dashboard/lab-technician" element={
@@ -174,6 +242,20 @@ const App = () => (
       <PrivateRoute>
         <RoleRoute roles={['LAB_TECHNICIAN']}>
           <LabResultDetails />
+        </RoleRoute>
+      </PrivateRoute>
+    } />
+    <Route path="/dashboard/lab-technician/specimens" element={
+      <PrivateRoute>
+        <RoleRoute roles={['LAB_TECHNICIAN']}>
+          <LabSpecimenTracking />
+        </RoleRoute>
+      </PrivateRoute>
+    } />
+    <Route path="/dashboard/lab-technician/archive" element={
+      <PrivateRoute>
+        <RoleRoute roles={['LAB_TECHNICIAN']}>
+          <LabResultArchive />
         </RoleRoute>
       </PrivateRoute>
     } />

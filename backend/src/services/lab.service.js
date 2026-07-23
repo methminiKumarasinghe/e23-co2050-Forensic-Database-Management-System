@@ -182,6 +182,35 @@ const getRequestById = async (userId, requestId) => {
 };
 
 /**
+ * Get Specimen Tracking for Lab Technician
+ */
+const getLabSpecimens = async (userId) => {
+    const tech = await getTechnicianDetails(userId);
+    const labId = tech.laboratory_id;
+
+    const result = await query(`
+        SELECT s.specimen_id, s.specimen_type, s.collection_datetime, s.remarks,
+               req.request_id, req.priority, req.status AS request_status,
+               pc.case_number,
+               pat_p.first_name || ' ' || pat_p.last_name AS patient_name,
+               jmo_p.first_name || ' ' || jmo_p.last_name AS jmo_name
+        FROM specimen s
+        JOIN laboratory_request req ON s.specimen_id = req.specimen_id
+        JOIN examination e ON s.examination_id = e.examination_id
+        JOIN mlef m ON e.mlef_id = m.mlef_id
+        JOIN police_case pc ON m.case_id = pc.case_id
+        JOIN patient pat ON m.patient_id = pat.patient_id
+        JOIN person pat_p ON pat.person_id = pat_p.person_id
+        JOIN judicial_medical_officer jmo ON req.requested_by = jmo.jmo_id
+        JOIN person jmo_p ON jmo.person_id = jmo_p.person_id
+        WHERE req.laboratory_id = $1
+        ORDER BY s.collection_datetime DESC
+    `, [labId]);
+
+    return result.rows;
+};
+
+/**
  * Update request status
  */
 const updateRequestStatus = async (userId, requestId, status) => {
@@ -410,6 +439,7 @@ module.exports = {
     getDashboardStats,
     getRequests,
     getRequestById,
+    getLabSpecimens,
     updateRequestStatus,
     startTest,
     submitResult,

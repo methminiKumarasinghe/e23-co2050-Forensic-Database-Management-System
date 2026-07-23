@@ -26,3 +26,23 @@ export const assignMlefToJmo = async (mlefId, jmoId) => {
   });
   return response.data;
 };
+
+export const getHospitalPatients = async () => {
+  const response = await api.get('/medical/patients');
+  return response.data.data;
+};
+
+export const getHospitalReports = async () => {
+  const response = await api.get('/medical/reports');
+  return response.data.data;
+};
+
+export const getHospitalCases = async () => {
+  const response = await api.get('/medical/cases');
+  return response.data.data;
+};
+
+export const getHospitalDocuments = async () => {
+  const response = await api.get('/medical/documents');
+  return response.data.data;
+};

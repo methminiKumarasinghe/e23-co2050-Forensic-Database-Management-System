@@ -13,6 +13,7 @@ router.get('/dashboard', labController.getDashboardStats);
 
 router.get('/requests', labController.getRequests);
 router.get('/request/:id', labController.getRequestById);
+router.get('/specimens', labController.getLabSpecimens);
 
 router.put('/request/:id/accept', labController.acceptRequest);
 router.put('/request/:id/reject', labController.rejectRequest);

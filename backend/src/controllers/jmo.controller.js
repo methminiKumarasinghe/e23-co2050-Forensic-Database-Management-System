@@ -37,6 +37,24 @@ const getMlefReport = async (req, res, next) => {
     }
 };
 
+const getMlrReports = async (req, res, next) => {
+    try {
+        const reports = await jmoService.getMlrReports(req.user.user_id);
+        return sendSuccess(res, { message: 'Medico-Legal Reports retrieved', data: reports });
+    } catch (err) {
+        next(err);
+    }
+};
+
+const getAutopsies = async (req, res, next) => {
+    try {
+        const autopsies = await jmoService.getAutopsies(req.user.user_id);
+        return sendSuccess(res, { message: 'Autopsies retrieved', data: autopsies });
+    } catch (err) {
+        next(err);
+    }
+};
+
 const getLaboratories = async (req, res, next) => {
     try {
         const laboratories = await jmoService.getLaboratories();
@@ -133,6 +151,8 @@ module.exports = {
     getMlefPoliceDetails,
     submitMlefExamination,
     getMlefReport,
+    getMlrReports,
+    getAutopsies,
     getLaboratories,
     getJmoSpecimens,
     createLabRequest,

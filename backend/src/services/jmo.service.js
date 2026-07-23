@@ -149,7 +149,6 @@ Conclusions & Opinions:
     const conclusion = `Category of Hurt: ${categoryOfHurt || 'Non-grievous'}. Life Endangering: ${endangersLife || 'No'}. Recommendations/Opinions: ${otherOpinions || 'None'}. Remarks: ${remarks || 'None'}`;
 
     return withTransaction(async (client) => {
-        // Check if examination record exists for this mlef_id
         const existingExam = await client.query(
             `SELECT examination_id FROM examination WHERE mlef_id = $1`,
             [mlefId]
@@ -174,22 +173,19 @@ Conclusions & Opinions:
             examId = newExam.rows[0].examination_id;
         }
 
-        // Update MLEF status to COMPLETED
         await client.query(
             `UPDATE mlef SET status = 'COMPLETED' WHERE mlef_id = $1`,
             [mlefId]
         );
 
-        // Upsert draft Medico-Legal Report
         const reportNo = 'MLR-' + Date.now();
         await client.query(`
             INSERT INTO medico_legal_report (examination_id, report_number, findings, medical_opinion, recommendations, report_status)
             VALUES ($1, $2, $3, $4, $5, 'DRAFT')
             ON CONFLICT (examination_id)
             DO UPDATE SET findings = EXCLUDED.findings, medical_opinion = EXCLUDED.medical_opinion, recommendations = EXCLUDED.recommendations
-        `, [examId, reportNo, examinationNotes, conclusion, recommendations || 'None']);
+        `, [examId, reportNo, examinationNotes, conclusion, otherOpinions || 'None']);
 
-        // Log Audit
         await client.query(`
             INSERT INTO audit_logs (user_id, action, entity_name, entity_id, description)
             VALUES ($1, 'COMPLETE_MLEF_EXAM', 'examination', $2, 'JMO completed MLEF Examination')
@@ -222,6 +218,55 @@ const getMlefReport = async (userId, mlefId) => {
         policeSection: policeDetails,
         jmoSection: exam
     };
+};
+
+/**
+ * Get JMO Medico-Legal Reports (MLR)
+ */
+const getMlrReports = async (userId) => {
+    let jmoId = null;
+    try {
+        const jmo = await getJmoDetails(userId);
+        jmoId = jmo.jmo_id;
+    } catch (e) {}
+
+    const result = await query(`
+        SELECT mlr.report_id, mlr.report_number, mlr.findings, mlr.medical_opinion, mlr.recommendations, mlr.report_status, mlr.prepared_date,
+               pc.case_number, pc.title AS case_title,
+               pat_p.first_name || ' ' || pat_p.last_name AS patient_name,
+               m.mlef_id
+        FROM medico_legal_report mlr
+        JOIN examination e ON mlr.examination_id = e.examination_id
+        JOIN mlef m ON e.mlef_id = m.mlef_id
+        JOIN police_case pc ON m.case_id = pc.case_id
+        JOIN patient pat ON m.patient_id = pat.patient_id
+        JOIN person pat_p ON pat.person_id = pat_p.person_id
+        WHERE ($1::uuid IS NULL OR e.jmo_id = $1)
+        ORDER BY mlr.prepared_date DESC
+    `, [jmoId]);
+
+    return result.rows;
+};
+
+/**
+ * Get JMO Autopsies / Post-Mortem Records
+ */
+const getAutopsies = async (userId) => {
+    let jmoId = null;
+    try {
+        const jmo = await getJmoDetails(userId);
+        jmoId = jmo.jmo_id;
+    } catch (e) {}
+
+    const result = await query(`
+        SELECT d.deceased_id, d.date_of_death, d.place_of_death, d.identified, d.identification_notes,
+               p.first_name || ' ' || p.last_name AS deceased_name, p.nic, p.gender
+        FROM deceased d
+        JOIN person p ON d.person_id = p.person_id
+        ORDER BY d.date_of_death DESC
+    `);
+
+    return result.rows;
 };
 
 /**
@@ -538,6 +583,8 @@ module.exports = {
     getMlefPoliceDetails,
     submitMlefExamination,
     getMlefReport,
+    getMlrReports,
+    getAutopsies,
     getLaboratories,
     getJmoSpecimens,
     createLabRequest,

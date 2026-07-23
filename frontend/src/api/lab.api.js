@@ -6,6 +6,8 @@ export const getRequests = (params) => api.get('/lab/requests', { params }).then
 
 export const getRequestById = (id) => api.get(`/lab/request/${id}`).then(res => res.data.data);
 
+export const getLabSpecimens = () => api.get('/lab/specimens').then(res => res.data.data);
+
 export const acceptRequest = (id) => api.put(`/lab/request/${id}/accept`).then(res => res.data.data);
 
 export const rejectRequest = (id) => api.put(`/lab/request/${id}/reject`).then(res => res.data.data);
