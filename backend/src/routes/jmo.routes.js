@@ -8,6 +8,12 @@ const { requireRole } = require('../middleware/rbac.middleware');
 router.use(authenticate);
 router.use(requireRole('JMO'));
 
+// Autopsy Workflow Endpoints
+router.get('/autopsy/cases', jmoController.getAutopsyCases);
+router.get('/autopsy/notification/:caseId', jmoController.getAutopsyNotification);
+router.post('/autopsy/notification', jmoController.saveAutopsyNotification);
+router.put('/autopsy/notification/:id', jmoController.saveAutopsyNotification);
+
 // MLR Module Endpoints
 router.get('/mlr/cases', jmoController.getMlrCases);
 router.get('/mlr/:mlefId/case-data', jmoController.getMlrCaseData);

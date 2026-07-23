@@ -1,6 +1,33 @@
 const jmoService = require('../services/jmo.service');
 const { sendSuccess, sendCreated, sendBadRequest } = require('../utils/response');
 
+const getAutopsyCases = async (req, res, next) => {
+    try {
+        const cases = await jmoService.getAutopsyCases(req.user.user_id);
+        return sendSuccess(res, { message: 'Autopsy cases retrieved', data: cases });
+    } catch (err) {
+        next(err);
+    }
+};
+
+const getAutopsyNotification = async (req, res, next) => {
+    try {
+        const notification = await jmoService.getAutopsyNotification(req.user.user_id, req.params.caseId);
+        return sendSuccess(res, { message: 'Autopsy notification retrieved', data: notification });
+    } catch (err) {
+        next(err);
+    }
+};
+
+const saveAutopsyNotification = async (req, res, next) => {
+    try {
+        const result = await jmoService.saveAutopsyNotification(req.user.user_id, req.body);
+        return sendCreated(res, { message: 'Health 1328 Autopsy Notification saved successfully', data: result });
+    } catch (err) {
+        next(err);
+    }
+};
+
 const getMlrCases = async (req, res, next) => {
     try {
         const cases = await jmoService.getMlrCases(req.user.user_id);
@@ -192,6 +219,9 @@ const markNotificationRead = async (req, res, next) => {
 };
 
 module.exports = {
+    getAutopsyCases,
+    getAutopsyNotification,
+    saveAutopsyNotification,
     getMlrCases,
     getMlrCaseData,
     saveMlrReport,

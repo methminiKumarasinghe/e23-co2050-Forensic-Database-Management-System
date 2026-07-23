@@ -1,5 +1,12 @@
 import api from './axios';
 
+// Autopsy Workflow APIs
+export const getAutopsyCases = () => api.get('/jmo/autopsy/cases').then(res => res.data.data);
+
+export const getAutopsyNotification = (caseId) => api.get(`/jmo/autopsy/notification/${caseId}`).then(res => res.data.data);
+
+export const saveAutopsyNotification = (data) => api.post('/jmo/autopsy/notification', data).then(res => res.data.data);
+
 // MLR Module APIs
 export const getMlrCases = () => api.get('/jmo/mlr/cases').then(res => res.data.data);
 

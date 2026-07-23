@@ -37,6 +37,8 @@ import PrepareMLRPage           from './pages/jmo/PrepareMLRPage';
 import DigitalSignatureMLR      from './pages/jmo/DigitalSignatureMLR';
 import ViewMLRReport            from './pages/jmo/ViewMLRReport';
 import JMOAutopsyModule         from './pages/jmo/JMOAutopsyModule';
+import PrepareAutopsyNotification from './pages/jmo/PrepareAutopsyNotification';
+import JMOAutopsyExam           from './pages/jmo/JMOAutopsyExam';
 
 // Staff / Medical Officer Pages
 import StaffPatientRecords      from './pages/staff/StaffPatientRecords';
@@ -150,6 +152,20 @@ const App = () => (
       <PrivateRoute>
         <RoleRoute roles={['JMO']}>
           <JMOAutopsyModule />
+        </RoleRoute>
+      </PrivateRoute>
+    } />
+    <Route path="/dashboard/jmo/autopsy/:caseId/notification" element={
+      <PrivateRoute>
+        <RoleRoute roles={['JMO']}>
+          <PrepareAutopsyNotification />
+        </RoleRoute>
+      </PrivateRoute>
+    } />
+    <Route path="/dashboard/jmo/autopsy/:caseId/exam" element={
+      <PrivateRoute>
+        <RoleRoute roles={['JMO']}>
+          <JMOAutopsyExam />
         </RoleRoute>
       </PrivateRoute>
     } />

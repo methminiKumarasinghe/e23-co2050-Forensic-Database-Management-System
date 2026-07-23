@@ -1,11 +1,64 @@
 const { query, withTransaction } = require('../config/db');
 
 /**
+ * Auto-initialize autopsy_notification table if not exists
+ */
+const initAutopsyNotificationTable = async () => {
+    try {
+        await query(`
+            CREATE TABLE IF NOT EXISTS autopsy_notification (
+                autopsy_notification_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                case_id UUID REFERENCES police_case(case_id) ON DELETE CASCADE,
+                jmo_id UUID REFERENCES judicial_medical_officer(jmo_id) ON DELETE SET NULL,
+                hospital_name VARCHAR(255),
+                post_mortem_serial_number VARCHAR(100),
+                court_case_number VARCHAR(100),
+                inquirer_name VARCHAR(255),
+                inquirer_designation VARCHAR(255),
+                inquirer_type VARCHAR(100),
+                area VARCHAR(255),
+                deceased_name VARCHAR(255),
+                age VARCHAR(50),
+                sex VARCHAR(50),
+                place_of_death VARCHAR(100),
+                hospital_name_if_applicable VARCHAR(255),
+                bht_number VARCHAR(100),
+                ward_number VARCHAR(100),
+                date_of_death DATE,
+                time_of_death VARCHAR(50),
+                immediate_cause TEXT,
+                cause_due_to_1 TEXT,
+                cause_due_to_2 TEXT,
+                cause_due_to_3 TEXT,
+                contributory_causes TEXT,
+                interval_between_onset_and_death VARCHAR(255),
+                cause_under_investigation VARCHAR(20),
+                specimens_retained VARCHAR(20),
+                specimen_details TEXT,
+                maternal_death VARCHAR(20),
+                maternal_category VARCHAR(100),
+                comments_opinions TEXT,
+                conducting_jmo_name VARCHAR(255),
+                designation VARCHAR(255),
+                conducted_date DATE,
+                expected_report_completion_time VARCHAR(255),
+                status VARCHAR(50) DEFAULT 'Pending Notification',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+    } catch (e) {
+        console.warn('autopsy_notification init note:', e.message);
+    }
+};
+initAutopsyNotificationTable();
+
+/**
  * Helper to get JMO details based on user_id
  */
 const getJmoDetails = async (userId) => {
     const result = await query(
-        `SELECT jmo.jmo_id, jmo.hospital_id 
+        `SELECT jmo.jmo_id, jmo.hospital_id, p.first_name || ' ' || p.last_name AS jmo_name
          FROM judicial_medical_officer jmo
          JOIN person p ON p.person_id = jmo.person_id
          WHERE p.user_id = $1 LIMIT 1`,
@@ -14,6 +67,225 @@ const getJmoDetails = async (userId) => {
     if (result.rowCount === 0) {
         throw new Error('JMO profile not found for this user.');
     }
+    return result.rows[0];
+};
+
+/**
+ * Get Autopsy Assigned Cases for JMO
+ */
+const getAutopsyCases = async (userId) => {
+    await initAutopsyNotificationTable();
+    let jmoId = null;
+    try {
+        const jmo = await getJmoDetails(userId);
+        jmoId = jmo.jmo_id;
+    } catch (e) {}
+
+    let sql = `
+        SELECT pc.case_id, pc.case_number, pc.case_type, pc.title AS case_title, pc.date_reported AS assigned_date,
+               ps.station_name,
+               d.deceased_id, d.date_of_death, d.place_of_death,
+               p.first_name || ' ' || p.last_name AS deceased_name, p.gender,
+               an.autopsy_notification_id, an.status AS autopsy_status, an.post_mortem_serial_number
+        FROM police_case pc
+        JOIN police_station ps ON pc.station_id = ps.station_id
+        LEFT JOIN mlef m ON pc.case_id = m.case_id
+        LEFT JOIN examination e ON m.mlef_id = e.mlef_id
+        LEFT JOIN deceased d ON 1=1
+        LEFT JOIN person p ON d.person_id = p.person_id
+        LEFT JOIN autopsy_notification an ON pc.case_id = an.case_id
+    `;
+
+    const params = [];
+    if (jmoId) {
+        sql += ` WHERE (e.jmo_id = $1 OR an.jmo_id = $1 OR pc.case_type ILIKE '%death%' OR pc.case_type ILIKE '%homicide%' OR pc.case_type ILIKE '%autopsy%' OR m.status IN ('ASSIGNED', 'COMPLETED'))`;
+        params.push(jmoId);
+    }
+
+    sql += ` ORDER BY pc.date_reported DESC`;
+
+    const result = await query(sql, params);
+    
+    // Deduplicate by case_id
+    const casesMap = new Map();
+    for (let r of result.rows) {
+        if (!casesMap.has(r.case_id)) {
+            casesMap.set(r.case_id, {
+                ...r,
+                autopsy_status: r.autopsy_status || 'Pending Notification',
+                deceased_name: r.deceased_name || 'Unknown Deceased Examinee'
+            });
+        }
+    }
+
+    return Array.from(casesMap.values());
+};
+
+/**
+ * Get Autopsy Notification Data for a selected case
+ */
+const getAutopsyNotification = async (userId, caseId) => {
+    await initAutopsyNotificationTable();
+    const jmo = await getJmoDetails(userId);
+
+    // Check existing notification record
+    const existing = await query(`
+        SELECT * FROM autopsy_notification WHERE case_id = $1
+    `, [caseId]);
+
+    if (existing.rowCount > 0) {
+        return existing.rows[0];
+    }
+
+    // Fetch case and deceased defaults
+    const caseRes = await query(`
+        SELECT pc.case_id, pc.case_number, pc.case_type, pc.title,
+               ps.station_name, ps.district,
+               h.hospital_name
+        FROM police_case pc
+        JOIN police_station ps ON pc.station_id = ps.station_id
+        LEFT JOIN mlef m ON pc.case_id = m.case_id
+        LEFT JOIN hospital h ON m.hospital_id = h.hospital_id
+        WHERE pc.case_id = $1
+        LIMIT 1
+    `, [caseId]);
+
+    const caseData = caseRes.rows[0] || {};
+
+    const decRes = await query(`
+        SELECT d.deceased_id, d.date_of_death, d.place_of_death,
+               p.first_name || ' ' || p.last_name AS deceased_name, p.gender, p.date_of_birth
+        FROM deceased d
+        JOIN person p ON d.person_id = p.person_id
+        LIMIT 1
+    `);
+
+    const decData = decRes.rows[0] || {};
+
+    return {
+        case_id: caseId,
+        hospital_name: caseData.hospital_name || 'Teaching Hospital Kandy',
+        post_mortem_serial_number: 'PM-' + Date.now().toString().slice(-6),
+        court_case_number: caseData.case_number || 'MC-KANDY-2026',
+        inquirer_name: 'W. M. Bandara',
+        inquirer_designation: 'Inquirer into Sudden Deaths',
+        inquirer_type: 'Inquirer into Sudden Deaths',
+        area: caseData.district || 'Kandy District',
+        deceased_name: decData.deceased_name || 'Unidentified Deceased',
+        age: '42 years',
+        sex: decData.gender || 'Male',
+        place_of_death: decData.place_of_death || 'Hospital admission',
+        hospital_name_if_applicable: caseData.hospital_name || 'Teaching Hospital Kandy',
+        bht_number: 'BHT-884920',
+        ward_number: 'Ward 12',
+        date_of_death: decData.date_of_death || new Date().toISOString().slice(0, 10),
+        time_of_death: '14:30',
+        immediate_cause: '',
+        cause_due_to_1: '',
+        cause_due_to_2: '',
+        cause_due_to_3: '',
+        contributory_causes: '',
+        interval_between_onset_and_death: '',
+        cause_under_investigation: 'Yes',
+        specimens_retained: 'Yes',
+        specimen_details: 'Blood, Visceral samples sent to Government Analyst Dept.',
+        maternal_death: 'No',
+        maternal_category: '',
+        comments_opinions: '',
+        conducting_jmo_name: jmo.jmo_name || 'Dr. Forensic Specialist',
+        designation: 'Judicial Medical Officer',
+        conducted_date: new Date().toISOString().slice(0, 10),
+        expected_report_completion_time: '6 weeks',
+        status: 'Pending Notification'
+    };
+};
+
+/**
+ * Save / Submit Autopsy Notification (Health 1328)
+ */
+const saveAutopsyNotification = async (userId, notificationData) => {
+    await initAutopsyNotificationTable();
+    const jmo = await getJmoDetails(userId);
+    const {
+        case_id, hospital_name, post_mortem_serial_number, court_case_number,
+        inquirer_name, inquirer_designation, inquirer_type, area,
+        deceased_name, age, sex, place_of_death, hospital_name_if_applicable,
+        bht_number, ward_number, date_of_death, time_of_death,
+        immediate_cause, cause_due_to_1, cause_due_to_2, cause_due_to_3,
+        contributory_causes, interval_between_onset_and_death,
+        cause_under_investigation, specimens_retained, specimen_details,
+        maternal_death, maternal_category, comments_opinions,
+        conducting_jmo_name, designation, conducted_date, expected_report_completion_time,
+        status = 'Notification Completed'
+    } = notificationData;
+
+    const existing = await query(`SELECT autopsy_notification_id FROM autopsy_notification WHERE case_id = $1`, [case_id]);
+
+    let result;
+    if (existing.rowCount > 0) {
+        result = await query(`
+            UPDATE autopsy_notification SET
+                jmo_id = $1, hospital_name = $2, post_mortem_serial_number = $3, court_case_number = $4,
+                inquirer_name = $5, inquirer_designation = $6, inquirer_type = $7, area = $8,
+                deceased_name = $9, age = $10, sex = $11, place_of_death = $12, hospital_name_if_applicable = $13,
+                bht_number = $14, ward_number = $15, date_of_death = $16, time_of_death = $17,
+                immediate_cause = $18, cause_due_to_1 = $19, cause_due_to_2 = $20, cause_due_to_3 = $21,
+                contributory_causes = $22, interval_between_onset_and_death = $23,
+                cause_under_investigation = $24, specimens_retained = $25, specimen_details = $26,
+                maternal_death = $27, maternal_category = $28, comments_opinions = $29,
+                conducting_jmo_name = $30, designation = $31, conducted_date = $32, expected_report_completion_time = $33,
+                status = $34, updated_at = CURRENT_TIMESTAMP
+            WHERE case_id = $35
+            RETURNING *
+        `, [
+            jmo.jmo_id, hospital_name, post_mortem_serial_number, court_case_number,
+            inquirer_name, inquirer_designation, inquirer_type, area,
+            deceased_name, age, sex, place_of_death, hospital_name_if_applicable,
+            bht_number, ward_number, date_of_death || null, time_of_death,
+            immediate_cause, cause_due_to_1, cause_due_to_2, cause_due_to_3,
+            contributory_causes, interval_between_onset_and_death,
+            cause_under_investigation, specimens_retained, specimen_details,
+            maternal_death, maternal_category, comments_opinions,
+            conducting_jmo_name, designation, conducted_date || null, expected_report_completion_time,
+            status, case_id
+        ]);
+    } else {
+        result = await query(`
+            INSERT INTO autopsy_notification (
+                case_id, jmo_id, hospital_name, post_mortem_serial_number, court_case_number,
+                inquirer_name, inquirer_designation, inquirer_type, area,
+                deceased_name, age, sex, place_of_death, hospital_name_if_applicable,
+                bht_number, ward_number, date_of_death, time_of_death,
+                immediate_cause, cause_due_to_1, cause_due_to_2, cause_due_to_3,
+                contributory_causes, interval_between_onset_and_death,
+                cause_under_investigation, specimens_retained, specimen_details,
+                maternal_death, maternal_category, comments_opinions,
+                conducting_jmo_name, designation, conducted_date, expected_report_completion_time,
+                status
+            ) VALUES (
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17,
+                $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34
+            )
+            RETURNING *
+        `, [
+            case_id, jmo.jmo_id, hospital_name, post_mortem_serial_number, court_case_number,
+            inquirer_name, inquirer_designation, inquirer_type, area,
+            deceased_name, age, sex, place_of_death, hospital_name_if_applicable,
+            bht_number, ward_number, date_of_death || null, time_of_death,
+            immediate_cause, cause_due_to_1, cause_due_to_2, cause_due_to_3,
+            contributory_causes, interval_between_onset_and_death,
+            cause_under_investigation, specimens_retained, specimen_details,
+            maternal_death, maternal_category, comments_opinions,
+            conducting_jmo_name, designation, conducted_date || null, expected_report_completion_time,
+            status
+        ]);
+    }
+
+    await query(`
+        INSERT INTO audit_logs (user_id, action, entity_name, entity_id, description)
+        VALUES ($1, 'SUBMIT_AUTOPSY_NOTIFICATION', 'autopsy_notification', $2, 'Submitted Health 1328 Autopsy Notification')
+    `, [userId, result.rows[0].autopsy_notification_id]);
+
     return result.rows[0];
 };
 
@@ -911,6 +1183,9 @@ const markNotificationRead = async (userId, notificationId) => {
 };
 
 module.exports = {
+    getAutopsyCases,
+    getAutopsyNotification,
+    saveAutopsyNotification,
     getMlrCases,
     getMlrCaseData,
     saveMlrReport,
